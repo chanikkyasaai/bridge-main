@@ -1,5 +1,15 @@
 import 'package:flutter/material.dart';
 
+import 'banking_page.dart';
+import 'profile/deregister_page.dart';
+import 'profile/fund_transfer_page.dart';
+import 'profile/manage_view_balance_page.dart';
+import 'profile/my_accounts_page.dart';
+import 'profile/my_qr_code_page.dart';
+import 'profile/my_upi_accounts_page.dart';
+import 'profile/my_upi_number_page.dart';
+import 'profile/upi_lite_page.dart';
+
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
@@ -55,22 +65,41 @@ class ProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 _sectionTitle('Banking', canaraDarkBlue),
-                _profileTile('De-Register', Icons.logout, canaraBlue),
-                _profileTile('Manage View Balance/Statement', Icons.account_balance_wallet, canaraYellow),
-                _profileTile('Change MPIN', Icons.lock, canaraLightBlue),
-                _profileTile('Forgot MPIN', Icons.help_outline, canaraBlue),
-                _profileTile('Change Passcode', Icons.password, canaraYellow),
-                _profileTile('Get MMID', Icons.confirmation_number, canaraLightBlue),
-                _profileTile('My Accounts', Icons.account_box, canaraBlue),
-                _profileTile('MB Fund Transfer', Icons.swap_horiz, canaraYellow, trailing: _blockSwitch()),
+                _profileTile('Banking', Icons.account_balance, canaraBlue, onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const BankingPage()));
+                }),
+                _profileTile('De-Register', Icons.logout, canaraBlue, onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const DeRegisterPage()));
+                }),
+                _profileTile('Manage View Balance/Statement', Icons.account_balance_wallet, canaraYellow, onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageViewBalancePage()));
+                }),
+                _profileTile('Change MPIN', Icons.lock, canaraLightBlue, onTap: () => _showChangeMpinDialog(context)),
+                _profileTile('Forgot MPIN', Icons.help_outline, canaraBlue, onTap: () => _showForgotMpinDialog(context)),
+                _profileTile('Change Passcode', Icons.password, canaraYellow, onTap: () => _showChangePasscodeDialog(context)),
+                _profileTile('Get MMID', Icons.confirmation_number, canaraLightBlue, onTap: () => _showGetMmidDialog(context)),
+                _profileTile('My Accounts', Icons.account_box, canaraBlue, onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const MyAccountsPage()));
+                }),
+                _profileTile('MB Fund Transfer', Icons.swap_horiz, canaraYellow, trailing: _blockSwitch(), onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const FundTransferPage()));
+                }),
                 const SizedBox(height: 18),
                 _sectionTitle('UPI', canaraDarkBlue),
-                _profileTile('My UPI Accounts', Icons.person_outline, canaraBlue),
-                _profileTile('My QR Code', Icons.qr_code, canaraYellow),
-                _profileTile('Blocked Users', Icons.block, canaraLightBlue),
-                _profileTile('Block/Unblock UPI Services', Icons.lock_open, canaraBlue),
-                _profileTile('My UPI Number', Icons.numbers, canaraYellow),
-                _profileTile('UPI Lite', Icons.flash_on, canaraLightBlue),
+                _profileTile('My UPI Accounts', Icons.person_outline, canaraBlue, onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const MyUpiAccountsPage()));
+                }),
+                _profileTile('My QR Code', Icons.qr_code, canaraYellow, onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const MyQrCodePage()));
+                }),
+                _profileTile('Blocked Users', Icons.block, canaraLightBlue, onTap: () => _showBlockedUsersDialog(context)),
+                _profileTile('Block/Unblock UPI Services', Icons.lock_open, canaraBlue, onTap: () => _showBlockUnblockUpiDialog(context)),
+                _profileTile('My UPI Number', Icons.numbers, canaraYellow, onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const MyUpiNumberPage()));
+                }),
+                _profileTile('UPI Lite', Icons.flash_on, canaraLightBlue, onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const UpiLitePage()));
+                }),
                 const SizedBox(height: 18),
                 _sectionTitle('General', canaraDarkBlue),
                 _profileTile('Change Language', Icons.language, canaraBlue),
@@ -184,7 +213,7 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _profileTile(String label, IconData icon, Color color, {Widget? trailing}) {
+  Widget _profileTile(String label, IconData icon, Color color, {Widget? trailing, void Function()? onTap}) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
       leading: Icon(icon, color: color),
@@ -194,7 +223,7 @@ class ProfilePage extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       ),
       trailing: trailing,
-      onTap: () {},
+      onTap: onTap ?? () {},
     );
   }
 
@@ -206,6 +235,161 @@ class ProfilePage extends StatelessWidget {
         Switch(value: false, onChanged: (v) {}),
         Text('Unblock', style: TextStyle(color: Colors.grey, fontSize: 12)),
       ],
+    );
+  }
+
+  void _showChangeMpinDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Change MPIN', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Enter your current and new MPIN to proceed.'),
+            const SizedBox(height: 16),
+            TextField(
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Current MPIN'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'New MPIN'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(child: const Text('Cancel'), onPressed: () => Navigator.pop(context)),
+          ElevatedButton(child: const Text('Change'), onPressed: () {/* Add logic */}),
+        ],
+      ),
+    );
+  }
+
+  void _showForgotMpinDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Forgot MPIN', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text('To reset your MPIN, you will receive an OTP on your registered mobile number. Proceed?'),
+        actions: [
+          TextButton(child: const Text('Cancel'), onPressed: () => Navigator.pop(context)),
+          ElevatedButton(child: const Text('Proceed'), onPressed: () {/* Add logic */}),
+        ],
+      ),
+    );
+  }
+
+  void _showChangePasscodeDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Change Passcode', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Enter your current and new passcode.'),
+            const SizedBox(height: 16),
+            TextField(
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Current Passcode'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'New Passcode'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(child: const Text('Cancel'), onPressed: () => Navigator.pop(context)),
+          ElevatedButton(child: const Text('Change'), onPressed: () {/* Add logic */}),
+        ],
+      ),
+    );
+  }
+
+  void _showGetMmidDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Get MMID', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Text('Your MMID for mobile banking is:'),
+            SizedBox(height: 16),
+            SelectableText('1234 5678', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        actions: [
+          TextButton(child: const Text('Close'), onPressed: () => Navigator.pop(context)),
+          ElevatedButton(child: const Text('Copy'), onPressed: () {/* Add copy logic */}),
+        ],
+      ),
+    );
+  }
+
+  void _showBlockedUsersDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Blocked Users', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView(
+            shrinkWrap: true,
+            children: const [
+              ListTile(
+                leading: Icon(Icons.person_off, color: Colors.red),
+                title: Text('user1@upi'),
+                trailing: Icon(Icons.delete, color: Colors.grey),
+              ),
+              ListTile(
+                leading: Icon(Icons.person_off, color: Colors.red),
+                title: Text('user2@upi'),
+                trailing: Icon(Icons.delete, color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(child: const Text('Close'), onPressed: () => Navigator.pop(context)),
+        ],
+      ),
+    );
+  }
+
+  void _showBlockUnblockUpiDialog(BuildContext context) {
+    bool isBlocked = false;
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Block/Unblock UPI Services', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Row(
+            children: [
+              const Text('Status: '),
+              Chip(
+                label: Text(isBlocked ? 'Blocked' : 'Active'),
+                backgroundColor: isBlocked ? Colors.red[100] : Colors.green[100],
+                labelStyle: TextStyle(color: isBlocked ? Colors.red : Colors.green),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(child: const Text('Cancel'), onPressed: () => Navigator.pop(context)),
+            ElevatedButton(
+              child: Text(isBlocked ? 'Unblock' : 'Block'),
+              onPressed: () {
+                setState(() => isBlocked = !isBlocked);
+                // Add block/unblock logic
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

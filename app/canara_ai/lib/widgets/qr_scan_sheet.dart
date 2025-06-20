@@ -36,7 +36,7 @@ class _QRScanSheetState extends State<QRScanSheet> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Done'),
+              child: const Text('Done', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
             ),
           ),
         ],
@@ -55,7 +55,7 @@ class _QRScanSheetState extends State<QRScanSheet> {
     return Container(
       height: 420,
       decoration: const BoxDecoration(
-        color: Colors.black,
+        color: Colors.white10,
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       child: Center(

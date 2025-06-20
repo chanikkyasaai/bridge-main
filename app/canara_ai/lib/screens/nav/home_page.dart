@@ -24,19 +24,14 @@ class _HomePageState extends State<HomePage> {
   final Color canaraPurple = const Color(0xFF7B1FA2);
 
   void _showSearchSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
-      builder: (context) {
-        return SearchSheet(
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchSheet(
           canaraBlue: canaraBlue,
           canaraDarkBlue: canaraDarkBlue,
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -151,47 +146,123 @@ class _HomePageState extends State<HomePage> {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: canaraBlue.withOpacity(0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
               padding: const EdgeInsets.all(18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ai + logo row
+                  // Top Row: Title + Logos
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Image.asset('assets/images/app.webp', height: 32),
-                      const SizedBox(width: 8),
-                      const Spacer(),
-                      Image.asset('assets/images/logo.jpeg', height: 28),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'My Portfolio',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Image.asset(
+                                  'assets/images/transapplogo.png',
+                                  height: 60,
+                                  width: 60,
+                                  fit: BoxFit.contain,
+                                ),
+                                Image.asset(
+                                  'assets/images/transbiglogo.png',
+                                  height: 50,
+                                  fit: BoxFit.contain,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      )
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 16),
+                  // Portfolio Grid with Amounts
                   Row(
                     children: [
-                      Text(
-                        'My Portfolio',
-                        style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                      // Left Column
+                      Expanded(
+                        child: Column(
+                          children: [
+                            _portfolioGridTileWithAmount(
+                              icon: 'assets/icons/rupee.png',
+                              label: 'Savings (A/C)',
+                              color: Colors.white,
+                              accent: Colors.transparent,
+                              amount: 125430.75,
+                            ),
+                            const SizedBox(height: 18),
+                            _portfolioGridTileWithAmount(
+                              icon: 'assets/icons/donation.png',
+                              label: 'Deposits (A/C)',
+                              color: Colors.white,
+                              accent: Colors.transparent,
+                              amount: 100000.00,
+                            ),
+                          ],
+                        ),
                       ),
-                      const Spacer(),
+                      // Right Column
+                      Expanded(
+                        child: Column(
+                          children: [
+                            _portfolioGridTileWithAmount(
+                              icon: 'assets/icons/save.png',
+                              label: 'OD Account (A/C)',
+                              color: Colors.white,
+                              accent: Colors.transparent,
+                              amount: 23450.00,
+                            ),
+                            const SizedBox(height: 18),
+                            _portfolioGridTileWithAmount(
+                              icon: 'assets/icons/loan.png',
+                              label: 'Loans (A/C)',
+                              color: Colors.white,
+                              accent: Colors.transparent,
+                              amount: 54321.99,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  // Show/Hide Switch (optional, can be removed if not needed)
+                  Row(
+                    children: [
                       Switch(
                         value: _showBalance,
                         onChanged: (val) => setState(() => _showBalance = val),
                         activeColor: canaraYellow,
+                        inactiveThumbColor: Colors.white,
+                        inactiveTrackColor: Colors.white54,
                       ),
                       Text(
-                        _showBalance ? 'Show' : 'Hide',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        'Show',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _portfolioTile('assets/icons/rupee.png', 'Savings (A/C)'),
-                      _portfolioTile('assets/icons/save.png', 'OD Account (A/C)'),
-                      _portfolioTile('assets/icons/donation.png', 'Deposits (A/C)'),
-                      _portfolioTile('assets/icons/loan.png', 'Loans (A/C)'),
                     ],
                   ),
                 ],
@@ -258,7 +329,89 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          // GST & Other Taxes
+
+          // --- INSERTED SECTIONS START HERE ---
+
+          _sectionTitle('UPI'),
+          _serviceGrid([
+            _serviceItem('assets/icons/upi.svg', 'Register'),
+            _serviceItem('assets/icons/upi.svg', 'Scan any UPI QR'),
+            _serviceItem('assets/icons/bhim.png', 'Send Money to any UPI app'),
+            _serviceItem('assets/icons/mobilephone.png', 'Pay to Contact/\nMobile Number'),
+            _serviceItem('assets/icons/cash.png', 'Approve Payment'),
+            _serviceItem('assets/icons/creditrupee.png', 'Add RuPay Credit Card'),
+            _serviceItem('assets/icons/tap-to-pay.png', 'Tap & Pay'),
+            _serviceItem('assets/icons/upi.svg', 'UPI Lite'),
+          ]),
+
+          _sectionTitle('Deposits'),
+          _serviceGrid([
+            _serviceItem('assets/icons/safety-box.png', 'Open Deposit'),
+            _serviceItem('assets/icons/file.png', 'Term Deposit Receipt'),
+            _serviceItem('assets/icons/add-document.png', 'Canara Dhanvarsha TD'),
+            _serviceItem('assets/icons/documents.png', 'RD Details'),
+            _serviceItem('assets/icons/paper.png', 'Payment of RD Installment'),
+            _serviceItem('assets/icons/invoice.png', 'Pre Mature Closure of RD/FD'),
+            _serviceItem('assets/icons/cancel.png', 'Close Fixed Deposit'),
+            _serviceItem('assets/icons/compose.png', 'Modify Fixed Deposit'),
+          ]),
+
+          _sectionTitle('Loans'),
+          _serviceGrid([
+            _serviceItem('assets/icons/calendar.png', 'Instant Overdraft'),
+            _serviceItem('assets/icons/banking.png', 'Loan Details'),
+            _serviceItem('assets/icons/save.png', 'Loan Repayment'),
+            _serviceItem('assets/icons/Choker.png', 'Gold OD'),
+            _serviceItem('assets/icons/heart.png', 'Canara HEAL'),
+            _serviceItem('assets/icons/rupees.png', 'Loan Against Mutual Funds'),
+            _serviceItem('assets/icons/statement.png', 'Loan Account Statement'),
+            _serviceItem('assets/icons/tax.png', 'Actual Interest Collected'),
+          ]),
+
+          _sectionTitle('LifeStyle'),
+          _serviceGrid([
+            _serviceItem('assets/icons/train.png', 'Train Tickets'),
+            _serviceItem('assets/icons/departures.png', 'Flights'),
+            _serviceItem('assets/icons/speedometer.png', 'Free Credit Score'),
+            _serviceItem('assets/icons/shopping-cart.png', 'Shopping'),
+            _serviceItem('assets/icons/mobile.png', 'Recharge'),
+            _serviceItem('assets/icons/pin.png', 'Experiences'),
+            _serviceItem('assets/icons/first-aid-kit.png', 'Healthcare'),
+            _serviceItem('assets/icons/card.png', 'E-Gift Card'),
+          ]),
+
+          _sectionTitle('Stores & Offers'),
+          _serviceGrid([
+            _serviceItem('assets/icons/badge.png', 'Rewards'),
+            _serviceItem('assets/icons/fire.png', 'Hot Deals'),
+            _serviceItem('assets/icons/discount.png', 'Offers'),
+            _serviceItem('assets/icons/flipkart-icon.png', 'Flipkart'),
+            _serviceItem('assets/icons/amazon.svg', 'Amazon'),
+            _serviceItem('assets/icons/myntra.svg', 'Myntra'),
+            _serviceItem('assets/icons/amazon-prime-video.svg', 'Amazon Prime'),
+            _serviceItem('assets/icons/airtel.svg', 'Airtel Postpaid'),
+          ]),
+
+          _sectionTitle('FOREX'),
+          _serviceGrid([
+            _serviceItem('assets/icons/money1.png', 'FOREX Beneficiary Mgmt'),
+            _serviceItem('assets/icons/exchange.png', 'Outward Remittance'),
+            _serviceItem('assets/icons/money-currency.png', 'Exchange Rate Enquiry'),
+            _serviceItem('assets/icons/trade.png', 'Inward Remittance'),
+          ]),
+
+          _sectionTitle('Accounts & Services'),
+          _serviceGrid([
+            _serviceItem('assets/icons/safety-box.png', 'Apply for Locker'),
+            _serviceItem('assets/icons/analysis.png', 'Wealth Management'),
+            _serviceItem('assets/icons/filesearch.png', 'NACH Mandate Cancellation'),
+            _serviceItem('assets/icons/cheque.png', 'Cheque Book Request & Track'),
+            _serviceItem('assets/icons/credit-card.png', 'Cheque Status'),
+            _serviceItem('assets/icons/card-payment-cancel.png', 'Stop Cheque'),
+            _serviceItem('assets/icons/give.png', 'Positive Pay System'),
+            _serviceItem('assets/icons/candidacy.png', 'Nominee Maintenance'),
+          ]),
+
           _sectionTitle('GST & Other Taxes'),
           _serviceGrid([
             _serviceItem('assets/icons/money-1.png', 'Pay GST'),
@@ -278,6 +431,35 @@ class _HomePageState extends State<HomePage> {
             _serviceItem('assets/icons/healthcare.png', 'Health Insurance'),
             _serviceItem('assets/icons/protection.png', 'Motor Insurance'),
           ]),
+
+          // REM Sections
+          _sectionTitle('Other Services'),
+          _serviceGrid([
+            _serviceItem('assets/icons/toll-road.png', 'Apply for FASTag'),
+            _serviceItem('assets/icons/toll-road.png', 'Manage FASTag'),
+            _serviceItem('assets/icons/box.png', 'Donate to PM Cares'),
+            _serviceItem('assets/icons/calendar.png', 'Calendar'),
+            _serviceItem('assets/icons/aging.png', 'Pension Seva Portal'),
+            _serviceItem('assets/icons/service.png', 'Service Charges'),
+            _serviceItem('assets/icons/lock.png', 'Block/Unblock IB'),
+            _serviceItem('assets/icons/rotation-lock.png', 'Reset IB Login Password'),
+          ]),
+
+          _sectionTitle('Kisan Services'),
+          _serviceGrid([
+            _serviceItem('assets/icons/balance.png', 'Mandi Prices'),
+            _serviceItem('assets/icons/cloud.png', 'Weather Update'),
+            _serviceItem('assets/icons/market.png', 'Market Place Integration'),
+            _serviceItem('assets/icons/crop.png', 'Crop Advisory & Predictive Alerts'),
+            _serviceItem('assets/icons/supply-chain.png', 'Value Chain Finance'),
+            _serviceItem('assets/icons/warehouse.png', 'Warehouse Receipt Finance'),
+            _serviceItem('assets/icons/calendar.png', 'Short Term Loans For Farmers'),
+          ]),
+
+          // --- INSERTED SECTIONS END HERE ---
+
+          // GST & Other Taxes (repeat, remove if not needed)
+
           const SizedBox(height: 24),
         ],
       ),
@@ -416,6 +598,63 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _portfolioGridTileWithAmount({
+    required String icon,
+    required String label,
+    required Color color,
+    required Color accent,
+    required double amount,
+  }) {
+    return Row(
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: accent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Center(
+            child: Image.asset(
+              icon,
+              height: 25,
+              color: color,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                _showBalance ? '₹ ${amount.toStringAsFixed(2)}' : '₹ ••••••••',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  letterSpacing: 1,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
