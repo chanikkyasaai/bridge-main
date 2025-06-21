@@ -1,16 +1,25 @@
-# canara_ai
 
-A new Flutter project.
+## 🛠️ Getting Started
 
-## Getting Started
+### Prerequisites
+- Flutter SDK (version 3.19.0 or higher)
+- Dart (version 3.3.0 or higher)
+- Android Studio/Xcode (for emulators)
+- VS Code/Android Studio (with Flutter plugins)
 
-This project is a starting point for a Flutter application.
+### Installation
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/your-username/your-repo.git
 
-A few resources to get you started if this is your first Flutter project:
+2. Navigate to project directory:
+   ```sh
+   cd your-repo
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+3. Install dependencies:
+   ```sh
+   flutter pub get
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+4.  Run the app:
+   ```sh
+   flutter run
