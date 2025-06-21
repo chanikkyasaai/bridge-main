@@ -242,26 +242,59 @@ class ProfilePage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Change MPIN', style: TextStyle(fontWeight: FontWeight.bold)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(
+          children: [
+            Icon(Icons.lock, color: Color(0xFF0072BC)),
+            const SizedBox(width: 8),
+            const Text('Change MPIN', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Enter your current and new MPIN to proceed.'),
-            const SizedBox(height: 16),
-            TextField(
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Current MPIN'),
+            const Text(
+              'Enter your current and new MPIN to proceed.',
+              style: TextStyle(fontSize: 15, color: Colors.black87),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 18),
             TextField(
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'New MPIN'),
+              decoration: InputDecoration(
+                labelText: 'Current MPIN',
+                prefixIcon: const Icon(Icons.vpn_key),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                filled: true,
+                fillColor: Colors.blue[50],
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'New MPIN',
+                prefixIcon: const Icon(Icons.lock_outline),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                filled: true,
+                fillColor: Colors.blue[50],
+              ),
             ),
           ],
         ),
         actions: [
-          TextButton(child: const Text('Cancel'), onPressed: () => Navigator.pop(context)),
-          ElevatedButton(child: const Text('Change'), onPressed: () {/* Add logic */}),
+          TextButton(
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            onPressed: () => Navigator.pop(context),
+          ),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.check_circle_outline),
+            label: const Text('Change'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0072BC),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {/* Add logic */},
+          ),
         ],
       ),
     );
@@ -271,11 +304,32 @@ class ProfilePage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Forgot MPIN', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('To reset your MPIN, you will receive an OTP on your registered mobile number. Proceed?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(
+          children: [
+            Icon(Icons.help_outline, color: Color(0xFF0072BC)),
+            const SizedBox(width: 8),
+            const Text('Forgot MPIN', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'To reset your MPIN, you will receive an OTP on your registered mobile number.\n\nDo you want to proceed?',
+          style: TextStyle(fontSize: 15, color: Colors.black87),
+        ),
         actions: [
-          TextButton(child: const Text('Cancel'), onPressed: () => Navigator.pop(context)),
-          ElevatedButton(child: const Text('Proceed'), onPressed: () {/* Add logic */}),
+          TextButton(
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            onPressed: () => Navigator.pop(context),
+          ),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.sms),
+            label: const Text('Proceed'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0072BC),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {/* Add logic */},
+          ),
         ],
       ),
     );
@@ -285,26 +339,60 @@ class ProfilePage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Change Passcode', style: TextStyle(fontWeight: FontWeight.bold)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(
+          children: [
+            Icon(Icons.password, color: Color(0xFFFFD600)),
+            const SizedBox(width: 8),
+            const Text('Change Passcode', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Enter your current and new passcode.'),
-            const SizedBox(height: 16),
-            TextField(
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Current Passcode'),
+            const Text(
+              'Enter your current and new passcode.',
+              style: TextStyle(fontSize: 15, color: Colors.black87),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 18),
             TextField(
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'New Passcode'),
+              decoration: InputDecoration(
+                labelText: 'Current Passcode',
+                prefixIcon: const Icon(Icons.vpn_key),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                filled: true,
+                fillColor: Colors.yellow[50],
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'New Passcode',
+                prefixIcon: const Icon(Icons.lock_outline),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                filled: true,
+                fillColor: Colors.yellow[50],
+              ),
             ),
           ],
         ),
         actions: [
-          TextButton(child: const Text('Cancel'), onPressed: () => Navigator.pop(context)),
-          ElevatedButton(child: const Text('Change'), onPressed: () {/* Add logic */}),
+          TextButton(
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            onPressed: () => Navigator.pop(context),
+          ),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.check_circle_outline),
+            label: const Text('Change'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFD600),
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {/* Add logic */},
+          ),
         ],
       ),
     );
@@ -314,18 +402,49 @@ class ProfilePage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Get MMID', style: TextStyle(fontWeight: FontWeight.bold)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(
+          children: [
+            Icon(Icons.confirmation_number, color: Color(0xFF00B9F1)),
+            const SizedBox(width: 8),
+            const Text('Get MMID', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            Text('Your MMID for mobile banking is:'),
-            SizedBox(height: 16),
-            SelectableText('1234 5678', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          children: [
+            const Text(
+              'Your MMID for mobile banking is:',
+              style: TextStyle(fontSize: 15, color: Colors.black87),
+            ),
+            const SizedBox(height: 18),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const SelectableText(
+                '1234 5678',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 2),
+              ),
+            ),
           ],
         ),
         actions: [
-          TextButton(child: const Text('Close'), onPressed: () => Navigator.pop(context)),
-          ElevatedButton(child: const Text('Copy'), onPressed: () {/* Add copy logic */}),
+          TextButton(
+            child: const Text('Close', style: TextStyle(color: Colors.grey)),
+            onPressed: () => Navigator.pop(context),
+          ),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.copy),
+            label: const Text('Copy'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF00B9F1),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {/* Add copy logic */},
+          ),
         ],
       ),
     );
@@ -335,27 +454,45 @@ class ProfilePage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Blocked Users', style: TextStyle(fontWeight: FontWeight.bold)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(
+          children: [
+            Icon(Icons.block, color: Color(0xFF00B9F1)),
+            const SizedBox(width: 8),
+            const Text('Blocked Users', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView(
             shrinkWrap: true,
-            children: const [
-              ListTile(
-                leading: Icon(Icons.person_off, color: Colors.red),
-                title: Text('user1@upi'),
-                trailing: Icon(Icons.delete, color: Colors.grey),
+            children: [
+              Card(
+                color: Colors.red[50],
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                child: const ListTile(
+                  leading: Icon(Icons.person_off, color: Colors.red),
+                  title: Text('user1@upi'),
+                  trailing: Icon(Icons.delete, color: Colors.grey),
+                ),
               ),
-              ListTile(
-                leading: Icon(Icons.person_off, color: Colors.red),
-                title: Text('user2@upi'),
-                trailing: Icon(Icons.delete, color: Colors.grey),
+              Card(
+                color: Colors.red[50],
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                child: const ListTile(
+                  leading: Icon(Icons.person_off, color: Colors.red),
+                  title: Text('user2@upi'),
+                  trailing: Icon(Icons.delete, color: Colors.grey),
+                ),
               ),
             ],
           ),
         ),
         actions: [
-          TextButton(child: const Text('Close'), onPressed: () => Navigator.pop(context)),
+          TextButton(
+            child: const Text('Close', style: TextStyle(color: Colors.grey)),
+            onPressed: () => Navigator.pop(context),
+          ),
         ],
       ),
     );
@@ -367,21 +504,46 @@ class ProfilePage extends StatelessWidget {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Block/Unblock UPI Services', style: TextStyle(fontWeight: FontWeight.bold)),
-          content: Row(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          title: Row(
             children: [
-              const Text('Status: '),
-              Chip(
-                label: Text(isBlocked ? 'Blocked' : 'Active'),
-                backgroundColor: isBlocked ? Colors.red[100] : Colors.green[100],
-                labelStyle: TextStyle(color: isBlocked ? Colors.red : Colors.green),
+              Icon(Icons.lock_open, color: Color(0xFF0072BC)),
+              const SizedBox(width: 8),
+              const Text('Block/Unblock UPI Services', style: TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const Text('Status: ', style: TextStyle(fontWeight: FontWeight.w500)),
+                  Chip(
+                    label: Text(isBlocked ? 'Blocked' : 'Active'),
+                    backgroundColor: isBlocked ? Colors.red[100] : Colors.green[100],
+                    labelStyle: TextStyle(color: isBlocked ? Colors.red : Colors.green),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                isBlocked ? 'Your UPI services are currently blocked. Tap Unblock to reactivate.' : 'Your UPI services are active. Tap Block to restrict UPI transactions.',
+                style: const TextStyle(fontSize: 14, color: Colors.black87),
               ),
             ],
           ),
           actions: [
-            TextButton(child: const Text('Cancel'), onPressed: () => Navigator.pop(context)),
-            ElevatedButton(
-              child: Text(isBlocked ? 'Unblock' : 'Block'),
+            TextButton(
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+              onPressed: () => Navigator.pop(context),
+            ),
+            ElevatedButton.icon(
+              icon: Icon(isBlocked ? Icons.lock_open : Icons.lock),
+              label: Text(isBlocked ? 'Unblock' : 'Block'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isBlocked ? Colors.green : Colors.red,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
               onPressed: () {
                 setState(() => isBlocked = !isBlocked);
                 // Add block/unblock logic

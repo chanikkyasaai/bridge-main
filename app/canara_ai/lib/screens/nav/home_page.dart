@@ -1,10 +1,28 @@
+import 'package:canara_ai/routes/slide_route.dart';
 import 'package:canara_ai/screens/nav/banking_page.dart';
 import 'package:canara_ai/screens/nav/cards_page.dart';
+import 'package:canara_ai/screens/nav/profile/manage_view_balance_page.dart';
+import 'package:canara_ai/screens/nav/profile/upi_lite_page.dart';
 import 'package:canara_ai/screens/nav/profile_page.dart';
+import 'package:canara_ai/screens/nav/tabs/pay_transfer/cardless_page.dart';
+import 'package:canara_ai/screens/nav/tabs/pay_transfer/direct_pay_page.dart';
+import 'package:canara_ai/screens/nav/tabs/pay_transfer/donation_page.dart';
+import 'package:canara_ai/screens/nav/tabs/pay_transfer/epassbook_page.dart';
+import 'package:canara_ai/screens/nav/tabs/pay_transfer/history_page.dart';
+import 'package:canara_ai/screens/nav/tabs/pay_transfer/my_beneficiary_page.dart';
+import 'package:canara_ai/screens/nav/tabs/pay_transfer/send_money_page.dart';
+import 'package:canara_ai/screens/nav/tabs/upi/add_credit_card.dart';
+import 'package:canara_ai/screens/nav/tabs/upi/approve_payment.dart';
+import 'package:canara_ai/screens/nav/tabs/upi/pay_contact.dart';
+import 'package:canara_ai/screens/nav/tabs/upi/register_upi.dart';
+import 'package:canara_ai/screens/nav/tabs/upi/scan_qr.dart';
+import 'package:canara_ai/screens/nav/tabs/upi/send_money_upi.dart';
+import 'package:canara_ai/screens/nav/tabs/upi/tap_pay.dart';
 import 'package:canara_ai/widgets/notification_sheet.dart';
 import 'package:canara_ai/widgets/qr_scan_sheet.dart';
 import 'package:canara_ai/widgets/search_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -298,14 +316,14 @@ class _HomePageState extends State<HomePage> {
           // Pay & Transfer Section
           _sectionTitle('Pay & Transfer'),
           _serviceGrid([
-            _serviceItem('assets/icons/bank.png', 'Send Money'),
-            _serviceItem('assets/icons/money.png', 'Direct Pay'),
-            _serviceItem('assets/icons/mobilephone.png', 'My Beneficiary'),
-            _serviceItem('assets/icons/passbook.png', 'ePassbook'),
-            _serviceItem('assets/icons/send-money.png', 'Card-less Cash'),
-            _serviceItem('assets/icons/contact-book.png', 'Donation'),
-            _serviceItem('assets/icons/folder.png', 'History'),
-            _serviceItem('assets/icons/mobile-banking.png', 'Manage Accounts'),
+            _serviceItem('assets/icons/bank.png', 'Send Money', SendMoneyPage()),
+            _serviceItem('assets/icons/money.png', 'Direct Pay', const DirectPayPage()),
+            _serviceItem('assets/icons/mobilephone.png', 'My Beneficiary', MyBeneficiaryPage()),
+            _serviceItem('assets/icons/passbook.png', 'ePassbook', const EPassbookPage()),
+            _serviceItem('assets/icons/send-money.png', 'Card-less Cash', const CardlessCashPage()),
+            _serviceItem('assets/icons/contact-book.png', 'Donation', const DonationPage()),
+            _serviceItem('assets/icons/folder.png', 'History', const HistoryPage()),
+            _serviceItem('assets/icons/mobile-banking.png', 'Manage Accounts', const ManageViewBalancePage()),
           ]),
           // UPI ID
           Padding(
@@ -334,126 +352,126 @@ class _HomePageState extends State<HomePage> {
 
           _sectionTitle('UPI'),
           _serviceGrid([
-            _serviceItem('assets/icons/upi.svg', 'Register'),
-            _serviceItem('assets/icons/upi.svg', 'Scan any UPI QR'),
-            _serviceItem('assets/icons/bhim.png', 'Send Money to any UPI app'),
-            _serviceItem('assets/icons/mobilephone.png', 'Pay to Contact/\nMobile Number'),
-            _serviceItem('assets/icons/cash.png', 'Approve Payment'),
-            _serviceItem('assets/icons/creditrupee.png', 'Add RuPay Credit Card'),
-            _serviceItem('assets/icons/tap-to-pay.png', 'Tap & Pay'),
-            _serviceItem('assets/icons/upi.svg', 'UPI Lite'),
+            _serviceItem('assets/icons/upi.svg', 'Register', RegisterPage()),
+            _serviceItem('assets/icons/upi.svg', 'Scan any UPI QR', QRScanPage()),
+            _serviceItem('assets/icons/bhim.png', 'Send Money to any UPI app', SendMoneyPageUPI()),
+            _serviceItem('assets/icons/mobilephone.png', 'Pay to Contact/\nMobile Number', PayContactPage()),
+            _serviceItem('assets/icons/cash.png', 'Approve Payment', ApprovePaymentPage()),
+            _serviceItem('assets/icons/creditrupee.png', 'Add RuPay Credit Card', AddCreditCardPage()),
+            _serviceItem('assets/icons/tap-to-pay.png', 'Tap & Pay', TapPayPage()),
+            _serviceItem('assets/icons/upi.svg', 'UPI Lite', UpiLitePage()),
           ]),
 
           _sectionTitle('Deposits'),
           _serviceGrid([
-            _serviceItem('assets/icons/safety-box.png', 'Open Deposit'),
-            _serviceItem('assets/icons/file.png', 'Term Deposit Receipt'),
-            _serviceItem('assets/icons/add-document.png', 'Canara Dhanvarsha TD'),
-            _serviceItem('assets/icons/documents.png', 'RD Details'),
-            _serviceItem('assets/icons/paper.png', 'Payment of RD Installment'),
-            _serviceItem('assets/icons/invoice.png', 'Pre Mature Closure of RD/FD'),
-            _serviceItem('assets/icons/cancel.png', 'Close Fixed Deposit'),
-            _serviceItem('assets/icons/compose.png', 'Modify Fixed Deposit'),
+            _serviceItem('assets/icons/safety-box.png', 'Open Deposit', RegisterPage()),
+            _serviceItem('assets/icons/file.png', 'Term Deposit Receipt', RegisterPage()),
+            _serviceItem('assets/icons/add-document.png', 'Canara Dhanvarsha TD', RegisterPage()),
+            _serviceItem('assets/icons/documents.png', 'RD Details', RegisterPage()),
+            _serviceItem('assets/icons/paper.png', 'Payment of RD Installment', RegisterPage()),
+            _serviceItem('assets/icons/invoice.png', 'Pre Mature Closure of RD/FD', RegisterPage()),
+            _serviceItem('assets/icons/cancel.png', 'Close Fixed Deposit', RegisterPage()),
+            _serviceItem('assets/icons/compose.png', 'Modify Fixed Deposit', RegisterPage()),
           ]),
 
           _sectionTitle('Loans'),
           _serviceGrid([
-            _serviceItem('assets/icons/calendar.png', 'Instant Overdraft'),
-            _serviceItem('assets/icons/banking.png', 'Loan Details'),
-            _serviceItem('assets/icons/save.png', 'Loan Repayment'),
-            _serviceItem('assets/icons/Choker.png', 'Gold OD'),
-            _serviceItem('assets/icons/heart.png', 'Canara HEAL'),
-            _serviceItem('assets/icons/rupees.png', 'Loan Against Mutual Funds'),
-            _serviceItem('assets/icons/statement.png', 'Loan Account Statement'),
-            _serviceItem('assets/icons/tax.png', 'Actual Interest Collected'),
+            _serviceItem('assets/icons/calendar.png', 'Instant Overdraft', RegisterPage()),
+            _serviceItem('assets/icons/banking.png', 'Loan Details', RegisterPage()),
+            _serviceItem('assets/icons/save.png', 'Loan Repayment', RegisterPage()),
+            _serviceItem('assets/icons/Choker.png', 'Gold OD', RegisterPage()),
+            _serviceItem('assets/icons/heart.png', 'Canara HEAL', RegisterPage()),
+            _serviceItem('assets/icons/rupees.png', 'Loan Against Mutual Funds', RegisterPage()),
+            _serviceItem('assets/icons/statement.png', 'Loan Account Statement', RegisterPage()),
+            _serviceItem('assets/icons/tax.png', 'Actual Interest Collected', RegisterPage()),
           ]),
 
           _sectionTitle('LifeStyle'),
           _serviceGrid([
-            _serviceItem('assets/icons/train.png', 'Train Tickets'),
-            _serviceItem('assets/icons/departures.png', 'Flights'),
-            _serviceItem('assets/icons/speedometer.png', 'Free Credit Score'),
-            _serviceItem('assets/icons/shopping-cart.png', 'Shopping'),
-            _serviceItem('assets/icons/mobile.png', 'Recharge'),
-            _serviceItem('assets/icons/pin.png', 'Experiences'),
-            _serviceItem('assets/icons/first-aid-kit.png', 'Healthcare'),
-            _serviceItem('assets/icons/card.png', 'E-Gift Card'),
+            _serviceItem('assets/icons/train.png', 'Train Tickets', RegisterPage()),
+            _serviceItem('assets/icons/departures.png', 'Flights', RegisterPage()),
+            _serviceItem('assets/icons/speedometer.png', 'Free Credit Score', RegisterPage()),
+            _serviceItem('assets/icons/shopping-cart.png', 'Shopping', RegisterPage()),
+            _serviceItem('assets/icons/mobile.png', 'Recharge', RegisterPage()),
+            _serviceItem('assets/icons/pin.png', 'Experiences', RegisterPage()),
+            _serviceItem('assets/icons/first-aid-kit.png', 'Healthcare', RegisterPage()),
+            _serviceItem('assets/icons/card.png', 'E-Gift Card', RegisterPage()),
           ]),
 
           _sectionTitle('Stores & Offers'),
           _serviceGrid([
-            _serviceItem('assets/icons/badge.png', 'Rewards'),
-            _serviceItem('assets/icons/fire.png', 'Hot Deals'),
-            _serviceItem('assets/icons/discount.png', 'Offers'),
-            _serviceItem('assets/icons/flipkart-icon.png', 'Flipkart'),
-            _serviceItem('assets/icons/amazon.svg', 'Amazon'),
-            _serviceItem('assets/icons/myntra.svg', 'Myntra'),
-            _serviceItem('assets/icons/amazon-prime-video.svg', 'Amazon Prime'),
-            _serviceItem('assets/icons/airtel.svg', 'Airtel Postpaid'),
+            _serviceItem('assets/icons/badge.png', 'Rewards', RegisterPage()),
+            _serviceItem('assets/icons/fire.png', 'Hot Deals', RegisterPage()),
+            _serviceItem('assets/icons/discount.png', 'Offers', RegisterPage()),
+            _serviceItem('assets/icons/flipkart-icon.png', 'Flipkart', RegisterPage()),
+            _serviceItem('assets/icons/amazon.svg', 'Amazon', RegisterPage()),
+            _serviceItem('assets/icons/myntra.svg', 'Myntra', RegisterPage()),
+            _serviceItem('assets/icons/amazon-prime-video.svg', 'Amazon Prime', RegisterPage()),
+            _serviceItem('assets/icons/airtel.svg', 'Airtel Postpaid', RegisterPage()),
           ]),
 
           _sectionTitle('FOREX'),
           _serviceGrid([
-            _serviceItem('assets/icons/money1.png', 'FOREX Beneficiary Mgmt'),
-            _serviceItem('assets/icons/exchange.png', 'Outward Remittance'),
-            _serviceItem('assets/icons/money-currency.png', 'Exchange Rate Enquiry'),
-            _serviceItem('assets/icons/trade.png', 'Inward Remittance'),
+            _serviceItem('assets/icons/money1.png', 'FOREX Beneficiary Mgmt', RegisterPage()),
+            _serviceItem('assets/icons/exchange.png', 'Outward Remittance', RegisterPage()),
+            _serviceItem('assets/icons/money-currency.png', 'Exchange Rate Enquiry', RegisterPage()),
+            _serviceItem('assets/icons/trade.png', 'Inward Remittance', RegisterPage()),
           ]),
 
           _sectionTitle('Accounts & Services'),
           _serviceGrid([
-            _serviceItem('assets/icons/safety-box.png', 'Apply for Locker'),
-            _serviceItem('assets/icons/analysis.png', 'Wealth Management'),
-            _serviceItem('assets/icons/filesearch.png', 'NACH Mandate Cancellation'),
-            _serviceItem('assets/icons/cheque.png', 'Cheque Book Request & Track'),
-            _serviceItem('assets/icons/credit-card.png', 'Cheque Status'),
-            _serviceItem('assets/icons/card-payment-cancel.png', 'Stop Cheque'),
-            _serviceItem('assets/icons/give.png', 'Positive Pay System'),
-            _serviceItem('assets/icons/candidacy.png', 'Nominee Maintenance'),
+            _serviceItem('assets/icons/safety-box.png', 'Apply for Locker', RegisterPage()),
+            _serviceItem('assets/icons/analysis.png', 'Wealth Management', RegisterPage()),
+            _serviceItem('assets/icons/filesearch.png', 'NACH Mandate Cancellation', RegisterPage()),
+            _serviceItem('assets/icons/cheque.png', 'Cheque Book Request & Track', RegisterPage()),
+            _serviceItem('assets/icons/credit-card.png', 'Cheque Status', RegisterPage()),
+            _serviceItem('assets/icons/card-payment-cancel.png', 'Stop Cheque', RegisterPage()),
+            _serviceItem('assets/icons/give.png', 'Positive Pay System', RegisterPage()),
+            _serviceItem('assets/icons/candidacy.png', 'Nominee Maintenance', RegisterPage()),
           ]),
 
           _sectionTitle('GST & Other Taxes'),
           _serviceGrid([
-            _serviceItem('assets/icons/money-1.png', 'Pay GST'),
-            _serviceItem('assets/icons/money-1.png', 'Check GST Payment Status'),
-            _serviceItem('assets/icons/money-1.png', 'Generate Receipt'),
-            _serviceItem('assets/icons/computer.png', 'Online Tax Payment'),
+            _serviceItem('assets/icons/money-1.png', 'Pay GST', RegisterPage()),
+            _serviceItem('assets/icons/money-1.png', 'Check GST Payment Status', RegisterPage()),
+            _serviceItem('assets/icons/money-1.png', 'Generate Receipt', RegisterPage()),
+            _serviceItem('assets/icons/computer.png', 'Online Tax Payment', RegisterPage()),
           ]),
           // Invest & Insure
           _sectionTitle('Invest & Insure'),
           _serviceGrid([
-            _serviceItem('assets/icons/life-insurance.png', 'Canara HSBC Life Insurance'),
-            _serviceItem('assets/icons/rupee-1.png', 'ASBA'),
-            _serviceItem('assets/icons/chart-file.png', 'Demat/Trade'),
-            _serviceItem('assets/icons/google-docs.png', '26AS'),
-            _serviceItem('assets/icons/rupees.png', 'Mutual Fund'),
-            _serviceItem('assets/icons/insurance.png', 'Home Insurance'),
-            _serviceItem('assets/icons/healthcare.png', 'Health Insurance'),
-            _serviceItem('assets/icons/protection.png', 'Motor Insurance'),
+            _serviceItem('assets/icons/life-insurance.png', 'Canara HSBC Life Insurance', RegisterPage()),
+            _serviceItem('assets/icons/rupee-1.png', 'ASBA', RegisterPage()),
+            _serviceItem('assets/icons/chart-file.png', 'Demat/Trade', RegisterPage()),
+            _serviceItem('assets/icons/google-docs.png', '26AS', RegisterPage()),
+            _serviceItem('assets/icons/rupees.png', 'Mutual Fund', RegisterPage()),
+            _serviceItem('assets/icons/insurance.png', 'Home Insurance', RegisterPage()),
+            _serviceItem('assets/icons/healthcare.png', 'Health Insurance', RegisterPage()),
+            _serviceItem('assets/icons/protection.png', 'Motor Insurance', RegisterPage()),
           ]),
 
           // REM Sections
           _sectionTitle('Other Services'),
           _serviceGrid([
-            _serviceItem('assets/icons/toll-road.png', 'Apply for FASTag'),
-            _serviceItem('assets/icons/toll-road.png', 'Manage FASTag'),
-            _serviceItem('assets/icons/box.png', 'Donate to PM Cares'),
-            _serviceItem('assets/icons/calendar.png', 'Calendar'),
-            _serviceItem('assets/icons/aging.png', 'Pension Seva Portal'),
-            _serviceItem('assets/icons/service.png', 'Service Charges'),
-            _serviceItem('assets/icons/lock.png', 'Block/Unblock IB'),
-            _serviceItem('assets/icons/rotation-lock.png', 'Reset IB Login Password'),
+            _serviceItem('assets/icons/toll-road.png', 'Apply for FASTag', RegisterPage()),
+            _serviceItem('assets/icons/toll-road.png', 'Manage FASTag', RegisterPage()),
+            _serviceItem('assets/icons/box.png', 'Donate to PM Cares', RegisterPage()),
+            _serviceItem('assets/icons/calendar.png', 'Calendar', RegisterPage()),
+            _serviceItem('assets/icons/aging.png', 'Pension Seva Portal', RegisterPage()),
+            _serviceItem('assets/icons/service.png', 'Service Charges', RegisterPage()),
+            _serviceItem('assets/icons/lock.png', 'Block/Unblock IB', RegisterPage()),
+            _serviceItem('assets/icons/rotation-lock.png', 'Reset IB Login Password', RegisterPage()),
           ]),
 
           _sectionTitle('Kisan Services'),
           _serviceGrid([
-            _serviceItem('assets/icons/balance.png', 'Mandi Prices'),
-            _serviceItem('assets/icons/cloud.png', 'Weather Update'),
-            _serviceItem('assets/icons/market.png', 'Market Place Integration'),
-            _serviceItem('assets/icons/crop.png', 'Crop Advisory & Predictive Alerts'),
-            _serviceItem('assets/icons/supply-chain.png', 'Value Chain Finance'),
-            _serviceItem('assets/icons/warehouse.png', 'Warehouse Receipt Finance'),
-            _serviceItem('assets/icons/calendar.png', 'Short Term Loans For Farmers'),
+            _serviceItem('assets/icons/balance.png', 'Mandi Prices', RegisterPage()),
+            _serviceItem('assets/icons/cloud.png', 'Weather Update', RegisterPage()),
+            _serviceItem('assets/icons/market.png', 'Market Place Integration', RegisterPage()),
+            _serviceItem('assets/icons/crop.png', 'Crop Advisory & Predictive Alerts', RegisterPage()),
+            _serviceItem('assets/icons/supply-chain.png', 'Value Chain Finance', RegisterPage()),
+            _serviceItem('assets/icons/warehouse.png', 'Warehouse Receipt Finance', RegisterPage()),
+            _serviceItem('assets/icons/calendar.png', 'Short Term Loans For Farmers', RegisterPage()),
           ]),
 
           // --- INSERTED SECTIONS END HERE ---
@@ -463,32 +481,6 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(height: 24),
         ],
       ),
-    );
-  }
-
-  Widget _portfolioTile(String asset, String label) {
-    return Column(
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.18),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Center(child: Image.asset(asset, height: 28)),
-        ),
-        const SizedBox(height: 6),
-        SizedBox(
-          width: 70,
-          child: Text(
-            label,
-            style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-          ),
-        ),
-      ],
     );
   }
 
@@ -520,40 +512,52 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _serviceItem(String asset, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
+  Widget _serviceItem(String asset, String label, Widget destinationPage) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(SlideRightRoute(page: destinationPage));
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Center(
+              child: (asset.endsWith("svg")) ?
+                SvgPicture.asset(asset, height: 26)
+              : Image.asset(
+                asset,
+                height: 26,
               ),
-            ],
+            ),
           ),
-          child: Center(
-              child: Image.asset(
-            asset,
-            height: 26,
-            color: canaraBlue,
-          )),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: TextStyle(fontSize: 11, color: canaraDarkBlue, fontWeight: FontWeight.w500),
-          textAlign: TextAlign.center,
-          maxLines: 2,
-        ),
-      ],
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              color: Color(0xFF003366),
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+          ),
+        ],
+      ),
     );
+
   }
 
   Widget _customNavBar() {

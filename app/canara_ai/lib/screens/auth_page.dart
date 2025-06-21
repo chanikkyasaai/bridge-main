@@ -1,3 +1,4 @@
+import 'package:canara_ai/screens/captcha_screen.dart';
 import 'package:canara_ai/screens/nav/home_page.dart';
 import 'package:flutter/material.dart';
 
@@ -48,7 +49,7 @@ class _AuthPageState extends State<AuthPage> {
             onPressed: () {
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => const HomePage()),
+                MaterialPageRoute(builder: (context) => const CaptchaPage()),
                 (route) => false,
               );
             },
@@ -64,7 +65,7 @@ class _AuthPageState extends State<AuthPage> {
     if (pin == '12345') {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
+        MaterialPageRoute(builder: (context) => const CaptchaPage()),
         (route) => false,
       );
     } else {
