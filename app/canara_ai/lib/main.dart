@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'screens/auth_page.dart';
-import 'screens/home_page.dart';
-import 'screens/profile_page.dart';
 
 void main() {
   runApp(const MyApp());

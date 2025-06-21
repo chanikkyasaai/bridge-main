@@ -1,4 +1,5 @@
-import 'package:canara_ai/screens/home_page.dart';
+import 'package:canara_ai/screens/captcha_screen.dart';
+import 'package:canara_ai/screens/nav/home_page.dart';
 import 'package:flutter/material.dart';
 
 class AuthPage extends StatefulWidget {
@@ -48,7 +49,7 @@ class _AuthPageState extends State<AuthPage> {
             onPressed: () {
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => const HomePage()),
+                MaterialPageRoute(builder: (context) => const CaptchaPage()),
                 (route) => false,
               );
             },
@@ -64,7 +65,7 @@ class _AuthPageState extends State<AuthPage> {
     if (pin == '12345') {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
+        MaterialPageRoute(builder: (context) => const CaptchaPage()),
         (route) => false,
       );
     } else {
@@ -220,15 +221,11 @@ class _AuthPageState extends State<AuthPage> {
         ));
   }
 
-  Widget _pinwidget(context) {
+  Widget _pinwidget(BuildContext context) {
     final FocusNode pinFocusNode = FocusNode();
-    pinFocusNode.addListener(() {
-      if (pinFocusNode.hasFocus ) {
-        _dummyLogin(context);
-      }
-    });
+
     return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(), // Dismiss keyboard
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Column(
         children: [
           // PIN + Fingerprint container
@@ -240,15 +237,15 @@ class _AuthPageState extends State<AuthPage> {
               children: [
                 // PIN Circles with Material elevation
                 GestureDetector(
-                  onTap: () =>
-                      FocusScope.of(context).requestFocus(pinFocusNode),
+                  onTap: () {
+                    FocusScope.of(context).requestFocus(pinFocusNode);
+                  },
                   child: Material(
                     elevation: 3,
                     borderRadius: BorderRadius.circular(12),
                     shadowColor: Colors.black.withOpacity(0.2),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         color: Colors.white,
@@ -257,34 +254,37 @@ class _AuthPageState extends State<AuthPage> {
                         children: List.generate(5, (index) {
                           String pin = _pinController.text;
                           bool filled = index < pin.length;
-                          return Container(
-                            width: 28,
-                            height: 28,
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: canaraBlue, width: 2),
-                              color: filled ? canaraBlue : Colors.transparent,
-                            ),
-                            child: filled
-                                ? Center(
-                                    child: Container(
-                                      width: 12,
-                                      height: 12,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
+                          return GestureDetector(
+                            onTap: () => FocusScope.of(context).requestFocus(pinFocusNode),
+                            child: Container(
+                              width: 28,
+                              height: 28,
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: canaraBlue, width: 2),
+                                color: filled ? canaraBlue : Colors.transparent,
+                              ),
+                              child: filled
+                                  ? Center(
+                                      child: Container(
+                                        width: 12,
+                                        height: 12,
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                        ),
                                       ),
-                                    ),
-                                  )
-                                : null,
+                                    )
+                                  : null,
+                            ),
                           );
                         }),
                       ),
                     ),
                   ),
                 ),
-    
+
                 // Gradient Fingerprint Button
                 GestureDetector(
                   onTap: () => _showFingerprintPopup(context),
@@ -306,18 +306,17 @@ class _AuthPageState extends State<AuthPage> {
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.fingerprint,
-                        color: Colors.white, size: 28),
+                    child: const Icon(Icons.fingerprint, color: Colors.white, size: 28),
                   ),
                 ),
               ],
             ),
           ),
-    
+
           // Hidden TextField for PIN input
           SizedBox(
-            height: 0,
-            width: 0,
+            width: 1,
+            height: 1, // small but non-zero so keyboard opens
             child: TextField(
               controller: _pinController,
               focusNode: pinFocusNode,
@@ -325,7 +324,12 @@ class _AuthPageState extends State<AuthPage> {
               maxLength: 5,
               keyboardType: TextInputType.number,
               autofocus: true,
-              onChanged: (_) => setState(() {}),
+              onChanged: (value) {
+                setState(() {});
+                if (value.length == 5) {
+                  _dummyLogin(context); // Trigger login
+                }
+              },
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 counterText: '',
@@ -336,6 +340,7 @@ class _AuthPageState extends State<AuthPage> {
       ),
     );
   }
+
 
   Widget _bottomNav(IconData icon, String label, Color color) {
     return SizedBox(
