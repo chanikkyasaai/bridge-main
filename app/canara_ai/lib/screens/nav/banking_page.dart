@@ -1,3 +1,12 @@
+import 'package:canara_ai/screens/nav/tabs/banking/manage_accounts_page.dart';
+import 'package:canara_ai/screens/nav/tabs/banking/statement_page.dart';
+import 'package:canara_ai/screens/nav/tabs/pay_transfer/add_beneficiary_page.dart';
+import 'package:canara_ai/screens/nav/tabs/pay_transfer/cardless_page.dart';
+import 'package:canara_ai/screens/nav/tabs/pay_transfer/direct_pay_page.dart';
+import 'package:canara_ai/screens/nav/tabs/pay_transfer/epassbook_page.dart';
+import 'package:canara_ai/screens/nav/tabs/pay_transfer/history_page.dart';
+import 'package:canara_ai/screens/nav/tabs/pay_transfer/my_beneficiary_page.dart';
+import 'package:canara_ai/screens/nav/tabs/pay_transfer/send_money_page.dart';
 import 'package:flutter/material.dart';
 
 class BankingPage extends StatefulWidget {
@@ -9,6 +18,8 @@ class BankingPage extends StatefulWidget {
 
 class _BankingPageState extends State<BankingPage> {
   int _selectedTab = 1; // 0: My Beneficiary, 1: My Dashboard, 2: Frequently Used
+  bool _isBalanceVisible = false;
+  final String _accountBalance = "₹1,25,480.50";
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +44,6 @@ class _BankingPageState extends State<BankingPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            
             // Account Card
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8),
@@ -53,9 +63,14 @@ class _BankingPageState extends State<BankingPage> {
                   children: [
                     Row(
                       children: [
-                        Image.asset(
-                          'assets/images/app_icon.png', // Replace with your ai logo asset
+                        Container(
+                          width: 34,
                           height: 34,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(Icons.account_balance, color: canaraBlue),
                         ),
                         const SizedBox(width: 10),
                         Text(
@@ -80,26 +95,64 @@ class _BankingPageState extends State<BankingPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 16),
                     Row(
                       children: [
-                        Icon(Icons.remove_red_eye, color: Colors.white, size: 22),
-                        const SizedBox(width: 8),
-                        Text(
-                          'View Balance',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _isBalanceVisible = !_isBalanceVisible;
+                            });
+                          },
+                          child: Row(
+                            children: [
+                              Icon(
+                                _isBalanceVisible ? Icons.visibility : Icons.visibility_off,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                              const SizedBox(width: 8),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _isBalanceVisible ? 'Available Balance' : 'View Balance',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.9),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  if (_isBalanceVisible)
+                                    Text(
+                                      _accountBalance,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                         const Spacer(),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const StatementPage()),
+                            );
+                          },
                           child: const Text('Statement', style: TextStyle(color: Colors.white)),
                         ),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ManageAccountPage()),
+                            );
+                          },
                           child: const Text('Manage', style: TextStyle(color: Colors.white)),
                         ),
                       ],
@@ -229,7 +282,12 @@ class _BankingPageState extends State<BankingPage> {
                 ),
                 const Spacer(),
                 TextButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AddBeneficiaryPage()),
+                    );
+                  },
                   icon: Icon(Icons.add, color: canaraBlue),
                   label: Text('Add', style: TextStyle(color: canaraBlue)),
                 ),
@@ -244,7 +302,9 @@ class _BankingPageState extends State<BankingPage> {
               title: const Text('Ravi Kumar'),
               subtitle: const Text('XXXXXX1234'),
               trailing: Icon(Icons.chevron_right, color: Colors.grey),
-              onTap: () {},
+              onTap: () {
+                
+              },
             ),
             ListTile(
               leading: CircleAvatar(
@@ -254,7 +314,9 @@ class _BankingPageState extends State<BankingPage> {
               title: const Text('Priya Sharma'),
               subtitle: const Text('XXXXXX5678'),
               trailing: Icon(Icons.chevron_right, color: Colors.grey),
-              onTap: () {},
+              onTap: () {
+                
+              },
             ),
             ListTile(
               leading: CircleAvatar(
@@ -264,12 +326,19 @@ class _BankingPageState extends State<BankingPage> {
               title: const Text('Amit Verma'),
               subtitle: const Text('XXXXXX9012'),
               trailing: Icon(Icons.chevron_right, color: Colors.grey),
-              onTap: () {},
+              onTap: () {
+                
+              },
             ),
             const SizedBox(height: 8),
             Center(
               child: TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MyBeneficiaryPage()),
+                  );
+                },
                 child: Text('View All', style: TextStyle(color: canaraBlue)),
               ),
             ),
@@ -314,7 +383,12 @@ class _BankingPageState extends State<BankingPage> {
               title: const Text('Send Money'),
               subtitle: const Text('To Ravi Kumar'),
               trailing: Icon(Icons.chevron_right, color: Colors.grey),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SendMoneyPage()),
+                );
+              },
             ),
             ListTile(
               leading: CircleAvatar(
@@ -324,7 +398,12 @@ class _BankingPageState extends State<BankingPage> {
               title: const Text('Bill Pay'),
               subtitle: const Text('Electricity Bill'),
               trailing: Icon(Icons.chevron_right, color: Colors.grey),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DirectPayPage()),
+                );
+              },
             ),
             ListTile(
               leading: CircleAvatar(
@@ -334,7 +413,12 @@ class _BankingPageState extends State<BankingPage> {
               title: const Text('Direct Pay'),
               subtitle: const Text('To Merchant'),
               trailing: Icon(Icons.chevron_right, color: Colors.grey),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DirectPayPage()),
+                );
+              },
             ),
           ],
         ),
@@ -364,22 +448,44 @@ class _BankingPageState extends State<BankingPage> {
               crossAxisSpacing: 8,
               childAspectRatio: 0.85,
               children: [
-                _dashboardItem('assets/icons/bank.png', 'Send Money', canaraBlue),
-                _dashboardItem('assets/icons/money.png', 'Direct Pay', canaraYellow),
-                _dashboardItem('assets/icons/mobilephone.png', 'My Beneficiary', canaraLightBlue),
-                _dashboardItem('assets/icons/passbook.png', 'ePassbook', canaraPurple),
-                _dashboardItem('assets/icons/b.png', 'Bill Pay', canaraBlue),
-                _dashboardItem('assets/icons/send-money.png', 'Card-less Cash', canaraYellow),
-                _dashboardItem('assets/icons/bank.png', 'Other Bank Accounts', canaraLightBlue),
-                _dashboardItem('assets/icons/folder.png', 'History', canaraPurple),
-                _dashboardItem('assets/icons/mobile-banking.png', 'Manage Accounts', canaraBlue),
+                _dashboardItem('Send Money', Icons.send, canaraBlue, () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) =>  SendMoneyPage()));
+                }),
+                _dashboardItem('Direct Pay', Icons.payment, canaraYellow, () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const DirectPayPage()));
+                }),
+                _dashboardItem('My Beneficiary', Icons.group, canaraLightBlue, () {
+                  setState(() {
+                    _selectedTab = 0;
+                  });
+                }),
+                _dashboardItem('ePassbook', Icons.book, canaraPurple, () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const EPassbookPage()));
+                }),
+                _dashboardItem('Bill Pay', Icons.receipt_long, canaraBlue, () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const DirectPayPage()));
+                }),
+                _dashboardItem('Card-less Cash', Icons.atm, canaraYellow, () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CardlessCashPage()));
+                }),
+                _dashboardItem('Other Bank\nAccounts', Icons.account_balance, canaraLightBlue, () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const HistoryPage()));
+                }),
+                _dashboardItem('History', Icons.history, canaraPurple, () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const HistoryPage()));
+                }),
+                _dashboardItem('Manage\nAccounts', Icons.settings, canaraBlue, () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const HistoryPage()));
+                }),
               ],
             ),
             const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerRight,
               child: TextButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  
+                },
                 icon: Icon(Icons.expand_more, color: canaraBlue),
                 label: Text('More', style: TextStyle(color: canaraBlue)),
               ),
@@ -390,33 +496,36 @@ class _BankingPageState extends State<BankingPage> {
     }
   }
 
-  Widget _dashboardItem(String asset, String label, Color color) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Center(
-            child: Image.asset(
-              asset,
-              height: 26,
-              color: color,
+  Widget _dashboardItem(String label, IconData icon, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Icon(
+                icon,
+                size: 26,
+                color: color,
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: TextStyle(fontSize: 11, color: Colors.black, fontWeight: FontWeight.w500),
-          textAlign: TextAlign.center,
-          maxLines: 2,
-        ),
-      ],
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: Colors.black, fontWeight: FontWeight.w500),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:canara_ai/screens/nav/home_page.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class CaptchaPage extends StatefulWidget {
   const CaptchaPage({Key? key}) : super(key: key);
@@ -11,10 +12,40 @@ class CaptchaPage extends StatefulWidget {
 
 class _CaptchaPageState extends State<CaptchaPage> {
   final TextEditingController _captchaController = TextEditingController();
-  String _captchaText = '';
+  List<String> _captchaWords = [];
+  final FlutterTts _flutterTts = FlutterTts();
+
   bool _isVerified = false;
   String _message = '';
   final Random _random = Random();
+  final List<String> _wordPool = [
+    'apple',
+    'banana',
+    'cherry',
+    'delta',
+    'echo',
+    'falcon',
+    'grape',
+    'honey',
+    'ice',
+    'joker',
+    'kiwi',
+    'lemon',
+    'mango',
+    'nectar',
+    'orange',
+    'peach',
+    'quartz',
+    'rocket',
+    'straw',
+    'tango',
+    'umbrella',
+    'violet',
+    'whale',
+    'xenon',
+    'yellow',
+    'zebra',
+  ];
 
   @override
   void initState() {
@@ -24,14 +55,13 @@ class _CaptchaPageState extends State<CaptchaPage> {
       setState(() {});
     });
 
+    _flutterTts.setLanguage('en-US');
+    _flutterTts.setSpeechRate(0.4); // Adjust as needed
+    _flutterTts.setPitch(1.0);
   }
 
   void _generateCaptcha() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    _captchaText = '';
-    for (int i = 0; i < 6; i++) {
-      _captchaText += chars[_random.nextInt(chars.length)];
-    }
+    _captchaWords = List.generate(3, (_) => _wordPool[_random.nextInt(_wordPool.length)]);
     setState(() {
       _message = '';
       _isVerified = false;
@@ -40,12 +70,19 @@ class _CaptchaPageState extends State<CaptchaPage> {
   }
 
   void _verifyCaptcha() {
-    if (_captchaController.text.toUpperCase() == _captchaText) {
+    String userInput = _captchaController.text.trim().toLowerCase();
+    String correctAnswer = _captchaWords.join(' ').toLowerCase();
+
+    if (userInput == correctAnswer) {
       setState(() {
         _isVerified = true;
         _message = 'CAPTCHA verified successfully!';
       });
-      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomePage()), (_) => false);
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+        (_) => false,
+      );
     } else {
       setState(() {
         _isVerified = false;
@@ -53,6 +90,19 @@ class _CaptchaPageState extends State<CaptchaPage> {
         _generateCaptcha();
       });
     }
+  }
+
+  Future<void> _speakCaptcha() async {
+    if (_captchaWords.isEmpty) return;
+    await _flutterTts.stop(); // stop any ongoing speech
+    await _flutterTts.speak(_captchaWords.join(', '));
+  }
+
+  @override
+  void dispose() {
+    _captchaController.dispose();
+    _flutterTts.stop();
+    super.dispose();
   }
 
   @override
@@ -108,7 +158,7 @@ class _CaptchaPageState extends State<CaptchaPage> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Please enter the CAPTCHA code shown below',
+                    'Please enter the words shown below',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
@@ -117,38 +167,35 @@ class _CaptchaPageState extends State<CaptchaPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  // CAPTCHA Display
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey[300]!),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // CAPTCHA Text with distortion effect
-                        ...List.generate(_captchaText.length, (index) {
-                          return Transform.rotate(
-                            angle: (_random.nextDouble() - 0.5) * 0.3,
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 2),
-                              child: Text(
-                                _captchaText[index],
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.primaries[index % Colors.primaries.length],
-                                  letterSpacing: 2,
-                                ),
-                              ),
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
+                  // CAPTCHA Word Display
+                  Column(
+                    children: [
+                      // CAPTCHA word display...
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: _captchaWords
+                            .map((word) => Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                                  child: Text(
+                                    word,
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.primaries[_random.nextInt(Colors.primaries.length)],
+                                    ),
+                                  ),
+                                ))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 10),
+                      IconButton(
+                        icon: const Icon(Icons.volume_up, color: Colors.blue, size: 28),
+                        onPressed: _speakCaptcha,
+                        tooltip: 'Listen to CAPTCHA',
+                      ),
+                    ],
                   ),
+
 
                   const SizedBox(height: 16),
 
@@ -157,7 +204,7 @@ class _CaptchaPageState extends State<CaptchaPage> {
                     onPressed: _generateCaptcha,
                     icon: const Icon(Icons.refresh, color: Colors.blue, size: 20),
                     label: const Text(
-                      'Generate New CAPTCHA',
+                      'Generate New Words',
                       style: TextStyle(
                         color: Colors.blue,
                         fontSize: 14,
@@ -178,7 +225,7 @@ class _CaptchaPageState extends State<CaptchaPage> {
                       fontWeight: FontWeight.w600,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Enter CAPTCHA',
+                      hintText: 'Type the 3 words shown above',
                       hintStyle: TextStyle(
                         color: Colors.grey[400],
                         letterSpacing: 1,
@@ -197,7 +244,6 @@ class _CaptchaPageState extends State<CaptchaPage> {
                         vertical: 16,
                       ),
                     ),
-                    maxLength: 6,
                     buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
                   ),
 
@@ -207,7 +253,7 @@ class _CaptchaPageState extends State<CaptchaPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _captchaController.text.length == 6 ? _verifyCaptcha : null,
+                      onPressed: _verifyCaptcha,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
@@ -218,7 +264,7 @@ class _CaptchaPageState extends State<CaptchaPage> {
                         elevation: 2,
                       ),
                       child: const Text(
-                        'Verify CAPTCHA',
+                        'Verify',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -291,7 +337,7 @@ class _CaptchaPageState extends State<CaptchaPage> {
                   const SizedBox(width: 12),
                   const Expanded(
                     child: Text(
-                      'Enter the 6-character code exactly as shown. CAPTCHA is case-insensitive.',
+                      'Enter the words exactly as shown. The verification is case-insensitive.',
                       style: TextStyle(
                         color: Colors.grey,
                         fontSize: 12,
@@ -305,11 +351,5 @@ class _CaptchaPageState extends State<CaptchaPage> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _captchaController.dispose();
-    super.dispose();
   }
 }
