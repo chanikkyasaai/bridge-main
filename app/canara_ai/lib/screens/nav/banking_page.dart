@@ -85,12 +85,15 @@ class _BankingPageState extends State<BankingPage> {
                       children: [
                         Icon(Icons.remove_red_eye, color: Colors.white, size: 22),
                         const SizedBox(width: 8),
-                        Text(
-                          'View Balance',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
+                        Flexible(
+                          child: Text(
+                            'View Balance',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const Spacer(),

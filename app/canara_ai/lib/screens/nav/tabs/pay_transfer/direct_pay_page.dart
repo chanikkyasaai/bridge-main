@@ -259,79 +259,81 @@ class _DirectPayPageState extends State<DirectPayPage> with SingleTickerProvider
             child: _otherBankTab == 0
                 ? mobileBankForm()
                 : _otherBankTab == 1
-                    ? Column(
-                        children: [
-                          TextField(
-                            controller: _accountController,
-                            decoration: const InputDecoration(labelText: 'Account Number'),
-                            keyboardType: TextInputType.number,
-                          ),
-                          const SizedBox(height: 12),
-                          TextField(
-                            controller: _reAccountController,
-                            decoration: const InputDecoration(labelText: 'Re-enter Account Number'),
-                            keyboardType: TextInputType.number,
-                          ),
-                          const SizedBox(height: 12),
-                          DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(labelText: 'Select Bank'),
-                            items: ['Canara Bank', 'SBI', 'HDFC', 'ICICI', 'Axis'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                            onChanged: (v) => _bankNameController.text = v ?? '',
-                          ),
-                          const SizedBox(height: 12),
-                          TextField(
-                            controller: _ifscController,
-                            decoration: const InputDecoration(labelText: 'IFSC Code'),
-                          ),
-                          const SizedBox(height: 12),
-                          TextField(
-                            controller: _beneficiaryController,
-                            decoration: const InputDecoration(labelText: 'Beneficiary Name'),
-                          ),
-                          const SizedBox(height: 12),
-                          TextField(
-                            decoration: const InputDecoration(labelText: 'Name as per Beneficiary Bank'),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.lightBlue,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                    ? SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            TextField(
+                              controller: _accountController,
+                              decoration: const InputDecoration(labelText: 'Account Number'),
+                              keyboardType: TextInputType.number,
                             ),
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Dummy: Beneficiary Validated')),
-                              );
-                            },
-                            child: const Text('Validate Beneficiary', style: TextStyle(color: Colors.white)),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(8),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: _reAccountController,
+                              decoration: const InputDecoration(labelText: 'Re-enter Account Number'),
+                              keyboardType: TextInputType.number,
                             ),
-                            child: const Text(
-                              'Disclaimer: The Beneficiary name displayed is for reference only. Only 3 beneficiaries can be validated in a day. The transaction can be carried out even in the event of failure of the validation.',
-                              style: TextStyle(fontSize: 11, color: Colors.black54),
+                            const SizedBox(height: 12),
+                            DropdownButtonFormField<String>(
+                              decoration: const InputDecoration(labelText: 'Select Bank'),
+                              items: ['Canara Bank', 'SBI', 'HDFC', 'ICICI', 'Axis'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                              onChanged: (v) => _bankNameController.text = v ?? '',
                             ),
-                          ),
-                          const Spacer(),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size.fromHeight(44),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                              backgroundColor: Colors.blue,
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: _ifscController,
+                              decoration: const InputDecoration(labelText: 'IFSC Code'),
                             ),
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Dummy: Confirmed Other Bank')),
-                              );
-                            },
-                            child: const Text('Confirm', style: TextStyle(color: Colors.white)),
-                          ),
-                        ],
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: _beneficiaryController,
+                              decoration: const InputDecoration(labelText: 'Beneficiary Name'),
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              decoration: const InputDecoration(labelText: 'Name as per Beneficiary Bank'),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.lightBlue,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                              ),
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Dummy: Beneficiary Validated')),
+                                );
+                              },
+                              child: const Text('Validate Beneficiary', style: TextStyle(color: Colors.white)),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text(
+                                'Disclaimer: The Beneficiary name displayed is for reference only. Only 3 beneficiaries can be validated in a day. The transaction can be carried out even in the event of failure of the validation.',
+                                style: TextStyle(fontSize: 11, color: Colors.black54),
+                              ),
+                            ),
+                            const Spacer(),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: const Size.fromHeight(44),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                                backgroundColor: Colors.blue,
+                              ),
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Dummy: Confirmed Other Bank')),
+                                );
+                              },
+                              child: const Text('Confirm', style: TextStyle(color: Colors.white)),
+                            ),
+                          ],
+                        ),
                       )
                     : mobileMmidForm(),
           ),
