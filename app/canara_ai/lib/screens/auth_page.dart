@@ -1,9 +1,12 @@
 import 'package:canara_ai/screens/captcha_screen.dart';
 import 'package:canara_ai/screens/nav/home_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthPage extends StatefulWidget {
-  const AuthPage({super.key});
+  final bool isFirst;
+  const AuthPage({super.key, required this.isFirst});
 
   @override
   State<AuthPage> createState() => _AuthPageState();
@@ -11,6 +14,7 @@ class AuthPage extends StatefulWidget {
 
 class _AuthPageState extends State<AuthPage> {
   final TextEditingController _pinController = TextEditingController();
+  final FocusNode pinFocusNode = FocusNode();
   bool _showFingerprintDialog = false;
 
   // Reference image colors
@@ -46,12 +50,16 @@ class _AuthPageState extends State<AuthPage> {
             child: const Text('Close'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const CaptchaPage()),
-                (route) => false,
-              );
+            onPressed: () async {
+              if (widget.isFirst == true) {
+                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const CaptchaPage()), (route) => false);
+              } else {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomePage()),
+                  (route) => false,
+                );
+              }
             },
             child: const Text('Login'),
           ),
@@ -60,14 +68,22 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 
-  void _dummyLogin(context) {
+  Future<void> _dummyLogin(context) async {
     final pin = _pinController.text;
     if (pin == '12345') {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const CaptchaPage()),
-        (route) => false,
-      );
+      if (widget.isFirst == true) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const CaptchaPage()),
+          (route) => false,
+        );
+      } else {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+          (route) => false,
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid PIN. Try 123456.')),
@@ -126,13 +142,10 @@ class _AuthPageState extends State<AuthPage> {
                 alignment: WrapAlignment.spaceAround,
                 children: [
                   _quickAction(Icons.send, 'Send Money', canaraYellow),
-                  _quickAction(Icons.qr_code_scanner, 'Scan any UPI QR',
-                      canaraLightBlue),
-                  _quickAction(
-                      Icons.account_balance_wallet, 'View Balance', canaraBlue),
+                  _quickAction(Icons.qr_code_scanner, 'Scan any UPI QR', canaraLightBlue),
+                  _quickAction(Icons.account_balance_wallet, 'View Balance', canaraBlue),
                   _quickAction(Icons.account_box, 'Open A/c', canaraYellow),
-                  _quickAction(
-                      Icons.account_balance, 'Apply Loan', canaraLightBlue),
+                  _quickAction(Icons.account_balance, 'Apply Loan', canaraLightBlue),
                   _quickAction(Icons.local_offer, 'Offers', canaraBlue),
                 ],
               ),
@@ -163,13 +176,7 @@ class _AuthPageState extends State<AuthPage> {
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _bottomNav(Icons.receipt_long, "Bill Pay", canaraBlue),
-                    _bottomNav(Icons.currency_rupee, 'Canara Digital Rupee',
-                        canaraYellow),
-                    _bottomNav(Icons.help_outline, 'Help', canaraLightBlue),
-                    _bottomNav(Icons.more_horiz, "More", canaraDarkBlue)
-                  ],
+                  children: [_bottomNav(Icons.receipt_long, "Bill Pay", canaraBlue), _bottomNav(Icons.currency_rupee, 'Canara Digital Rupee', canaraYellow), _bottomNav(Icons.help_outline, 'Help', canaraLightBlue), _bottomNav(Icons.more_horiz, "More", canaraDarkBlue)],
                 ),
               ),
               const SizedBox(height: 12),
@@ -213,19 +220,15 @@ class _AuthPageState extends State<AuthPage> {
                     child: Icon(icon, color: color),
                   ),
                   const SizedBox(height: 6),
-                  Text(label,
-                      style: TextStyle(color: color, fontSize: 10),
-                      textAlign: TextAlign.center),
+                  Text(label, style: TextStyle(color: color, fontSize: 10), textAlign: TextAlign.center),
                 ],
               )),
         ));
   }
 
   Widget _pinwidget(BuildContext context) {
-    final FocusNode pinFocusNode = FocusNode();
-
     return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
+      onTap: () => FocusScope.of(context).requestFocus(pinFocusNode),
       child: Column(
         children: [
           // PIN + Fingerprint container
@@ -250,13 +253,13 @@ class _AuthPageState extends State<AuthPage> {
                         borderRadius: BorderRadius.circular(12),
                         color: Colors.white,
                       ),
-                      child: Row(
-                        children: List.generate(5, (index) {
-                          String pin = _pinController.text;
-                          bool filled = index < pin.length;
-                          return GestureDetector(
-                            onTap: () => FocusScope.of(context).requestFocus(pinFocusNode),
-                            child: Container(
+                      child: GestureDetector(
+                        onTap: () => FocusScope.of(context).requestFocus(pinFocusNode),
+                        child: Row(
+                          children: List.generate(5, (index) {
+                            String pin = _pinController.text;
+                            bool filled = index < pin.length;
+                            return Container(
                               width: 28,
                               height: 28,
                               margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -277,9 +280,9 @@ class _AuthPageState extends State<AuthPage> {
                                       ),
                                     )
                                   : null,
-                            ),
-                          );
-                        }),
+                            );
+                          }),
+                        ),
                       ),
                     ),
                   ),
@@ -313,34 +316,35 @@ class _AuthPageState extends State<AuthPage> {
             ),
           ),
 
-          // Hidden TextField for PIN input
           SizedBox(
-            width: 1,
-            height: 1, // small but non-zero so keyboard opens
-            child: TextField(
+            width: 0,
+            height: 0,
+            child: EditableText(
               controller: _pinController,
               focusNode: pinFocusNode,
               obscureText: true,
-              maxLength: 5,
               keyboardType: TextInputType.number,
               autofocus: true,
+              enableInteractiveSelection: false,
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(5),
+                FilteringTextInputFormatter.digitsOnly,
+              ],
+              style: const TextStyle(color: Colors.transparent, fontSize: 0.1),
+              cursorColor: Colors.transparent,
+              backgroundCursorColor: Colors.transparent,
               onChanged: (value) {
                 setState(() {});
                 if (value.length == 5) {
-                  _dummyLogin(context); // Trigger login
+                  _dummyLogin(context);
                 }
               },
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                counterText: '',
-              ),
             ),
           ),
         ],
       ),
     );
   }
-
 
   Widget _bottomNav(IconData icon, String label, Color color) {
     return SizedBox(

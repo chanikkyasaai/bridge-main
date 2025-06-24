@@ -4,19 +4,23 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
 }
-
 android {
+<<<<<<< HEAD
     namespace "com.example.canara_ai"
     compileSdk flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
+=======
+    namespace = "com.example.canara_ai"
+    compileSdk 35
+    ndkVersion "25.1.8937393"
+>>>>>>> 6623368aeb6ffecf8a32553336df82251116ede7
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
-
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = JavaVersion.VERSION_17
     }
 
     defaultConfig {
@@ -24,8 +28,8 @@ android {
         applicationId = "com.example.canara_ai"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk 35
+        minSdkVersion 23
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

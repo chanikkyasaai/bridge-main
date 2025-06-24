@@ -1,4 +1,6 @@
+import 'package:canara_ai/screens/login_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'banking_page.dart';
 import 'profile/deregister_page.dart';
@@ -19,6 +21,17 @@ class ProfilePage extends StatelessWidget {
     final Color canaraYellow = const Color(0xFFFFD600);
     final Color canaraLightBlue = const Color(0xFF00B9F1);
     final Color canaraDarkBlue = const Color(0xFF003366);
+
+    Future<void> _onlogout() async {
+      final storage = FlutterSecureStorage();
+      await storage.delete(key: 'email');
+      await storage.delete(key: 'isLoggedIn');
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+        (route) => false,
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -189,7 +202,7 @@ class ProfilePage extends StatelessWidget {
                 const SizedBox(height: 8),
                 Center(
                   child: TextButton.icon(
-                    onPressed: () {},
+                    onPressed: _onlogout,
                     icon: Icon(Icons.logout, color: canaraBlue),
                     label: const Text('Log Out', style: TextStyle(color: Colors.black)),
                   ),
