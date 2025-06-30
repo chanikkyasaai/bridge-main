@@ -98,6 +98,19 @@ class _BankingPageState extends State<BankingPage> {
                     const SizedBox(height: 16),
                     Row(
                       children: [
+<<<<<<< HEAD
+                        Icon(Icons.remove_red_eye, color: Colors.white, size: 22),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            'View Balance',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+=======
                         GestureDetector(
                           onTap: () {
                             setState(() {
@@ -134,6 +147,7 @@ class _BankingPageState extends State<BankingPage> {
                                 ],
                               ),
                             ],
+>>>>>>> 6623368aeb6ffecf8a32553336df82251116ede7
                           ),
                         ),
                         const Spacer(),

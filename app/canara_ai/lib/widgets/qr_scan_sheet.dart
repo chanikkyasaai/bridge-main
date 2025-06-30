@@ -12,12 +12,16 @@ class _QRScanSheetState extends State<QRScanSheet> {
   bool _scanned = false;
 
   void _simulateScan() async {
+    if (!mounted) return;
     await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
     setState(() {
       _scanned = true;
     });
     await Future.delayed(const Duration(seconds: 2));
-    if (mounted) Navigator.pop(context);
+    if (!mounted) return;
+    Navigator.pop(context);
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
