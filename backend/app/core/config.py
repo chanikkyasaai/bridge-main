@@ -1,6 +1,6 @@
 import os
 from typing import List
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # API Configuration
@@ -11,8 +11,10 @@ class Settings(BaseSettings):
     
     # Security
     SECRET_KEY: str = "change-this-secret-key-in-production"
+    REFRESH_SECRET_KEY: str = "change-this-refresh-secret-key-in-production"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15  # Short-lived access tokens
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 30   # Long-lived refresh tokens
     SESSION_EXPIRE_MINUTES: int = 60
     
     # MPIN Configuration
@@ -30,6 +32,11 @@ class Settings(BaseSettings):
     
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8080"]
+    
+    # Supabase Configuration
+    SUPABASE_URL: str = ""
+    SUPABASE_SERVICE_KEY: str = ""
+    SUPABASE_STORAGE_BUCKET: str = "behavior-logs"
     
     # Development
     DEBUG: bool = True

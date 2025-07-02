@@ -59,19 +59,39 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 @app.get("/")
 async def root():
     return {
-        "message": "Welcome to Canara AI Security Backend",
+        "message": "Welcome to Canara AI Security Backend with Supabase Integration",
         "version": settings.VERSION,
-        "description": "ML-powered behavioral analysis for banking security",
+        "description": "ML-powered behavioral analysis for banking security with Supabase storage",
         "features": [
-            "Real-time behavioral analysis",
+            "Real-time behavioral analysis via WebSocket",
             "Session-based security monitoring",
             "MPIN verification system",
-            "WebSocket behavioral data collection"
+            "Supabase database integration",
+            "Behavioral data storage in Supabase Storage",
+            "Structured JSON logging with user_id/session_id"
         ],
         "endpoints": {
             "docs": "/docs",
             "redoc": "/redoc",
-            "websocket": "/api/v1/ws/behavior/{session_id}?token={session_token}"
+            "auth": {
+                "register": "POST /api/v1/auth/register",
+                "login": "POST /api/v1/auth/login",
+                "verify_mpin": "POST /api/v1/auth/verify-mpin",
+                "logout": "POST /api/v1/auth/logout"
+            },
+            "logging": {
+                "start_session": "POST /api/v1/log/start-session",
+                "log_behavior": "POST /api/v1/log/behavior-data",
+                "end_session": "POST /api/v1/log/end-session",
+                "session_status": "GET /api/v1/log/session/{id}/status",
+                "get_logs": "GET /api/v1/log/session/{id}/logs"
+            },
+            "websocket": "ws://localhost:8000/api/v1/ws/behavior/{session_id}?token={session_token}"
+        },
+        "supabase_integration": {
+            "database_tables": ["users", "sessions", "security_events"],
+            "storage_bucket": "behavior-logs",
+            "log_format": "logs/{user_id}/{session_id}.json"
         }
     }
 

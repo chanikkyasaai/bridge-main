@@ -48,9 +48,9 @@ class WebSocketManager:
                 print(f"Failed to send message to {session_id}: {e}")
                 self.disconnect(session_id)
     
-    async def broadcast_to_user(self, user_email: str, message: dict):
+    async def broadcast_to_user(self, user_id: str, message: dict):
         """Send message to all sessions of a user"""
-        user_sessions = session_manager.get_user_sessions(user_email)
+        user_sessions = session_manager.get_user_sessions(user_id)
         for session in user_sessions:
             await self.send_message(session.session_id, message)
 
@@ -135,7 +135,8 @@ async def process_behavioral_data(session_id: str, behavioral_event: Dict[str, A
     # Add session context to data
     event_data.update({
         "session_id": session_id,
-        "user_email": session.user_email,
+        "user_id": session.user_id,
+        "phone": session.phone,
         "device_id": session.device_id
     })
     

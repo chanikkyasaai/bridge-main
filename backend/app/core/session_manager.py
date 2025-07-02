@@ -18,9 +18,11 @@ class BehavioralData:
 
 class UserSession:
     """Manages individual user session and behavioral data"""
-    def __init__(self, session_id: str, user_email: str, device_id: str):
-        self.session_id = session_id
-        self.user_email = user_email
+    def __init__(self, session_id: str, user_id: str, phone: str, device_id: str, supabase_session_id: str = None):
+        self.session_id = session_id  # Local session ID
+        self.supabase_session_id = supabase_session_id  # Supabase database session ID
+        self.user_id = user_id  # Supabase user ID
+        self.phone = phone
         self.device_id = device_id
         self.created_at = datetime.utcnow()
         self.last_activity = datetime.utcnow()
@@ -28,35 +30,53 @@ class UserSession:
         self.is_blocked = False
         self.risk_score = 0.0
         self.mpin_attempts = 0
-        self.behavioral_buffer = deque(maxlen=settings.BEHAVIOR_BUFFER_SIZE)
+        self.behavioral_buffer = []  # Store all behavioral data in memory during session
         self.websocket_connection = None
+        self.ended_at = None
         
     def add_behavioral_data(self, event_type: str, data: Dict[str, Any]):
-        """Add behavioral data to the session buffer"""
+        """Add behavioral data to the session buffer (kept in memory during session)"""
         behavior_data = BehavioralData(event_type, data)
         self.behavioral_buffer.append(behavior_data)
         self.last_activity = datetime.utcnow()
         
-        # Save to file for ML model processing
-        asyncio.create_task(self._save_to_buffer_file(behavior_data))
+        # No longer save to file immediately - keep in memory until session ends
     
-    async def _save_to_buffer_file(self, behavior_data: BehavioralData):
-        """Save behavioral data to session-specific buffer file"""
-        buffer_dir = "session_buffers"
-        os.makedirs(buffer_dir, exist_ok=True)
+    async def save_behavioral_data_to_supabase(self):
+        """Save all behavioral data to Supabase Storage when session ends"""
+        from app.core.supabase_client import supabase_client
         
-        file_path = os.path.join(buffer_dir, f"{self.session_id}.jsonl")
-        
-        data_entry = {
-            "timestamp": behavior_data.timestamp,
-            "event_type": behavior_data.event_type,
-            "data": behavior_data.data,
-            "session_id": self.session_id,
-            "user_email": self.user_email
-        }
-        
-        async with aiofiles.open(file_path, mode='a') as f:
-            await f.write(json.dumps(data_entry) + '\n')
+        try:
+            # Convert behavioral buffer to JSON-serializable format
+            behavioral_logs = []
+            for behavior_data in self.behavioral_buffer:
+                log_entry = {
+                    "timestamp": behavior_data.timestamp,
+                    "event_type": behavior_data.event_type,
+                    "data": behavior_data.data
+                }
+                behavioral_logs.append(log_entry)
+            
+            # Upload to Supabase Storage
+            if behavioral_logs:
+                file_path = await supabase_client.upload_behavioral_log(
+                    self.user_id, 
+                    self.session_id, 
+                    behavioral_logs
+                )
+                
+                # Update session record with log file URL
+                if self.supabase_session_id:
+                    await supabase_client.update_session(
+                        self.supabase_session_id,
+                        {"log_file_url": file_path, "anomaly_score": self.risk_score}
+                    )
+                
+                return file_path
+            
+        except Exception as e:
+            print(f"Failed to save behavioral data to Supabase: {e}")
+            return None
     
     def update_risk_score(self, new_score: float):
         """Update risk score and handle security actions"""
@@ -106,11 +126,21 @@ class UserSession:
         expiry_time = self.created_at + timedelta(minutes=settings.SESSION_EXPIRE_MINUTES)
         return datetime.utcnow() > expiry_time
     
+    def end_session(self):
+        """End the session and prepare for data persistence"""
+        self.is_active = False
+        self.ended_at = datetime.utcnow()
+        
+        # Log session completion
+        print(f"Session {self.session_id} ended. Total behavioral events: {len(self.behavioral_buffer)}")
+    
     def get_session_stats(self) -> Dict[str, Any]:
         """Get session statistics"""
         return {
             "session_id": self.session_id,
-            "user_email": self.user_email,
+            "supabase_session_id": self.supabase_session_id,
+            "user_id": self.user_id,
+            "phone": self.phone,
             "device_id": self.device_id,
             "created_at": self.created_at.isoformat(),
             "last_activity": self.last_activity.isoformat(),
@@ -120,23 +150,145 @@ class UserSession:
             "behavioral_events_count": len(self.behavioral_buffer),
             "mpin_attempts": self.mpin_attempts
         }
+    
+    def get_behavioral_summary(self) -> Dict[str, Any]:
+        """Get summary of behavioral data collected during session"""
+        if not self.behavioral_buffer:
+            return {
+                "total_events": 0,
+                "event_types": [],
+                "duration_minutes": 0,
+                "first_event": None,
+                "last_event": None
+            }
+        
+        event_types = list(set(bd.event_type for bd in self.behavioral_buffer))
+        duration = (self.last_activity - self.created_at).total_seconds() / 60
+        
+        return {
+            "total_events": len(self.behavioral_buffer),
+            "event_types": event_types,
+            "duration_minutes": round(duration, 2),
+            "first_event": self.behavioral_buffer[0].timestamp if self.behavioral_buffer else None,
+            "last_event": self.behavioral_buffer[-1].timestamp if self.behavioral_buffer else None,
+            "risk_score": self.risk_score
+        }
+    
+    async def validate_and_save_behavioral_data(self):
+        """Validate behavioral data before saving to permanent storage"""
+        if not self.behavioral_buffer:
+            print(f"No behavioral data to save for session {self.session_id}")
+            return None
+        
+        # Validate data integrity
+        valid_events = []
+        for behavior_data in self.behavioral_buffer:
+            if self._validate_behavioral_event(behavior_data):
+                valid_events.append(behavior_data)
+            else:
+                print(f"Invalid behavioral event skipped: {behavior_data.event_type}")
+        
+        if not valid_events:
+            print(f"No valid behavioral data to save for session {self.session_id}")
+            return None
+        
+        # Save validated data
+        try:
+            return await self.save_behavioral_data_to_supabase()
+        except Exception as e:
+            print(f"Failed to save behavioral data: {e}")
+            # Fallback: save to local file
+            return await self._save_to_local_backup()
+    
+    def _validate_behavioral_event(self, behavior_data: 'BehavioralData') -> bool:
+        """Validate individual behavioral event"""
+        try:
+            # Check required fields
+            if not behavior_data.event_type or not behavior_data.timestamp:
+                return False
+            
+            # Validate timestamp format
+            datetime.fromisoformat(behavior_data.timestamp.replace('Z', ''))
+            
+            # Validate data is not empty
+            if not behavior_data.data or not isinstance(behavior_data.data, dict):
+                return False
+            
+            return True
+        except Exception:
+            return False
+    
+    async def _save_to_local_backup(self) -> str:
+        """Backup behavioral data to local file if Supabase fails"""
+        try:
+            import os
+            import json
+            
+            backup_dir = "session_backups"
+            os.makedirs(backup_dir, exist_ok=True)
+            
+            backup_file = f"{backup_dir}/session_{self.session_id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
+            
+            behavioral_logs = []
+            for behavior_data in self.behavioral_buffer:
+                log_entry = {
+                    "timestamp": behavior_data.timestamp,
+                    "event_type": behavior_data.event_type,
+                    "data": behavior_data.data
+                }
+                behavioral_logs.append(log_entry)
+            
+            session_backup = {
+                "session_id": self.session_id,
+                "user_id": self.user_id,
+                "phone": self.phone,
+                "device_id": self.device_id,
+                "created_at": self.created_at.isoformat(),
+                "ended_at": getattr(self, 'ended_at', datetime.utcnow()).isoformat(),
+                "risk_score": self.risk_score,
+                "behavioral_data": behavioral_logs
+            }
+            
+            with open(backup_file, 'w') as f:
+                json.dump(session_backup, f, indent=2)
+            
+            print(f"Session data backed up to: {backup_file}")
+            return backup_file
+            
+        except Exception as e:
+            print(f"Failed to create local backup: {e}")
+            return None
 
 class SessionManager:
     """Global session manager"""
     def __init__(self):
         self.active_sessions: Dict[str, UserSession] = {}
-        self.user_sessions: Dict[str, List[str]] = {}  # user_email -> [session_ids]
+        self.user_sessions: Dict[str, List[str]] = {}  # user_id -> [session_ids]
         
-    def create_session(self, user_email: str, device_id: str) -> str:
-        """Create a new user session"""
+    async def create_session(self, user_id: str, phone: str, device_id: str, session_token: str) -> str:
+        """Create a new user session with Supabase integration"""
+        from app.core.supabase_client import supabase_client
+        
         session_id = str(uuid.uuid4())
-        session = UserSession(session_id, user_email, device_id)
+        
+        # Create session in Supabase database
+        try:
+            supabase_session = await supabase_client.create_session(
+                user_id, device_id, session_token
+            )
+            supabase_session_id = supabase_session['id'] if supabase_session else None
+        except Exception as e:
+            print(f"Failed to create session in Supabase: {e}")
+            supabase_session_id = None
+        
+        # Create local session object
+        session = UserSession(session_id, user_id, phone, device_id, supabase_session_id)
         
         self.active_sessions[session_id] = session
         
-        if user_email not in self.user_sessions:
-            self.user_sessions[user_email] = []
-        self.user_sessions[user_email].append(session_id)
+        if user_id not in self.user_sessions:
+            self.user_sessions[user_id] = []
+        self.user_sessions[user_id].append(session_id)
         
         return session_id
     
@@ -144,27 +296,52 @@ class SessionManager:
         """Get session by ID"""
         return self.active_sessions.get(session_id)
     
-    def get_user_sessions(self, user_email: str) -> List[UserSession]:
+    def get_user_sessions(self, user_id: str) -> List[UserSession]:
         """Get all active sessions for a user"""
-        session_ids = self.user_sessions.get(user_email, [])
+        session_ids = self.user_sessions.get(user_id, [])
         return [self.active_sessions[sid] for sid in session_ids if sid in self.active_sessions]
     
-    def terminate_session(self, session_id: str) -> bool:
-        """Terminate a specific session"""
+    async def terminate_session(self, session_id: str, final_decision: str = "normal") -> bool:
+        """Terminate a specific session and save behavioral data to Supabase"""
         if session_id in self.active_sessions:
             session = self.active_sessions[session_id]
-            session.is_active = False
+            
+            # End the session
+            session.end_session()
+            
+            # Get behavioral data summary before saving
+            summary = session.get_behavioral_summary()
+            print(f"Terminating session {session_id}: {summary}")
+            
+            # Validate and save behavioral data to permanent storage
+            log_file_path = await session.validate_and_save_behavioral_data()
+            
+            # Mark session as ended in Supabase
+            if session.supabase_session_id:
+                try:
+                    from app.core.supabase_client import supabase_client
+                    await supabase_client.end_session(
+                        session.supabase_session_id, 
+                        final_decision, 
+                        log_file_path or "",
+                        session.risk_score
+                    )
+                except Exception as e:
+                    print(f"Failed to end session in Supabase: {e}")
             
             # Remove from user sessions
-            if session.user_email in self.user_sessions:
-                if session_id in self.user_sessions[session.user_email]:
-                    self.user_sessions[session.user_email].remove(session_id)
+            if session.user_id in self.user_sessions:
+                if session_id in self.user_sessions[session.user_id]:
+                    self.user_sessions[session.user_id].remove(session_id)
             
+            # Clean up session from memory
             del self.active_sessions[session_id]
+            
+            print(f"Session {session_id} terminated successfully. Log file: {log_file_path}")
             return True
         return False
     
-    def cleanup_expired_sessions(self):
+    async def cleanup_expired_sessions(self):
         """Clean up expired sessions"""
         expired_sessions = []
         for session_id, session in self.active_sessions.items():
@@ -172,7 +349,7 @@ class SessionManager:
                 expired_sessions.append(session_id)
         
         for session_id in expired_sessions:
-            self.terminate_session(session_id)
+            await self.terminate_session(session_id, "expired")
         
         print(f"Cleaned up {len(expired_sessions)} expired sessions")
     
@@ -192,4 +369,4 @@ async def cleanup_sessions_task():
     """Background task to periodically clean up expired sessions"""
     while True:
         await asyncio.sleep(settings.SESSION_CLEANUP_INTERVAL)
-        session_manager.cleanup_expired_sessions()
+        await session_manager.cleanup_expired_sessions()

@@ -1,0 +1,259 @@
+from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from pydantic import BaseModel
+from typing import Dict, Any, List, Optional
+from datetime import datetime
+from app.core.session_manager import session_manager
+from app.core.security import extract_session_info
+from app.core.supabase_client import supabase_client
+
+router = APIRouter()
+security = HTTPBearer()
+
+class StartSessionRequest(BaseModel):
+    user_id: str
+    phone: str
+    device_id: str
+    device_info: Optional[str] = ""
+
+class BehaviorDataRequest(BaseModel):
+    session_id: str
+    event_type: str
+    data: Dict[str, Any]
+
+class EndSessionRequest(BaseModel):
+    session_id: str
+    final_decision: Optional[str] = "normal"
+
+class SessionResponse(BaseModel):
+    session_id: str
+    supabase_session_id: Optional[str]
+    message: str
+    status: str
+
+@router.post("/start-session", response_model=SessionResponse)
+async def start_session(request: StartSessionRequest):
+    """
+    Start a new behavioral logging session
+    """
+    try:
+        # Create session token (you may want to integrate with your auth system)
+        from app.core.security import create_session_token
+        session_token = create_session_token(request.phone, request.device_id)
+        
+        # Create session
+        session_id = await session_manager.create_session(
+            request.user_id,
+            request.phone,
+            request.device_id,
+            session_token
+        )
+        
+        session = session_manager.get_session(session_id)
+        
+        return SessionResponse(
+            session_id=session_id,
+            supabase_session_id=session.supabase_session_id if session else None,
+            message="Session started successfully",
+            status="active"
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start session: {str(e)}"
+        )
+
+@router.post("/behavior-data")
+async def log_behavior_data(
+    request: BehaviorDataRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    Accept behavioral JSON data during an active session
+    Note: Data is stored in memory and only uploaded to Supabase when session ends
+    """
+    try:
+        # Verify session token
+        session_info = extract_session_info(credentials.credentials)
+        if not session_info:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid session token"
+            )
+        
+        # Get session
+        session = session_manager.get_session(request.session_id)
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Session not found"
+            )
+        
+        if session.is_blocked:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Session is blocked"
+            )
+        
+        # Add behavioral data to session buffer (kept in memory)
+        session.add_behavioral_data(request.event_type, request.data)
+        
+        return {
+            "message": "Behavioral data logged successfully",
+            "session_id": request.session_id,
+            "event_type": request.event_type,
+            "total_events": len(session.behavioral_buffer),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to log behavioral data: {str(e)}"
+        )
+
+@router.post("/end-session")
+async def end_session(
+    request: EndSessionRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    End session and upload all behavioral data to Supabase Storage
+    """
+    try:
+        # Verify session token
+        session_info = extract_session_info(credentials.credentials)
+        if not session_info:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid session token"
+            )
+        
+        # Get session
+        session = session_manager.get_session(request.session_id)
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Session not found"
+            )
+        
+        # Terminate session (this will save behavioral data to Supabase)
+        success = await session_manager.terminate_session(
+            request.session_id, 
+            request.final_decision
+        )
+        
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to terminate session"
+            )
+        
+        return {
+            "message": "Session ended successfully",
+            "session_id": request.session_id,
+            "final_decision": request.final_decision,
+            "behavioral_data_saved": True,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to end session: {str(e)}"
+        )
+
+@router.get("/session/{session_id}/status")
+async def get_session_status(
+    session_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    Get current session status and behavioral data summary
+    """
+    try:
+        # Verify session token
+        session_info = extract_session_info(credentials.credentials)
+        if not session_info:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid session token"
+            )
+        
+        # Get session
+        session = session_manager.get_session(session_id)
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Session not found"
+            )
+        
+        return {
+            **session.get_session_stats(),
+            "behavioral_data_summary": {
+                "total_events": len(session.behavioral_buffer),
+                "event_types": list(set(bd.event_type for bd in session.behavioral_buffer)),
+                "last_event": session.behavioral_buffer[-1].timestamp if session.behavioral_buffer else None
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get session status: {str(e)}"
+        )
+
+@router.get("/session/{session_id}/logs")
+async def get_session_logs(
+    session_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    Get behavioral logs for a completed session from Supabase Storage
+    """
+    try:
+        # Verify session token
+        session_info = extract_session_info(credentials.credentials)
+        if not session_info:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid session token"
+            )
+        
+        # Get session info from Supabase
+        session_data = await supabase_client.get_session(session_id)
+        if not session_data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Session not found in database"
+            )
+        
+        if not session_data.get('log_file_url'):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No behavioral logs found for this session"
+            )
+        
+        # Download logs from Supabase Storage
+        logs = await supabase_client.download_behavioral_log(session_data['log_file_url'])
+        
+        return {
+            "session_id": session_id,
+            "logs": logs,
+            "file_path": session_data['log_file_url']
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get session logs: {str(e)}"
+        )
