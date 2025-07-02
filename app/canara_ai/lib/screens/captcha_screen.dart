@@ -1,3 +1,4 @@
+import 'package:canara_ai/logging/log_touch_data.dart';
 import 'package:canara_ai/screens/nav/home_page.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
@@ -46,6 +47,8 @@ class _CaptchaPageState extends State<CaptchaPage> {
     'yellow',
     'zebra',
   ];
+
+  final logger = TouchLogger();
 
   @override
   void initState() {
@@ -98,6 +101,11 @@ class _CaptchaPageState extends State<CaptchaPage> {
     await _flutterTts.speak(_captchaWords.join(', '));
   }
 
+  void _handlePointer(PointerEvent event, String type) {
+    logger.logEvent(event, type);
+  }
+
+
   @override
   void dispose() {
     _captchaController.dispose();
@@ -107,7 +115,11 @@ class _CaptchaPageState extends State<CaptchaPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Listener(
+      onPointerDown: (e) => _handlePointer(e, 'DOWN'),
+      onPointerMove: (e) => _handlePointer(e, 'MOVE'),
+      onPointerUp: (e) => _handlePointer(e, 'UP'),
+      child:  Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -349,6 +361,7 @@ class _CaptchaPageState extends State<CaptchaPage> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
