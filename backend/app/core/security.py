@@ -117,14 +117,15 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
     return verify_session_token(token)
 
 def extract_session_info(token: str) -> Optional[Dict[str, Any]]:
-    """Extract session information from token"""
+    """Extract session information from session token"""
     payload = verify_session_token(token)
     if payload:
         return {
             "user_phone": payload.get("user_phone"),
-            "user_id": payload.get("user_id"),
+            "user_id": payload.get("user_id"), 
             "session_id": payload.get("session_id"),
-            "device_id": payload.get("device_id")
+            "device_id": payload.get("device_id"),
+            "created_at": payload.get("created_at")
         }
     return None
 
@@ -136,16 +137,3 @@ def get_token_payload(token: str) -> Optional[Dict[str, Any]]:
         return payload
     except JWTError:
         return None
-        return None
-
-def extract_session_info(token: str) -> Optional[Dict[str, Any]]:
-    """Extract session information from JWT token"""
-    payload = verify_token(token)
-    if payload and "session_id" in payload:
-        return {
-            "session_id": payload["session_id"],
-            "user_email": payload["user_email"],
-            "device_id": payload["device_id"],
-            "created_at": payload["created_at"]
-        }
-    return None

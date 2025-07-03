@@ -62,21 +62,33 @@ async def behavioral_websocket(websocket: WebSocket, session_id: str, token: str
     """
     WebSocket endpoint for real-time behavioral data collection
     """
-    # Verify session token
-    session_info = extract_session_info(token)
-    if not session_info or session_info["session_id"] != session_id:
-        await websocket.close(code=1008, reason="Invalid session token")
-        return
-    
-    # Get session
-    session = session_manager.get_session(session_id)
-    if not session or session.is_blocked:
-        await websocket.close(code=1008, reason="Session blocked or not found")
-        return
-    
-    await websocket_manager.connect(websocket, session_id)
-    
     try:
+        # Verify session token
+        session_info = extract_session_info(token)
+        if not session_info:
+            await websocket.close(code=1008, reason="Invalid session token")
+            return
+        
+        # Get session from session manager
+        session = session_manager.get_session(session_id)
+        if not session:
+            await websocket.close(code=1008, reason="Session not found")
+            return
+            
+        if session.is_blocked:
+            await websocket.close(code=1008, reason="Session is blocked")
+            return
+        
+        # Verify that the token belongs to this session's user
+        token_user_id = session_info.get("user_id")
+        token_phone = session_info.get("user_phone")
+        
+        if token_user_id != session.user_id or token_phone != session.phone:
+            await websocket.close(code=1008, reason="Token does not match session user")
+            return
+        
+        await websocket_manager.connect(websocket, session_id)
+        
         # Send initial connection confirmation
         await websocket.send_text(json.dumps({
             "type": "connection_established",
@@ -116,6 +128,12 @@ async def behavioral_websocket(websocket: WebSocket, session_id: str, token: str
     except WebSocketDisconnect:
         websocket_manager.disconnect(session_id)
         print(f"WebSocket disconnected for session: {session_id}")
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+        try:
+            await websocket.close(code=1011, reason=f"Server error: {str(e)}")
+        except:
+            pass
 
 async def process_behavioral_data(session_id: str, behavioral_event: Dict[str, Any]):
     """
@@ -266,3 +284,29 @@ async def simulate_ml_analysis(session_id: str):
         "predicted_risk_score": simulated_risk_score,
         "action_taken": "block" if simulated_risk_score >= 0.9 else "monitor" if simulated_risk_score >= 0.7 else "normal"
     }
+
+@router.get("/debug/token/{token}")
+async def debug_token(token: str):
+    """Debug endpoint to inspect token contents"""
+    try:
+        from app.core.security import get_token_payload
+        
+        # Get token payload without verification
+        payload = get_token_payload(token)
+        
+        if not payload:
+            return {"error": "Invalid token format"}
+        
+        # Also try to verify it
+        session_info = extract_session_info(token)
+        
+        return {
+            "token_payload": payload,
+            "session_info": session_info,
+            "token_type": payload.get("type"),
+            "expires": payload.get("exp"),
+            "issued_at": payload.get("iat")
+        }
+        
+    except Exception as e:
+        return {"error": f"Debug failed: {str(e)}"}
