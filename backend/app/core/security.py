@@ -50,13 +50,16 @@ def create_refresh_token(data: dict) -> str:
 
 def create_session_token(phone: str, device_id: str, user_id: str, session_id: str = None) -> str:
     """Create a session token for WebSocket and session management"""
+    expire = datetime.utcnow() + timedelta(minutes=settings.SESSION_EXPIRE_MINUTES)
+    
     session_data = {
         "user_phone": phone,
         "user_id": user_id,
         "device_id": device_id,
         "created_at": datetime.utcnow().isoformat(),
         "type": "session",
-        "exp": (datetime.utcnow() + timedelta(minutes=settings.SESSION_EXPIRE_MINUTES)).timestamp()
+        "exp": expire,
+        "iat": datetime.utcnow()
     }
     
     # Only add session_id if provided (optional)
@@ -137,7 +140,8 @@ def get_token_payload(token: str) -> Optional[Dict[str, Any]]:
     """Get token payload without verification (for debugging)"""
     try:
         # Decode without verification to see token content
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM], options={"verify_signature": False})
+        payload = jwt.decode(token, "dummy", algorithms=["HS256"], options={"verify_signature": False})
         return payload
-    except JWTError:
+    except JWTError as e:
+        print(f"JWT decode error: {e}")
         return None
