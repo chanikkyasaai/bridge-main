@@ -350,6 +350,73 @@ Authorization: Bearer <session_token>
 }
 ```
 
+### 6. App Closure Handling
+```http
+POST /api/v1/logging/app-close
+```
+**Request Body:**
+```json
+{
+  "session_id": "session-uuid",
+  "reason": "app_closed"
+}
+```
+**Possible reasons:** `app_closed`, `user_logout`, `force_close`
+
+**Response:**
+```json
+{
+  "message": "App closure handled successfully",
+  "session_id": "session-uuid",
+  "reason": "app_closed",
+  "behavioral_data_saved": true,
+  "timestamp": "2025-07-03T09:45:30.123456"
+}
+```
+
+### 7. App State Changes
+```http
+POST /api/v1/logging/app-state
+```
+**Request Body:**
+```json
+{
+  "session_id": "session-uuid",
+  "state": "background",
+  "details": {
+    "previous_state": "foreground",
+    "duration_in_foreground": 300
+  }
+}
+```
+**Possible states:** `background`, `foreground`, `minimized`, `restored`
+
+**Response:**
+```json
+{
+  "message": "App state changed to background",
+  "session_id": "session-uuid",
+  "state": "background",
+  "timestamp": "2025-07-03T09:45:30.123456"
+}
+```
+
+### 🔄 **Session Lifecycle Management**
+
+#### When the app is opened:
+1. User enters MPIN → `POST /api/v1/auth/mpin-login` 
+2. Session and behavioral logging starts automatically
+3. WebSocket connection established → `WS /api/v1/ws/behavior/{session_token}`
+
+#### During app usage:
+- Behavioral data sent via WebSocket
+- App state changes → `POST /api/v1/logging/app-state`
+
+#### When the app is closed:
+- **Option 1 (Recommended):** Call `POST /api/v1/logging/app-close`
+- **Option 2:** Let WebSocket disconnect handle cleanup automatically
+- **Option 3:** Let session expire naturally after 60 minutes
+
 ---
 
 ## 🔗 **WebSocket Routes** (`/api/v1/ws`)

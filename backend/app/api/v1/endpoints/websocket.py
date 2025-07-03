@@ -128,6 +128,9 @@ async def behavioral_websocket(websocket: WebSocket, session_id: str, token: str
     except WebSocketDisconnect:
         websocket_manager.disconnect(session_id)
         print(f"WebSocket disconnected for session: {session_id}")
+        
+        # Handle graceful session cleanup on WebSocket disconnect
+        await handle_websocket_disconnect(session_id)
     except Exception as e:
         print(f"WebSocket error: {e}")
         try:
@@ -310,3 +313,14 @@ async def debug_token(token: str):
         
     except Exception as e:
         return {"error": f"Debug failed: {str(e)}"}
+
+async def handle_websocket_disconnect(session_id: str):
+    """
+    Handle WebSocket disconnection and decide whether to terminate the session
+    """
+    # Use the new lifecycle event handler
+    await session_manager.handle_app_lifecycle_event(
+        session_id, 
+        "websocket_disconnect",
+        {"reason": "client_disconnect"}
+    )
