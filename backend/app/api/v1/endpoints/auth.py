@@ -294,17 +294,21 @@ async def verify_mpin_endpoint(
         
         # Verify MPIN
         if verify_mpin(mpin_data.mpin, user["mpin_hash"]):
-            # Create behavioral logging session after successful MPIN verification
-            session_token = create_session_token(phone, current_user["device_id"], user_id)
+            # Create behavioral logging session first
             session_id = await session_manager.create_session(
                 user_id,
                 phone,
                 current_user["device_id"],
-                session_token
+                None  # Pass None for session_token, we'll update it after creation
             )
             
-            # Get the created session for behavioral logging
+            # Create session token with the actual session_id
+            session_token = create_session_token(phone, current_user["device_id"], user_id, session_id)
+            
+            # Update the session with the token
             session = session_manager.get_session(session_id)
+            if session:
+                session.session_token = session_token
             
             if session:
                 # Reset MPIN attempts on successful verification
@@ -564,16 +568,21 @@ async def mpin_login(user_data: MPINLogin):
         token_manager.store_refresh_token(jti, user_id, user_data.device_id, expires_at)
         
         # Create behavioral logging session immediately
-        session_token = create_session_token(user_data.phone, user_data.device_id, user_id)
+        # First create session to get session_id, then create token with that session_id
         session_id = await session_manager.create_session(
             user_id,
             user_data.phone,
             user_data.device_id,
-            session_token
+            None  # Pass None for session_token, we'll update it after creation
         )
         
-        # Get the created session for behavioral logging
+        # Create session token with the actual session_id
+        session_token = create_session_token(user_data.phone, user_data.device_id, user_id, session_id)
+        
+        # Update the session with the token
         session = session_manager.get_session(session_id)
+        if session:
+            session.session_token = session_token
         
         if session:
             # Log MPIN verification success

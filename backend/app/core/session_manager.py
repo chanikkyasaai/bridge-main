@@ -33,6 +33,7 @@ class UserSession:
         self.behavioral_buffer = []  # Store all behavioral data in memory during session
         self.websocket_connection = None
         self.ended_at = None
+        self.session_token = None  # JWT session token for this session
         
     def add_behavioral_data(self, event_type: str, data: Dict[str, Any]):
         """Add behavioral data to the session buffer (kept in memory during session)"""
@@ -265,7 +266,7 @@ class SessionManager:
         self.active_sessions: Dict[str, UserSession] = {}
         self.user_sessions: Dict[str, List[str]] = {}  # user_id -> [session_ids]
         
-    async def create_session(self, user_id: str, phone: str, device_id: str, session_token: str) -> str:
+    async def create_session(self, user_id: str, phone: str, device_id: str, session_token: str = None) -> str:
         """Create a new user session with Supabase integration"""
         from app.core.supabase_client import supabase_client
         
@@ -283,6 +284,7 @@ class SessionManager:
         
         # Create local session object
         session = UserSession(session_id, user_id, phone, device_id, supabase_session_id)
+        session.session_token = session_token  # Set the session token
         
         self.active_sessions[session_id] = session
         
