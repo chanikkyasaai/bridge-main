@@ -1,5 +1,14 @@
+import 'dart:convert';
+
+import 'package:canara_ai/apis/endpoints.dart';
+import 'package:canara_ai/apis/interceptor.dart';
+import 'package:canara_ai/logging/log_touch_data.dart';
+import 'package:canara_ai/logging/logger_instance.dart';
+import 'package:canara_ai/logging/monitor_logging.dart';
 import 'package:canara_ai/screens/captcha_screen.dart';
 import 'package:canara_ai/screens/nav/home_page.dart';
+import 'package:canara_ai/utils/token_storage.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -22,6 +31,46 @@ class _AuthPageState extends State<AuthPage> {
   final Color canaraYellow = const Color(0xFFFFD600);
   final Color canaraLightBlue = const Color(0xFF00B9F1);
   final Color canaraDarkBlue = const Color(0xFF003366);
+
+  final tokenstorage = TokenStorage();
+  final _storage = const FlutterSecureStorage();
+
+  final Dio dio = Dio();
+  late final logger;
+
+  Future<void> _retryPendingExitEvent(BuildContext context) async {
+    final data = await _storage.read(key: 'pending_exit_event');
+    if (data != null) {
+      try {
+        dio.interceptors.clear(); // avoid duplicate interceptors
+
+        dio.interceptors.add(AuthInterceptor(dio, tokenstorage));
+        final response = await dio.post('${Endpoints.baseUrl}${Endpoints.log_exit}', data: jsonDecode(data));
+
+        if (response.statusCode == 200) {
+          print('Retried exit event sent');
+          await _storage.delete(key: 'pending_exit_event');
+        } else {
+          print('Retry failed with status: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('Retry failed: $e');
+      }
+    }
+
+    // Use context after async gap with a mounted check
+    if (context.mounted) {
+      BehaviorMonitorState? monitorState = context.findAncestorStateOfType<BehaviorMonitorState>();
+      await monitorState?.checkForPreviousForceClose();
+    }
+    
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    logger = AppLogger.logger;
+  }
 
   void _showFingerprintPopup(BuildContext context) {
     setState(() {
@@ -70,24 +119,55 @@ class _AuthPageState extends State<AuthPage> {
 
   Future<void> _dummyLogin(context) async {
     final pin = _pinController.text;
-    if (pin == '12345') {
-      if (widget.isFirst == true) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const CaptchaPage()),
-          (route) => false,
-        );
+
+    AppLogger.logger.dio.interceptors.add(AuthInterceptor(AppLogger.logger.dio, tokenstorage));
+    AppLogger.logger.dio.options.headers['Content-Type'] = 'application/json';
+
+    try {
+      final api = await AppLogger.logger.dio.post('${Endpoints.baseUrl}${Endpoints.verifympin}', data: {"mpin": pin.toString().trim()});
+      if (api.statusCode == 200) {
+        if (widget.isFirst == true) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const CaptchaPage()),
+            (route) => false,
+          );
+        } else {
+          print('User ID: ${api.data['user_id']} Phone: ${api.data['phone']}');
+
+          // Retry pending exit event
+          await _retryPendingExitEvent(context);
+
+          // Start session
+          await logger.startSession(api.data['session_id'], api.data['session_token']);
+
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BehaviorMonitor(
+                logger: AppLogger.logger,
+                child: HomePage(), // your main UI
+              ),
+            ),
+            (route) => false,
+          );
+        }
       } else {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-          (route) => false,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Invalid PIN !'),
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
-    } else {
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid PIN. Try 123456.')),
+        SnackBar(
+          content: const Text('Invalid PIN !'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
+      return;
     }
   }
 

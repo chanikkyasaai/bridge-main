@@ -39,6 +39,7 @@ class SessionResponse(BaseModel):
     session_id: str
     session_token: str
     behavioral_logging: str
+    phone: str
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
@@ -78,6 +79,7 @@ def validate_mpin(mpin: str) -> bool:
 
 @router.post("/register", response_model=dict)
 async def register(user_data: UserRegister):
+    import logging
     """
     Register a new user with phone, password, and MPIN
     """
@@ -87,14 +89,14 @@ async def register(user_data: UserRegister):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid phone number format"
         )
-    
+    logging.info(user_data.phone)
     # Validate MPIN
     if not validate_mpin(user_data.mpin):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"MPIN must be exactly {settings.MPIN_LENGTH} digits"
         )
-    
+    logging.info(user_data.mpin)
     try:
         # Check if user already exists
         existing_user = await supabase_client.get_user_by_phone(user_data.phone)
@@ -103,7 +105,7 @@ async def register(user_data: UserRegister):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Phone number already registered"
             )
-        
+        logging.info(existing_user)
         # Hash password and MPIN
         hashed_password = get_password_hash(user_data.password)
         hashed_mpin = hash_mpin(user_data.mpin)
@@ -165,7 +167,7 @@ async def login(user_data: UserLogin):
         
         # Extract JTI from refresh token for storage
         from jose import jwt
-        refresh_payload = jwt.decode(refresh_token, options={"verify_signature": False})
+        refresh_payload = jwt.decode(refresh_token, settings.SECRET_KEY, options={"verify_signature": False})
         jti = refresh_payload.get("jti")
         expires_at = datetime.fromtimestamp(refresh_payload.get("exp"))
         
@@ -233,7 +235,7 @@ async def refresh_token(token_request: RefreshTokenRequest):
         
         # Extract new JTI and store new refresh token
         from jose import jwt
-        new_refresh_payload = jwt.decode(new_refresh_token, options={"verify_signature": False})
+        new_refresh_payload = jwt.decode(new_refresh_token, settings.SECRET_KEY, options={"verify_signature": False})
         new_jti = new_refresh_payload.get("jti")
         new_expires_at = datetime.fromtimestamp(new_refresh_payload.get("exp"))
         
@@ -294,17 +296,22 @@ async def verify_mpin_endpoint(
         
         # Verify MPIN
         if verify_mpin(mpin_data.mpin, user["mpin_hash"]):
-            # Create behavioral logging session after successful MPIN verification
-            session_token = create_session_token(phone, current_user["device_id"], user_id)
+            # Create behavioral logging session first
             session_id = await session_manager.create_session(
                 user_id,
                 phone,
                 current_user["device_id"],
-                session_token
+                None  # Pass None for session_token, we'll update it after creation
             )
-            
-            # Get the created session for behavioral logging
+
+            # Create session token with the actual session_id
+            session_token = create_session_token(
+                phone, current_user["device_id"], user_id, session_id)
+
+            # Update the session with the token
             session = session_manager.get_session(session_id)
+            if session:
+                session.session_token = session_token
             
             if session:
                 # Reset MPIN attempts on successful verification
@@ -331,6 +338,7 @@ async def verify_mpin_endpoint(
             return SessionResponse(
                 message="MPIN verified successfully",
                 user_id=user_id,
+                phone=phone,
                 status="verified",
                 session_id=session_id,
                 session_token=session_token,
@@ -529,51 +537,58 @@ async def mpin_login(user_data: MPINLogin):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User not found"
             )
-        
+
         # Verify MPIN
         if not verify_mpin(user_data.mpin, user["mpin_hash"]):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid MPIN"
             )
-        
+
         user_id = user['id']
-        
+
         # Create authentication tokens
         access_token_data = {
             "sub": user_id,
             "phone": user_data.phone,
             "device_id": user_data.device_id
         }
-        
+
         refresh_token_data = {
             "sub": user_id,
             "phone": user_data.phone,
             "device_id": user_data.device_id
         }
-        
+
         # Generate authentication tokens
         access_token = create_access_token(access_token_data)
         refresh_token = create_refresh_token(refresh_token_data)
-        
+
         # Store refresh token
         from jose import jwt
-        refresh_payload = jwt.decode(refresh_token, options={"verify_signature": False})
+        refresh_payload = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         jti = refresh_payload.get("jti")
         expires_at = datetime.fromtimestamp(refresh_payload.get("exp"))
-        token_manager.store_refresh_token(jti, user_id, user_data.device_id, expires_at)
-        
+        token_manager.store_refresh_token(
+            jti, user_id, user_data.device_id, expires_at)
+
         # Create behavioral logging session immediately
-        session_token = create_session_token(user_data.phone, user_data.device_id, user_id)
+        # First create session to get session_id, then create token with that session_id
         session_id = await session_manager.create_session(
             user_id,
             user_data.phone,
             user_data.device_id,
-            session_token
+            None  # Pass None for session_token, we'll update it after creation
         )
-        
-        # Get the created session for behavioral logging
+
+        # Create session token with the actual session_id
+        session_token = create_session_token(
+            user_data.phone, user_data.device_id, user_id, session_id)
+
+        # Update the session with the token
         session = session_manager.get_session(session_id)
+        if session:
+            session.session_token = session_token
         
         if session:
             # Log MPIN verification success

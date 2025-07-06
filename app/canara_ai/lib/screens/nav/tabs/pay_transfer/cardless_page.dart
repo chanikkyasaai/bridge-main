@@ -1,4 +1,9 @@
+import 'package:canara_ai/logging/behaviour_route_tracker.dart';
+import 'package:canara_ai/logging/log_touch_data.dart';
+import 'package:canara_ai/logging/logger_instance.dart';
 import 'package:flutter/material.dart';
+
+import '../../../../main.dart';
 
 class CardlessCashPage extends StatefulWidget {
   const CardlessCashPage({Key? key}) : super(key: key);
@@ -15,6 +20,33 @@ class _CardlessCashPageState extends State<CardlessCashPage> {
   final Color canaraBlue = const Color(0xFF1976D2);
   final Color canaraDarkBlue = const Color(0xFF0D47A1);
   final List<String> _quickAmounts = ['500', '1000', '2000', '5000'];
+  late BehaviorLogger logger;
+  late BehaviorRouteTracker tracker;
+  bool _subscribed = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_subscribed) {
+      final route = ModalRoute.of(context);
+      if (route is PageRoute) {
+        tracker = BehaviorRouteTracker(logger, context);
+        routeObserver.subscribe(tracker, route);
+        _subscribed = true;
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    logger = AppLogger.logger;
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(tracker);
+  }
 
   @override
   Widget build(BuildContext context) {

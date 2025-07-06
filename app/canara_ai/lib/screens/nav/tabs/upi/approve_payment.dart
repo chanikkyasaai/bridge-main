@@ -1,7 +1,12 @@
 import 'package:canara_ai/screens/nav/tabs/upi/base_upi.dart';
 import 'package:flutter/material.dart';
 
-class ApprovePaymentPage extends StatelessWidget {
+class ApprovePaymentPage extends StatefulWidget {
+  @override
+  State<ApprovePaymentPage> createState() => _ApprovePaymentPageState();
+}
+
+class _ApprovePaymentPageState extends State<ApprovePaymentPage> {
   final List<Map<String, dynamic>> pendingPayments = [
     {'from': 'John Doe', 'amount': '₹500.00', 'time': '2 minutes ago', 'note': 'Dinner bill split', 'upi': 'john@paytm'},
     {'from': 'Sarah Smith', 'amount': '₹1,200.00', 'time': '5 minutes ago', 'note': 'Rent payment', 'upi': 'sarah@gpay'},

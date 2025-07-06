@@ -1,4 +1,9 @@
+import 'package:canara_ai/apis/endpoints.dart';
+import 'package:canara_ai/apis/interceptor.dart';
 import 'package:canara_ai/screens/auth_page.dart';
+import 'package:canara_ai/screens/login_page.dart';
+import 'package:canara_ai/utils/token_storage.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -21,6 +26,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   final FocusNode _pinFocusNode = FocusNode();
 
+  final dio = Dio();
+  final tokenstorage = TokenStorage();
+
   Future<void> _handleRegister() async {
     final email = _emailController.text.trim();
     final pass = _passwordController.text;
@@ -31,10 +39,41 @@ class _RegisterPageState extends State<RegisterPage> {
     } else if (pin.length != 5) {
       _showSnack('PIN must be exactly 5 digits');
     } else {
-      _showSnack('Registration Successful');
-      final storage = FlutterSecureStorage();
-      await storage.write(key: 'email', value: email).then((_) async => await storage.write(key: 'isLoggedIn', value: '1'));
-      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const AuthPage(isFirst: true,)), (_) => false);
+
+      try{
+        dio.options.headers['Content-Type'] = 'application/json';
+        final api = await dio.post('${Endpoints.baseUrl}${Endpoints.register}', data: {
+          'phone': email.toString(),
+          'password': pass.toString(),
+          'mpin': pin.toString().trim()
+        });
+
+        if(api.statusCode != 200) {
+          _showSnack("Error Registering");
+        }
+        else{
+          _showSnack('Registration Successful');
+          final storage = FlutterSecureStorage();
+          await storage.write(key: 'email', value: email).then((_) async => await storage.write(key: 'isLoggedIn', value: '1'));
+
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const LoginPage(
+                        isFirst: true
+                      )),
+              (_) => false);
+        }
+      }
+      catch(e){
+        _showSnack("Error Registering");
+        if (e is DioError && e.response != null && e.response?.data != null) {
+          print(e.response?.data['detail']);
+        } else {
+          print(e);
+        }
+      }
+      
     }
   }
 
@@ -140,8 +179,8 @@ class _RegisterPageState extends State<RegisterPage> {
               const SizedBox(height: 20),
               TextField(
                 controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: _inputDecoration('Email', const Icon(Icons.email), canaraBlue),
+                keyboardType: TextInputType.phone,
+                decoration: _inputDecoration('Phone', const Icon(Icons.phone), canaraBlue),
               ),
               const SizedBox(height: 16),
               TextField(

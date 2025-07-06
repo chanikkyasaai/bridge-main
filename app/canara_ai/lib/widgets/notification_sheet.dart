@@ -1,9 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:canara_ai/logging/behaviour_route_tracker.dart';
+import 'package:canara_ai/logging/log_touch_data.dart';
+import 'package:canara_ai/logging/logger_instance.dart';
+import 'package:canara_ai/main.dart';
 
-class NotificationSheet extends StatelessWidget {
+class NotificationSheet extends StatefulWidget {
   final Color canaraBlue;
 
   const NotificationSheet({super.key, required this.canaraBlue});
+
+  @override
+  State<NotificationSheet> createState() => _NotificationSheetState();
+}
+
+class _NotificationSheetState extends State<NotificationSheet> {
+  late BehaviorLogger logger;
+  late BehaviorRouteTracker tracker;
+  bool _subscribed = false;
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_subscribed) {
+      final route = ModalRoute.of(context);
+      if (route is PageRoute) {
+        tracker = BehaviorRouteTracker(logger, context);
+        routeObserver.subscribe(tracker, route);
+        _subscribed = true;
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    logger = AppLogger.logger;
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(tracker);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +58,7 @@ class NotificationSheet extends StatelessWidget {
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: Icon(Icons.close, color: canaraBlue),
+                  icon: Icon(Icons.close, color: widget.canaraBlue),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -34,13 +71,13 @@ class NotificationSheet extends StatelessWidget {
             child: Text(
               'MBS',
               style: TextStyle(
-                color: canaraBlue,
+                color: widget.canaraBlue,
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
               ),
             ),
           ),
-          Divider(color: canaraBlue, thickness: 2, height: 0),
+          Divider(color: widget.canaraBlue, thickness: 2, height: 0),
           const SizedBox(height: 40),
           const Center(
             child: Text(

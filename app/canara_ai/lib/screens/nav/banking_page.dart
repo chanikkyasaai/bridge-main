@@ -1,3 +1,8 @@
+import 'package:canara_ai/logging/behaviour_route_tracker.dart';
+import 'package:canara_ai/logging/button_wrapper.dart';
+import 'package:canara_ai/logging/log_touch_data.dart';
+import 'package:canara_ai/logging/logger_instance.dart';
+import 'package:canara_ai/main.dart';
 import 'package:canara_ai/screens/nav/tabs/banking/manage_accounts_page.dart';
 import 'package:canara_ai/screens/nav/tabs/banking/statement_page.dart';
 import 'package:canara_ai/screens/nav/tabs/pay_transfer/add_beneficiary_page.dart';
@@ -20,6 +25,34 @@ class _BankingPageState extends State<BankingPage> {
   int _selectedTab = 1; // 0: My Beneficiary, 1: My Dashboard, 2: Frequently Used
   bool _isBalanceVisible = false;
   final String _accountBalance = "₹1,25,480.50";
+
+  late BehaviorLogger logger;
+  late BehaviorRouteTracker tracker;
+  bool _subscribed = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_subscribed) {
+      final route = ModalRoute.of(context);
+      if (route is PageRoute) {
+        tracker = BehaviorRouteTracker(logger, context);
+        routeObserver.subscribe(tracker, route);
+        _subscribed = true;
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    logger = AppLogger.logger;
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(tracker);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,25 +131,21 @@ class _BankingPageState extends State<BankingPage> {
                     const SizedBox(height: 16),
                     Row(
                       children: [
-<<<<<<< HEAD
-                        Icon(Icons.remove_red_eye, color: Colors.white, size: 22),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            'View Balance',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-=======
-                        GestureDetector(
+                        LoggedButton(
+                          logger: logger,
+                          eventName: 'button_press',
+                          eventData: {
+                            'button_name': 'view_balance',
+                            'new_state': !_isBalanceVisible,
+                            'screen': 'Banking Page',
+                          },
                           onTap: () {
                             setState(() {
                               _isBalanceVisible = !_isBalanceVisible;
                             });
                           },
+                          onDoubleTap: () {},
+                          onLongPress: () {},
                           child: Row(
                             children: [
                               Icon(
@@ -147,7 +176,6 @@ class _BankingPageState extends State<BankingPage> {
                                 ],
                               ),
                             ],
->>>>>>> 6623368aeb6ffecf8a32553336df82251116ede7
                           ),
                         ),
                         const Spacer(),
@@ -316,9 +344,7 @@ class _BankingPageState extends State<BankingPage> {
               title: const Text('Ravi Kumar'),
               subtitle: const Text('XXXXXX1234'),
               trailing: Icon(Icons.chevron_right, color: Colors.grey),
-              onTap: () {
-                
-              },
+              onTap: () {},
             ),
             ListTile(
               leading: CircleAvatar(
@@ -328,9 +354,7 @@ class _BankingPageState extends State<BankingPage> {
               title: const Text('Priya Sharma'),
               subtitle: const Text('XXXXXX5678'),
               trailing: Icon(Icons.chevron_right, color: Colors.grey),
-              onTap: () {
-                
-              },
+              onTap: () {},
             ),
             ListTile(
               leading: CircleAvatar(
@@ -340,9 +364,7 @@ class _BankingPageState extends State<BankingPage> {
               title: const Text('Amit Verma'),
               subtitle: const Text('XXXXXX9012'),
               trailing: Icon(Icons.chevron_right, color: Colors.grey),
-              onTap: () {
-                
-              },
+              onTap: () {},
             ),
             const SizedBox(height: 8),
             Center(
@@ -463,7 +485,7 @@ class _BankingPageState extends State<BankingPage> {
               childAspectRatio: 0.85,
               children: [
                 _dashboardItem('Send Money', Icons.send, canaraBlue, () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) =>  SendMoneyPage()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SendMoneyPage()));
                 }),
                 _dashboardItem('Direct Pay', Icons.payment, canaraYellow, () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const DirectPayPage()));
@@ -497,9 +519,7 @@ class _BankingPageState extends State<BankingPage> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton.icon(
-                onPressed: () {
-                  
-                },
+                onPressed: () {},
                 icon: Icon(Icons.expand_more, color: canaraBlue),
                 label: Text('More', style: TextStyle(color: canaraBlue)),
               ),

@@ -48,8 +48,6 @@ class _CaptchaPageState extends State<CaptchaPage> {
     'zebra',
   ];
 
-  final logger = TouchLogger();
-
   @override
   void initState() {
     super.initState();
@@ -101,10 +99,6 @@ class _CaptchaPageState extends State<CaptchaPage> {
     await _flutterTts.speak(_captchaWords.join(', '));
   }
 
-  void _handlePointer(PointerEvent event, String type) {
-    logger.logEvent(event, type);
-  }
-
 
   @override
   void dispose() {
@@ -115,11 +109,7 @@ class _CaptchaPageState extends State<CaptchaPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      onPointerDown: (e) => _handlePointer(e, 'DOWN'),
-      onPointerMove: (e) => _handlePointer(e, 'MOVE'),
-      onPointerUp: (e) => _handlePointer(e, 'UP'),
-      child:  Scaffold(
+    return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -361,7 +351,6 @@ class _CaptchaPageState extends State<CaptchaPage> {
             ),
           ],
         ),
-      ),
       ),
     );
   }

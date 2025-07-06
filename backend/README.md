@@ -278,7 +278,7 @@ SUSPICIOUS_THRESHOLD = 0.7   # Risk score threshold
 HIGH_RISK_THRESHOLD = 0.9    # Auto-block threshold
 
 # MPIN Configuration  
-MPIN_LENGTH = 6
+MPIN_LENGTH = 5
 MAX_MPIN_ATTEMPTS = 3
 MPIN_LOCKOUT_MINUTES = 15
 

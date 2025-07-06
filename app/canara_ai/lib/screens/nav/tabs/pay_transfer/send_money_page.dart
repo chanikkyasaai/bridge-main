@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+import 'package:canara_ai/main.dart';
+
+import 'package:canara_ai/logging/behaviour_route_tracker.dart';
+import 'package:canara_ai/logging/log_touch_data.dart';
+import 'package:canara_ai/logging/logger_instance.dart';
+
 class SendMoneyPage extends StatefulWidget {
   @override
   _SendMoneyPageState createState() => _SendMoneyPageState();
@@ -64,16 +70,36 @@ class _SendMoneyPageState extends State<SendMoneyPage>
     },
   ];
 
+  late BehaviorLogger logger;
+  late BehaviorRouteTracker tracker;
+  bool _subscribed = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_subscribed) {
+      final route = ModalRoute.of(context);
+      if (route is PageRoute) {
+        tracker = BehaviorRouteTracker(logger, context);
+        routeObserver.subscribe(tracker, route);
+        _subscribed = true;
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    logger = AppLogger.logger;
   }
 
   @override
   void dispose() {
     _tabController?.dispose();
     _searchController.dispose();
+    routeObserver.unsubscribe(tracker);
+
     super.dispose();
   }
 

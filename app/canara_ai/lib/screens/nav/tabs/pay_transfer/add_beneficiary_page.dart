@@ -1,4 +1,9 @@
+import 'package:canara_ai/logging/behaviour_route_tracker.dart';
+import 'package:canara_ai/logging/log_touch_data.dart';
+import 'package:canara_ai/logging/logger_instance.dart';
+import 'package:canara_ai/main.dart';
 import 'package:flutter/material.dart';
+
 
 class AddBeneficiaryPage extends StatefulWidget {
   @override
@@ -41,11 +46,29 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage>
   ];
   
   String? _selectedBank;
+
+  late BehaviorLogger logger;
+  late BehaviorRouteTracker tracker;
+  bool _subscribed = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_subscribed) {
+      final route = ModalRoute.of(context);
+      if (route is PageRoute) {
+        tracker = BehaviorRouteTracker(logger, context);
+        routeObserver.subscribe(tracker, route);
+        _subscribed = true;
+      }
+    }
+  }
   
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    logger = AppLogger.logger;
   }
 
   @override
@@ -60,6 +83,8 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage>
     _upiIdController.dispose();
     _ifscController.dispose();
     super.dispose();
+
+    routeObserver.unsubscribe(tracker);
   }
 
   @override

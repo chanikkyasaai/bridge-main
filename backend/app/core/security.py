@@ -48,17 +48,25 @@ def create_refresh_token(data: dict) -> str:
     encoded_jwt = jwt.encode(to_encode, settings.REFRESH_SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
-def create_session_token(phone: str, device_id: str, user_id: str) -> str:
+
+def create_session_token(phone: str, device_id: str, user_id: str, session_id: str = None) -> str:
     """Create a session token for WebSocket and session management"""
+    expire = datetime.utcnow() + timedelta(minutes=settings.SESSION_EXPIRE_MINUTES)
+
     session_data = {
         "user_phone": phone,
         "user_id": user_id,
         "device_id": device_id,
-        "session_id": str(uuid.uuid4()),
         "created_at": datetime.utcnow().isoformat(),
         "type": "session",
-        "exp": (datetime.utcnow() + timedelta(minutes=settings.SESSION_EXPIRE_MINUTES)).timestamp()
+        "exp": expire,
+        "iat": datetime.utcnow()
     }
+
+    # Only add session_id if provided (optional)
+    if session_id:
+        session_data["session_id"] = session_id
+
     return jwt.encode(session_data, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 def verify_access_token(token: str) -> Optional[Dict[str, Any]]:
@@ -84,11 +92,15 @@ def verify_refresh_token(token: str) -> Optional[Dict[str, Any]]:
 def verify_session_token(token: str) -> Optional[Dict[str, Any]]:
     """Verify and decode session token"""
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        print("Verifying session token with key", settings.SECRET_KEY)
+        payload = jwt.decode(token, settings.SECRET_KEY,
+                                algorithms=settings.ALGORITHM)
         if payload.get("type") != "session":
+            print("Invalid token type:", payload.get("type"))
             return None
         return payload
     except JWTError:
+        print("Failed to decode session token")
         return None
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -116,15 +128,20 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
     # Fallback to session token
     return verify_session_token(token)
 
+
 def extract_session_info(token: str) -> Optional[Dict[str, Any]]:
-    """Extract session information from token"""
+    """Extract session information from session token"""
     payload = verify_session_token(token)
+    print("Payload recvd")
+    print(payload)
     if payload:
+        print("Extracted Payload:", payload)
         return {
             "user_phone": payload.get("user_phone"),
             "user_id": payload.get("user_id"),
             "session_id": payload.get("session_id"),
-            "device_id": payload.get("device_id")
+            "device_id": payload.get("device_id"),
+            "created_at": payload.get("created_at")
         }
     return None
 
@@ -132,20 +149,8 @@ def get_token_payload(token: str) -> Optional[Dict[str, Any]]:
     """Get token payload without verification (for debugging)"""
     try:
         # Decode without verification to see token content
-        payload = jwt.decode(token, options={"verify_signature": False})
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[
+                                settings.ALGORITHM], options={"verify_signature": False})
         return payload
     except JWTError:
         return None
-        return None
-
-def extract_session_info(token: str) -> Optional[Dict[str, Any]]:
-    """Extract session information from JWT token"""
-    payload = verify_token(token)
-    if payload and "session_id" in payload:
-        return {
-            "session_id": payload["session_id"],
-            "user_email": payload["user_email"],
-            "device_id": payload["device_id"],
-            "created_at": payload["created_at"]
-        }
-    return None

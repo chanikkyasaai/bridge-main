@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     SESSION_EXPIRE_MINUTES: int = 60
     
     # MPIN Configuration
-    MPIN_LENGTH: int = 6
+    MPIN_LENGTH: int = 5
     MAX_MPIN_ATTEMPTS: int = 3
     MPIN_LOCKOUT_MINUTES: int = 15
     

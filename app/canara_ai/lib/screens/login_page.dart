@@ -1,29 +1,46 @@
+import 'package:canara_ai/apis/endpoints.dart';
 import 'package:canara_ai/screens/auth_page.dart';
+import 'package:canara_ai/utils/get_device_info.dart';
+import 'package:canara_ai/utils/token_storage.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final bool isFirst;
+  const LoginPage({super.key, required this.isFirst});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _emailController = TextEditingController(text: 'demo@canara.com');
-  final TextEditingController _passwordController = TextEditingController(text: 'canara123');
+  final TextEditingController _emailController = TextEditingController(text: '');
+  final TextEditingController _passwordController = TextEditingController(text: '');
 
   final Color canaraBlue = const Color(0xFF0072BC);
   final Color canaraYellow = const Color(0xFFFFD600);
   final Color canaraLightBlue = const Color(0xFF00B9F1);
   final Color canaraDarkBlue = const Color(0xFF003366);
 
+  final Dio dio = Dio();
+  final tokenstorage = TokenStorage();
+
   Future<void> _handleLogin()  async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
-    if (email == 'demo@canara.com' && password == 'canara123') {
+
+    final deviceId = await getAndroidDeviceId();
+
+    final api = await dio.post('${Endpoints.baseUrl}${Endpoints.login}', data: {
+      'phone': email,
+      'password': password,
+      'device_id': deviceId
+    });
+
+    if (api.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Login Successful'),
@@ -32,7 +49,9 @@ class _LoginPageState extends State<LoginPage> {
       );
       final storage = FlutterSecureStorage();
       await storage.write(key: 'email', value: email);
-      await storage.write(key: 'isLoggedIn', value: '1');
+      await storage.write(key: 'isLoggedIn', value: true.toString());
+      await tokenstorage.saveTokens(api.data['access_token'], api.data['refresh_token']);
+
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const AuthPage(isFirst: false,)),
@@ -78,8 +97,8 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
               TextField(
                 controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: _inputDecoration('Email', const Icon(Icons.email), canaraBlue),
+                keyboardType: TextInputType.phone,
+                decoration: _inputDecoration('Phone', const Icon(Icons.phone), canaraBlue),
               ),
               const SizedBox(height: 16),
               TextField(

@@ -3,6 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 from datetime import datetime
+from app.api.v1.endpoints.auth import get_current_user
 from app.core.session_manager import session_manager
 from app.core.security import extract_session_info
 from app.core.supabase_client import supabase_client
@@ -10,49 +11,73 @@ from app.core.supabase_client import supabase_client
 router = APIRouter()
 security = HTTPBearer()
 
+
 class StartSessionRequest(BaseModel):
-    user_id: str
     phone: str
     device_id: str
     device_info: Optional[str] = ""
+
 
 class BehaviorDataRequest(BaseModel):
     session_id: str
     event_type: str
     data: Dict[str, Any]
 
+
 class EndSessionRequest(BaseModel):
     session_id: str
     final_decision: Optional[str] = "normal"
+    session_token: str
+
 
 class SessionResponse(BaseModel):
     session_id: str
+    session_token: str
     supabase_session_id: Optional[str]
     message: str
     status: str
 
+
+class AppCloseRequest(BaseModel):
+    session_id: str
+    session_token: str
+    reason: str = "app_closed"  # app_closed, user_logout, app_background, etc.
+
+
+class AppStateRequest(BaseModel):
+    session_id: str
+    state: str  # "background", "foreground", "minimized", "restored"
+    details: Optional[Dict[str, Any]] = None
+
 @router.post("/start-session", response_model=SessionResponse)
-async def start_session(request: StartSessionRequest):
+async def start_session(request: StartSessionRequest, current_user: dict = Depends(get_current_user)):
     """
     Start a new behavioral logging session
     """
     try:
+        user_id = current_user["user_id"]
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not authenticated"
+            )
         # Create session token (you may want to integrate with your auth system)
         from app.core.security import create_session_token
-        session_token = create_session_token(request.phone, request.device_id)
+        session_token = create_session_token(request.phone, request.device_id, user_id)
         
         # Create session
         session_id = await session_manager.create_session(
-            request.user_id,
-            request.phone,
-            request.device_id,
-            session_token
+            user_id=user_id,
+            phone=request.phone,
+            device_id=request.device_id,
+            session_token=session_token
         )
         
         session = session_manager.get_session(session_id)
         
         return SessionResponse(
             session_id=session_id,
+            session_token=session_token,
             supabase_session_id=session.supabase_session_id if session else None,
             message="Session started successfully",
             status="active"
@@ -125,7 +150,7 @@ async def end_session(
     """
     try:
         # Verify session token
-        session_info = extract_session_info(credentials.credentials)
+        session_info = extract_session_info(request.session_token)
         if not session_info:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -141,9 +166,10 @@ async def end_session(
             )
         
         # Terminate session (this will save behavioral data to Supabase)
+        final_decision = request.final_decision if request.final_decision is not None else "normal"
         success = await session_manager.terminate_session(
             request.session_id, 
-            request.final_decision
+            final_decision
         )
         
         if not success:
@@ -256,4 +282,122 @@ async def get_session_logs(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get session logs: {str(e)}"
+        )
+
+
+@router.post("/app-close")
+async def handle_app_close(
+    request: AppCloseRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    Handle explicit app closure by terminating the session and saving behavioral data
+    """
+    try:
+        # Verify session token
+        session_info = extract_session_info(request.session_token)
+        if not session_info:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid session token"
+            )
+
+        # Verify session_id matches
+        if session_info.get("session_id") != request.session_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Session ID mismatch"
+            )
+
+        # Get session
+        session = session_manager.get_session(request.session_id)
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Session not found"
+            )
+
+        # Handle app closure using lifecycle management
+        success = await session_manager.handle_app_lifecycle_event(
+            request.session_id,
+            request.reason,
+            {
+                "explicit_close": True,
+                "session_duration": (datetime.utcnow() - session.created_at).total_seconds()
+            }
+        )
+
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to terminate session on app close"
+            )
+
+        return {
+            "message": "App closure handled successfully",
+            "session_id": request.session_id,
+            "reason": request.reason,
+            "behavioral_data_saved": True,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to handle app closure: {str(e)}"
+        )
+
+
+@router.post("/app-state")
+async def handle_app_state_change(
+    request: AppStateRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    Handle app state changes (background, foreground, etc.)
+    """
+    try:
+        # Verify session token
+        session_info = extract_session_info(credentials.credentials)
+        if not session_info:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid session token"
+            )
+
+        # Verify session_id matches
+        if session_info.get("session_id") != request.session_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Session ID mismatch"
+            )
+
+        # Handle state change
+        success = await session_manager.handle_app_lifecycle_event(
+            request.session_id,
+            f"app_{request.state}",
+            request.details or {}
+        )
+
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Session not found or state change failed"
+            )
+
+        return {
+            "message": f"App state changed to {request.state}",
+            "session_id": request.session_id,
+            "state": request.state,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to handle app state change: {str(e)}"
         )

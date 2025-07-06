@@ -1,6 +1,11 @@
 import 'package:canara_ai/screens/nav/tabs/upi/base_upi.dart';
 import 'package:flutter/material.dart';
 
+import 'package:canara_ai/main.dart';
+import 'package:canara_ai/logging/behaviour_route_tracker.dart';
+import 'package:canara_ai/logging/log_touch_data.dart';
+import 'package:canara_ai/logging/logger_instance.dart';
+
 class UPILitePage extends StatefulWidget {
   @override
   _UPILitePageState createState() => _UPILitePageState();
@@ -33,6 +38,34 @@ class _UPILitePageState extends State<UPILitePage> {
       'date': 'Today',
     },
   ];
+
+  late BehaviorLogger logger;
+  late BehaviorRouteTracker tracker;
+  bool _subscribed = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_subscribed) {
+      final route = ModalRoute.of(context);
+      if (route is PageRoute) {
+        tracker = BehaviorRouteTracker(logger, context);
+        routeObserver.subscribe(tracker, route);
+        _subscribed = true;
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    logger = AppLogger.logger;
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(tracker);
+  }
 
   @override
   Widget build(BuildContext context) {

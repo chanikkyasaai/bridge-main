@@ -13,6 +13,7 @@ class WebSocketManager:
     
     def __init__(self):
         self.active_connections: Dict[str, WebSocket] = {}
+        
     
     async def connect(self, websocket: WebSocket, session_id: str):
         """Accept WebSocket connection and link to session"""
@@ -62,21 +63,37 @@ async def behavioral_websocket(websocket: WebSocket, session_id: str, token: str
     """
     WebSocket endpoint for real-time behavioral data collection
     """
-    # Verify session token
-    session_info = extract_session_info(token)
-    if not session_info or session_info["session_id"] != session_id:
-        await websocket.close(code=1008, reason="Invalid session token")
-        return
-    
-    # Get session
-    session = session_manager.get_session(session_id)
-    if not session or session.is_blocked:
-        await websocket.close(code=1008, reason="Session blocked or not found")
-        return
-    
-    await websocket_manager.connect(websocket, session_id)
-    
     try:
+        # Verify session token
+        session_info = extract_session_info(token)
+        if not session_info:
+            print("Invalid session token")
+            await websocket.close(code=1008, reason="Invalid session token")
+            return
+
+        # Get session from session manager
+        session = session_manager.get_session(session_id)
+        if not session:
+            print("Session not found")
+            await websocket.close(code=1008, reason="Session not found")
+            return
+
+        if session.is_blocked:
+            print("Session is blocked")
+            await websocket.close(code=1008, reason="Session is blocked")
+            return
+
+        # Verify that the token belongs to this session's user
+        token_user_id = session_info.get("user_id")
+        token_phone = session_info.get("user_phone")
+
+        if token_user_id != session.user_id or token_phone != session.phone:
+            print("Token does not match session user")
+            await websocket.close(code=1008, reason="Token does not match session user")
+            return
+
+        await websocket_manager.connect(websocket, session_id)
+
         # Send initial connection confirmation
         await websocket.send_text(json.dumps({
             "type": "connection_established",
@@ -84,22 +101,23 @@ async def behavioral_websocket(websocket: WebSocket, session_id: str, token: str
             "message": "Behavioral data collection started",
             "timestamp": datetime.utcnow().isoformat()
         }))
-        
+
         while True:
             # Receive behavioral data from client
             data = await websocket.receive_text()
-            
+
             try:
                 behavioral_event = json.loads(data)
+                print(f"Received behavioral event: {behavioral_event}")
                 await process_behavioral_data(session_id, behavioral_event)
-                
+
                 # Send acknowledgment
                 await websocket.send_text(json.dumps({
                     "type": "data_received",
                     "status": "processed",
                     "timestamp": datetime.utcnow().isoformat()
                 }))
-                
+
             except json.JSONDecodeError:
                 await websocket.send_text(json.dumps({
                     "type": "error",
@@ -112,10 +130,20 @@ async def behavioral_websocket(websocket: WebSocket, session_id: str, token: str
                     "message": f"Processing error: {str(e)}",
                     "timestamp": datetime.utcnow().isoformat()
                 }))
-    
+
     except WebSocketDisconnect:
         websocket_manager.disconnect(session_id)
         print(f"WebSocket disconnected for session: {session_id}")
+        
+        # Handle graceful session cleanup on WebSocket disconnect
+        await handle_websocket_disconnect(session_id)
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+        try:
+            await websocket.close(code=1011, reason=f"Server error: {str(e)}")
+        except:
+            pass
+
 
 async def process_behavioral_data(session_id: str, behavioral_event: Dict[str, Any]):
     """
@@ -266,3 +294,15 @@ async def simulate_ml_analysis(session_id: str):
         "predicted_risk_score": simulated_risk_score,
         "action_taken": "block" if simulated_risk_score >= 0.9 else "monitor" if simulated_risk_score >= 0.7 else "normal"
     }
+
+
+async def handle_websocket_disconnect(session_id: str):
+    """
+    Handle WebSocket disconnection and decide whether to terminate the session
+    """
+    # Use the new lifecycle event handler
+    await session_manager.handle_app_lifecycle_event(
+        session_id,
+        "websocket_disconnect",
+        {"reason": "client_disconnect"}
+    )

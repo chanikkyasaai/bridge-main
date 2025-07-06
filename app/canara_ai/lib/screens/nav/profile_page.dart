@@ -1,4 +1,13 @@
+import 'package:canara_ai/apis/endpoints.dart';
+import 'package:canara_ai/apis/interceptor.dart';
+import 'package:canara_ai/logging/behaviour_route_tracker.dart';
+import 'package:canara_ai/logging/log_touch_data.dart';
+import 'package:canara_ai/logging/logger_instance.dart';
+import 'package:canara_ai/logging/monitor_logging.dart';
+import 'package:canara_ai/main.dart';
 import 'package:canara_ai/screens/login_page.dart';
+import 'package:canara_ai/utils/token_storage.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -12,8 +21,41 @@ import 'profile/my_upi_accounts_page.dart';
 import 'profile/my_upi_number_page.dart';
 import 'profile/upi_lite_page.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  late BehaviorRouteTracker tracker;
+  late BehaviorLogger logger;
+  bool _subscribed = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_subscribed) {
+      final route = ModalRoute.of(context);
+      if (route is PageRoute) {
+        tracker = BehaviorRouteTracker(logger, context);
+        routeObserver.subscribe(tracker, route);
+        _subscribed = true;
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    logger = AppLogger.logger;
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(tracker);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,15 +64,42 @@ class ProfilePage extends StatelessWidget {
     final Color canaraLightBlue = const Color(0xFF00B9F1);
     final Color canaraDarkBlue = const Color(0xFF003366);
 
-    Future<void> _onlogout() async {
+    final tokenStorage = TokenStorage();
+    final Dio dio = Dio();
+    final logger = AppLogger.logger;
+
+    Future<void> onLogout(BuildContext context) async {
+            // Send logout event before deleting tokens
+      if (context.mounted) {
+        BehaviorMonitorState? monitorState = context.findAncestorStateOfType<BehaviorMonitorState>();
+        await monitorState?.sendUserLogoutEvent();
+      }
+
+      dio.interceptors.add(AuthInterceptor(dio, tokenStorage));
+      final api = await dio.post('${Endpoints.baseUrl}${Endpoints.logout}');
+
+      if (api.statusCode != 200) {
+        return;
+      }
+
+      // await logger.endSession('normal');
       final storage = FlutterSecureStorage();
       await storage.delete(key: 'email');
       await storage.delete(key: 'isLoggedIn');
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-        (route) => false,
-      );
+      await tokenStorage.clearTokens();
+      
+
+      // Use context after async gap with a mounted check
+      if (context.mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const LoginPage(
+                    isFirst: false,
+                  )),
+          (route) => false,
+        );
+      }
     }
 
     return Scaffold(
@@ -199,10 +268,9 @@ class ProfilePage extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(height: 8),
                 Center(
                   child: TextButton.icon(
-                    onPressed: _onlogout,
+                    onPressed: () => onLogout(context),
                     icon: Icon(Icons.logout, color: canaraBlue),
                     label: const Text('Log Out', style: TextStyle(color: Colors.black)),
                   ),

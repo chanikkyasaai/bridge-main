@@ -1,11 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:canara_ai/main.dart';
+import 'package:canara_ai/logging/behaviour_route_tracker.dart';
+import 'package:canara_ai/logging/log_touch_data.dart';
+import 'package:canara_ai/logging/logger_instance.dart';
 
-class DonationPage extends StatelessWidget {
+class DonationPage extends StatefulWidget {
  const DonationPage({super.key});
 
+  @override
+  State<DonationPage> createState() => _DonationPageState();
+}
+
+class _DonationPageState extends State<DonationPage> {
   final Color canaraBlue = const Color(0xFF1976D2);
+
   final Color canaraDarkBlue = const Color(0xFF0D47A1);
-  
+
+  late BehaviorLogger logger;
+  late BehaviorRouteTracker tracker;
+  bool _subscribed = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_subscribed) {
+      final route = ModalRoute.of(context);
+      if (route is PageRoute) {
+        tracker = BehaviorRouteTracker(logger, context);
+        routeObserver.subscribe(tracker, route);
+        _subscribed = true;
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    logger = AppLogger.logger;
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(tracker);
+  }
+
   final List<Map<String, dynamic>> _donations = const [
     {'name': 'Red Cross Society', 'category': 'Health', 'image': Icons.local_hospital},
     {'name': 'Child Education Fund', 'category': 'Education', 'image': Icons.school},

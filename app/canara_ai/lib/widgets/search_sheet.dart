@@ -1,13 +1,17 @@
+import 'package:canara_ai/logging/log_touch_data.dart';
+import 'package:canara_ai/logging/typing_tracker.dart';
 import 'package:flutter/material.dart';
 
 class SearchSheet extends StatefulWidget {
   final Color canaraBlue;
   final Color canaraDarkBlue;
+  final BehaviorLogger logger;
 
   const SearchSheet({
     super.key,
     required this.canaraBlue,
     required this.canaraDarkBlue,
+    required this.logger
   });
 
   @override
@@ -55,33 +59,39 @@ class _SearchSheetState extends State<SearchSheet> {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 12),
-                child: TextField(
+                child: TypingFieldTracker(
                   controller: _controller,
-                  decoration: InputDecoration(
-                    hintText: 'Search',
-                    hintStyle: TextStyle(color: widget.canaraDarkBlue),
-                    prefixIcon: Icon(Icons.search, color: widget.canaraBlue),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  fieldName: 'search_input',
+                  logger: widget.logger,
+                  child: TextField(
+                    controller: _controller,
+                    decoration: InputDecoration(
+                      hintText: 'Search',
+                      hintStyle: TextStyle(color: widget.canaraDarkBlue),
+                      prefixIcon: Icon(Icons.search, color: widget.canaraBlue),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(Icons.clear, color: widget.canaraBlue),
+                              onPressed: () {
+                                _controller.clear();
+                                setState(() {
+                                  _searchQuery = '';
+                                });
+                              },
+                            )
+                          : null,
                     ),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: Icon(Icons.clear, color: widget.canaraBlue),
-                            onPressed: () {
-                              _controller.clear();
-                              setState(() {
-                                _searchQuery = '';
-                              });
-                            },
-                          )
-                        : null,
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value;
-                    });
-                  },
                 ),
+
               ),
               Expanded(
                 child: _filteredItems.isEmpty

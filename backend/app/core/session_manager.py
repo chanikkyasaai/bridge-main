@@ -33,6 +33,7 @@ class UserSession:
         self.behavioral_buffer = []  # Store all behavioral data in memory during session
         self.websocket_connection = None
         self.ended_at = None
+        self.session_token = None  # JWT session token for this session
         
     def add_behavioral_data(self, event_type: str, data: Dict[str, Any]):
         """Add behavioral data to the session buffer (kept in memory during session)"""
@@ -265,7 +266,7 @@ class SessionManager:
         self.active_sessions: Dict[str, UserSession] = {}
         self.user_sessions: Dict[str, List[str]] = {}  # user_id -> [session_ids]
         
-    async def create_session(self, user_id: str, phone: str, device_id: str, session_token: str) -> str:
+    async def create_session(self, user_id: str, phone: str, device_id: str, session_token: str = None) -> str:
         """Create a new user session with Supabase integration"""
         from app.core.supabase_client import supabase_client
         
@@ -283,17 +284,21 @@ class SessionManager:
         
         # Create local session object
         session = UserSession(session_id, user_id, phone, device_id, supabase_session_id)
-        
+        session.session_token = session_token  # Set the session token
+
         self.active_sessions[session_id] = session
         
         if user_id not in self.user_sessions:
             self.user_sessions[user_id] = []
         self.user_sessions[user_id].append(session_id)
         
+        print(f"Created session: {session_id}")
         return session_id
     
     def get_session(self, session_id: str) -> Optional[UserSession]:
         """Get session by ID"""
+        
+        print(f"Getting session: {session_id}")
         return self.active_sessions.get(session_id)
     
     def get_user_sessions(self, user_id: str) -> List[UserSession]:
@@ -360,6 +365,65 @@ class SessionManager:
             "total_users": len(self.user_sessions),
             "sessions": [session.get_session_stats() for session in self.active_sessions.values()]
         }
+
+    async def handle_app_lifecycle_event(self, session_id: str, event_type: str, details: Dict[str, Any] = None):
+        """
+        Handle various app lifecycle events
+        
+        Args:
+            session_id: The session identifier
+            event_type: Type of lifecycle event (app_close, app_background, app_foreground, user_logout, etc.)
+            details: Additional details about the event
+        """
+        session = self.get_session(session_id)
+        if not session:
+            return False
+
+        # Add lifecycle event to behavioral data
+        lifecycle_data = {
+            "session_id": session_id,
+            "event_type": event_type,
+            "timestamp": datetime.utcnow().isoformat(),
+            "session_duration": (datetime.utcnow() - session.created_at).total_seconds()
+        }
+
+        if details:
+            lifecycle_data.update(details)
+
+        session.add_behavioral_data("app_lifecycle", lifecycle_data)
+
+        # Handle different lifecycle events
+        if event_type in ["app_close", "user_logout", "force_close"]:
+            # Terminate session immediately
+            await self.terminate_session(session_id, event_type)
+            return True
+        elif event_type == "app_background":
+            # Mark session as backgrounded but keep it active
+            session.add_behavioral_data("session_backgrounded", lifecycle_data)
+            print(f"Session {session_id} moved to background")
+            return True
+        elif event_type == "app_foreground":
+            # Session resumed from background
+            session.add_behavioral_data("session_resumed", lifecycle_data)
+            print(f"Session {session_id} resumed from background")
+            return True
+        elif event_type == "websocket_disconnect":
+            # WebSocket disconnected but app may still be active
+            session.websocket_connection = None
+            session.add_behavioral_data(
+                "websocket_disconnected", lifecycle_data)
+            print(f"WebSocket disconnected for session {session_id}")
+            return True
+
+        return False
+
+    def get_session_by_user_and_device(self, user_id: str, device_id: str) -> Optional[UserSession]:
+        """Get active session for a specific user and device combination"""
+        user_sessions = self.get_user_sessions(user_id)
+        for session in user_sessions:
+            if session.device_id == device_id and session.is_active:
+                return session
+        return None
 
 # Global session manager instance
 session_manager = SessionManager()
