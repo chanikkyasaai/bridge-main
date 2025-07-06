@@ -49,15 +49,6 @@ class AppStateRequest(BaseModel):
     state: str  # "background", "foreground", "minimized", "restored"
     details: Optional[Dict[str, Any]] = None
 
-class AppCloseRequest(BaseModel):
-    session_id: str
-    reason: str = "app_closed"  # app_closed, user_logout, app_background, etc.
-
-class AppStateRequest(BaseModel):
-    session_id: str
-    state: str  # "background", "foreground", "minimized", "restored"
-    details: Optional[Dict[str, Any]] = None
-
 @router.post("/start-session", response_model=SessionResponse)
 async def start_session(request: StartSessionRequest, current_user: dict = Depends(get_current_user)):
     """
