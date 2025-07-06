@@ -303,8 +303,11 @@ async def verify_mpin_endpoint(
                 current_user["device_id"],
                 None  # Pass None for session_token, we'll update it after creation
             )
-            
-            # Get the created session for behavioral logging
+            # Create session token with the actual session_id
+            session_token = create_session_token(
+                phone, current_user["device_id"], user_id, session_id)
+
+            # Update the session with the token
             session = session_manager.get_session(session_id)
             if session:
                 session.session_token = session_token
@@ -574,8 +577,14 @@ async def mpin_login(user_data: MPINLogin):
             user_id,
             user_data.phone,
             user_data.device_id,
-            session_token
+            None  # Pass None for session_token, we'll update it after creation
         )
+
+        # Create session token with the actual session_id
+        session_token = create_session_token(
+            user_data.phone, user_data.device_id, user_id, session_id)
+
+        # Update the session with the token
         
         # Get the created session for behavioral logging
         session = session_manager.get_session(session_id)

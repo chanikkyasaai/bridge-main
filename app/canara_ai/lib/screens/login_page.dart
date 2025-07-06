@@ -28,37 +28,44 @@ class _LoginPageState extends State<LoginPage> {
   final Dio dio = Dio();
   final tokenstorage = TokenStorage();
 
-  Future<void> _handleLogin()  async {
+  Future<void> _handleLogin() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
     final deviceId = await getAndroidDeviceId();
 
-    final api = await dio.post('${Endpoints.baseUrl}${Endpoints.login}', data: {
-      'phone': email,
-      'password': password,
-      'device_id': deviceId
-    });
+    try {
+      final api = await dio.post('${Endpoints.baseUrl}${Endpoints.login}', data: {'phone': email, 'password': password, 'device_id': deviceId});
 
-    if (api.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login Successful'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      final storage = FlutterSecureStorage();
-      await storage.write(key: 'email', value: email);
-      await storage.write(key: 'isLoggedIn', value: true.toString());
-      await tokenstorage.saveTokens(api.data['access_token'], api.data['refresh_token']);
+      if (api.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login Successful'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        final storage = FlutterSecureStorage();
+        await storage.write(key: 'email', value: email);
+        await storage.write(key: 'isLoggedIn', value: true.toString());
+        await tokenstorage.saveTokens(api.data['access_token'], api.data['refresh_token']);
 
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const AuthPage(isFirst: false,)),
-        (route) => false,
-      );
-      
-    } else {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const AuthPage(
+                    isFirst: false,
+                  )),
+          (route) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid credentials'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Invalid credentials'),

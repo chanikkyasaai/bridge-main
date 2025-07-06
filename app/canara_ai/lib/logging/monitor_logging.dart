@@ -53,12 +53,13 @@ class BehaviorMonitorState extends State<BehaviorMonitor> with WidgetsBindingObs
   Future<void> sendUserLogoutEvent() async {
     _exitReason = 'user_logout';
     await _sendExitEvent();
+    // await widget.logger.endSession(_exitReason!);
   }
 
   /// Sends an exit event (logout, app close, etc.) to the backend.
   /// If sending fails, saves the event locally for retry.
   Future<void> _sendExitEvent() async {
-    final payload = {'session_id': sessionId ?? widget.logger.sessionId, 'reason': _exitReason ?? 'app_exit', 'session_token': widget.logger.sessionToken};
+    final payload = {'session_id': sessionId ?? widget.logger.sessionId, 'reason': _exitReason ?? 'app_close', 'session_token': widget.logger.sessionToken};
 
     try {
       // Ensure Dio has up-to-date token access

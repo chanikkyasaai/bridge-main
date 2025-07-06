@@ -82,7 +82,6 @@ class _ProfilePageState extends State<ProfilePage> {
         return;
       }
 
-      // await logger.endSession('normal');
       final storage = FlutterSecureStorage();
       await storage.delete(key: 'email');
       await storage.delete(key: 'isLoggedIn');

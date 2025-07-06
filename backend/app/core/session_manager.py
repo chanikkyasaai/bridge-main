@@ -328,8 +328,7 @@ class SessionManager:
                     await supabase_client.end_session(
                         session.supabase_session_id, 
                         final_decision, 
-                        log_file_path or "",
-                        session.risk_score
+                        log_file_path or ""
                     )
                 except Exception as e:
                     print(f"Failed to end session in Supabase: {e}")
@@ -391,6 +390,9 @@ class SessionManager:
             lifecycle_data.update(details)
 
         session.add_behavioral_data("app_lifecycle", lifecycle_data)
+        
+        if not session.is_active:
+            return True
 
         # Handle different lifecycle events
         if event_type in ["app_close", "user_logout", "force_close"]:
