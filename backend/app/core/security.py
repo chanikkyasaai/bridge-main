@@ -48,11 +48,10 @@ def create_refresh_token(data: dict) -> str:
     encoded_jwt = jwt.encode(to_encode, settings.REFRESH_SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
-
 def create_session_token(phone: str, device_id: str, user_id: str, session_id: str = None) -> str:
     """Create a session token for WebSocket and session management"""
     expire = datetime.utcnow() + timedelta(minutes=settings.SESSION_EXPIRE_MINUTES)
-
+    
     session_data = {
         "user_phone": phone,
         "user_id": user_id,
@@ -62,11 +61,11 @@ def create_session_token(phone: str, device_id: str, user_id: str, session_id: s
         "exp": expire,
         "iat": datetime.utcnow()
     }
-
+    
     # Only add session_id if provided (optional)
     if session_id:
         session_data["session_id"] = session_id
-
+    
     return jwt.encode(session_data, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 def verify_access_token(token: str) -> Optional[Dict[str, Any]]:
@@ -138,7 +137,7 @@ def extract_session_info(token: str) -> Optional[Dict[str, Any]]:
         print("Extracted Payload:", payload)
         return {
             "user_phone": payload.get("user_phone"),
-            "user_id": payload.get("user_id"),
+            "user_id": payload.get("user_id"), 
             "session_id": payload.get("session_id"),
             "device_id": payload.get("device_id"),
             "created_at": payload.get("created_at")
@@ -149,8 +148,8 @@ def get_token_payload(token: str) -> Optional[Dict[str, Any]]:
     """Get token payload without verification (for debugging)"""
     try:
         # Decode without verification to see token content
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[
-                                settings.ALGORITHM], options={"verify_signature": False})
+        payload = jwt.decode(token, "dummy", algorithms=["HS256"], options={"verify_signature": False})
         return payload
-    except JWTError:
+    except JWTError as e:
+        print(f"JWT decode error: {e}")
         return None

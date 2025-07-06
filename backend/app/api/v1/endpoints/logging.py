@@ -49,6 +49,15 @@ class AppStateRequest(BaseModel):
     state: str  # "background", "foreground", "minimized", "restored"
     details: Optional[Dict[str, Any]] = None
 
+class AppCloseRequest(BaseModel):
+    session_id: str
+    reason: str = "app_closed"  # app_closed, user_logout, app_background, etc.
+
+class AppStateRequest(BaseModel):
+    session_id: str
+    state: str  # "background", "foreground", "minimized", "restored"
+    details: Optional[Dict[str, Any]] = None
+
 @router.post("/start-session", response_model=SessionResponse)
 async def start_session(request: StartSessionRequest, current_user: dict = Depends(get_current_user)):
     """
@@ -284,7 +293,6 @@ async def get_session_logs(
             detail=f"Failed to get session logs: {str(e)}"
         )
 
-
 @router.post("/app-close")
 async def handle_app_close(
     request: AppCloseRequest,
@@ -301,14 +309,12 @@ async def handle_app_close(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid session token"
             )
-
         # Verify session_id matches
         if session_info.get("session_id") != request.session_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Session ID mismatch"
             )
-
         # Get session
         session = session_manager.get_session(request.session_id)
         if not session:
@@ -316,7 +322,6 @@ async def handle_app_close(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Session not found"
             )
-
         # Handle app closure using lifecycle management
         success = await session_manager.handle_app_lifecycle_event(
             request.session_id,
@@ -326,13 +331,12 @@ async def handle_app_close(
                 "session_duration": (datetime.utcnow() - session.created_at).total_seconds()
             }
         )
-
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to terminate session on app close"
             )
-
+        
         return {
             "message": "App closure handled successfully",
             "session_id": request.session_id,
@@ -340,7 +344,7 @@ async def handle_app_close(
             "behavioral_data_saved": True,
             "timestamp": datetime.utcnow().isoformat()
         }
-
+        
     except HTTPException:
         raise
     except Exception as e:
@@ -348,7 +352,6 @@ async def handle_app_close(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to handle app closure: {str(e)}"
         )
-
 
 @router.post("/app-state")
 async def handle_app_state_change(
@@ -366,34 +369,34 @@ async def handle_app_state_change(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid session token"
             )
-
+        
         # Verify session_id matches
         if session_info.get("session_id") != request.session_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Session ID mismatch"
             )
-
+        
         # Handle state change
         success = await session_manager.handle_app_lifecycle_event(
             request.session_id,
             f"app_{request.state}",
             request.details or {}
         )
-
+        
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Session not found or state change failed"
             )
-
+        
         return {
             "message": f"App state changed to {request.state}",
             "session_id": request.session_id,
             "state": request.state,
             "timestamp": datetime.utcnow().isoformat()
         }
-
+        
     except HTTPException:
         raise
     except Exception as e:

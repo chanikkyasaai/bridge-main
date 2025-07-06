@@ -67,33 +67,29 @@ async def behavioral_websocket(websocket: WebSocket, session_id: str, token: str
         # Verify session token
         session_info = extract_session_info(token)
         if not session_info:
-            print("Invalid session token")
             await websocket.close(code=1008, reason="Invalid session token")
             return
-
+        
         # Get session from session manager
         session = session_manager.get_session(session_id)
         if not session:
-            print("Session not found")
             await websocket.close(code=1008, reason="Session not found")
             return
-
+            
         if session.is_blocked:
-            print("Session is blocked")
             await websocket.close(code=1008, reason="Session is blocked")
             return
-
+        
         # Verify that the token belongs to this session's user
         token_user_id = session_info.get("user_id")
         token_phone = session_info.get("user_phone")
-
+        
         if token_user_id != session.user_id or token_phone != session.phone:
-            print("Token does not match session user")
             await websocket.close(code=1008, reason="Token does not match session user")
             return
-
+        
         await websocket_manager.connect(websocket, session_id)
-
+        
         # Send initial connection confirmation
         await websocket.send_text(json.dumps({
             "type": "connection_established",
@@ -143,7 +139,6 @@ async def behavioral_websocket(websocket: WebSocket, session_id: str, token: str
             await websocket.close(code=1011, reason=f"Server error: {str(e)}")
         except:
             pass
-
 
 async def process_behavioral_data(session_id: str, behavioral_event: Dict[str, Any]):
     """
@@ -295,6 +290,31 @@ async def simulate_ml_analysis(session_id: str):
         "action_taken": "block" if simulated_risk_score >= 0.9 else "monitor" if simulated_risk_score >= 0.7 else "normal"
     }
 
+@router.get("/debug/token/{token}")
+async def debug_token(token: str):
+    """Debug endpoint to inspect token contents"""
+    try:
+        from app.core.security import get_token_payload
+        
+        # Get token payload without verification
+        payload = get_token_payload(token)
+        
+        if not payload:
+            return {"error": "Invalid token format"}
+        
+        # Also try to verify it
+        session_info = extract_session_info(token)
+        
+        return {
+            "token_payload": payload,
+            "session_info": session_info,
+            "token_type": payload.get("type"),
+            "expires": payload.get("exp"),
+            "issued_at": payload.get("iat")
+        }
+        
+    except Exception as e:
+        return {"error": f"Debug failed: {str(e)}"}
 
 async def handle_websocket_disconnect(session_id: str):
     """
@@ -302,7 +322,7 @@ async def handle_websocket_disconnect(session_id: str):
     """
     # Use the new lifecycle event handler
     await session_manager.handle_app_lifecycle_event(
-        session_id,
+        session_id, 
         "websocket_disconnect",
         {"reason": "client_disconnect"}
     )
