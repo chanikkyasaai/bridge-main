@@ -67,6 +67,7 @@ class _SendMoneyPageState extends State<SendMoneyPageUPI> {
               TypingFieldTracker(
                 controller: _upiController,
                 fieldName: 'upi_id',
+                screenName: 'Send_Money_UPI',
                 logger: logger,
                 child: TextFormField(
                   controller: _upiController,
@@ -84,6 +85,7 @@ class _SendMoneyPageState extends State<SendMoneyPageUPI> {
               TypingFieldTracker(
                 controller: _amountController,
                 fieldName: 'amount',
+                screenName: 'Send_Money_UPI',
                 logger: logger,
                 child: TextFormField(
                   controller: _amountController,
@@ -102,6 +104,7 @@ class _SendMoneyPageState extends State<SendMoneyPageUPI> {
               TypingFieldTracker(
                 controller: _noteController,
                 fieldName: 'note',
+                screenName: 'Send_Money_UPI',
                 logger: logger,
                 child: TextFormField(
                   controller: _noteController,

@@ -67,6 +67,7 @@ class _DirectPayPageState extends State<DirectPayPage> with SingleTickerProvider
           TypingFieldTracker(
             controller: _accountController,
             fieldName: 'account_number',
+            screenName: 'Direct_Pay',
             logger: logger,
             child: TextField(
               controller: _accountController,
@@ -78,6 +79,7 @@ class _DirectPayPageState extends State<DirectPayPage> with SingleTickerProvider
           TypingFieldTracker(
             controller: _reAccountController,
             fieldName: 're_account_number',
+            screenName: 'Direct_Pay',
             logger: logger,
             child: TextField(
               controller: _reAccountController,
@@ -89,6 +91,7 @@ class _DirectPayPageState extends State<DirectPayPage> with SingleTickerProvider
           TypingFieldTracker(
             controller: _beneficiaryController,
             fieldName: 'beneficiary_name',
+            screenName: 'Direct_Pay',
             logger: logger,
             child: TextField(
               controller: _beneficiaryController,
@@ -99,6 +102,7 @@ class _DirectPayPageState extends State<DirectPayPage> with SingleTickerProvider
           TypingFieldTracker(
             controller: _nickNameController,
             fieldName: 'nickname',
+            screenName: 'Direct_Pay',
             logger: logger,
             child: TextField(
               controller: _nickNameController,

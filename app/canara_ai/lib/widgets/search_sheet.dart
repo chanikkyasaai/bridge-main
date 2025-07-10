@@ -61,6 +61,7 @@ class _SearchSheetState extends State<SearchSheet> {
                 padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 12),
                 child: TypingFieldTracker(
                   controller: _controller,
+                  screenName: 'Search_Sheet',
                   fieldName: 'search_input',
                   logger: widget.logger,
                   child: TextField(

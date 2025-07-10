@@ -65,7 +65,7 @@ class BehaviorLogger {
     sessionId = _sessionId;
     sessionToken = _sessionToken;
 
-    final uri = Uri.parse('ws://192.168.241.41:8000/api/v1/ws/behavior/$_sessionId?token=${Uri.encodeComponent(_sessionToken)}');
+    final uri = Uri.parse('ws://35.225.176.106:8000/api/v1/ws/behavior/$_sessionId?token=${Uri.encodeComponent(_sessionToken)}');
 
     print(uri);
 
@@ -150,7 +150,7 @@ class BehaviorLogger {
         print('Session ID: $sessionId');
         print('Session Token: $sessionToken');
         final token = await tokenstorage.getAccessToken();
-        final uri = Uri.parse('ws://192.168.241.41:8000/api/v1/ws/behavior/$sessionId?token=${Uri.encodeComponent(sessionToken!)}');
+        final uri = Uri.parse('ws://35.225.176.106:8000/api/v1/ws/behavior/$sessionId?token=${Uri.encodeComponent(sessionToken!)}');
 
         _ws = WebSocketChannel.connect(uri);
 

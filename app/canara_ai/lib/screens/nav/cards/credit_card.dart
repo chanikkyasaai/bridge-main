@@ -1,8 +1,45 @@
+import 'package:canara_ai/logging/behaviour_route_tracker.dart';
+import 'package:canara_ai/logging/log_touch_data.dart';
+import 'package:canara_ai/logging/logger_instance.dart';
+import 'package:canara_ai/main.dart';
 import 'package:flutter/material.dart';
 
-class CreditCardsPage extends StatelessWidget {
+class CreditCardsPage extends StatefulWidget {
   const CreditCardsPage({super.key});
 
+  @override
+  State<CreditCardsPage> createState() => _CreditCardsPageState();
+}
+
+class _CreditCardsPageState extends State<CreditCardsPage> {
+  late BehaviorLogger logger;
+  late BehaviorRouteTracker tracker;
+  bool _subscribed = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_subscribed) {
+      final route = ModalRoute.of(context);
+      if (route is PageRoute) {
+        tracker = BehaviorRouteTracker(logger, context);
+        routeObserver.subscribe(tracker, route);
+        _subscribed = true;
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    logger = AppLogger.logger;
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(tracker);
+  }
+  
   @override
   Widget build(BuildContext context) {
     final Color canaraBlue = const Color(0xFF0072BC);

@@ -1,3 +1,5 @@
+import 'package:canara_ai/logging/button_wrapper.dart';
+import 'package:canara_ai/logging/typing_tracker.dart';
 import 'package:canara_ai/screens/nav/tabs/upi/base_upi.dart';
 import 'package:flutter/material.dart';
 
@@ -25,31 +27,8 @@ class _PayContactPageState extends State<PayContactPage> {
   late BehaviorRouteTracker tracker;
   bool _subscribed = false;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_subscribed) {
-      final route = ModalRoute.of(context);
-      if (route is PageRoute) {
-        tracker = BehaviorRouteTracker(logger, context);
-        routeObserver.subscribe(tracker, route);
-        _subscribed = true;
-      }
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    logger = AppLogger.logger;
-  }
-
-  @override
-  void dispose() {
-    routeObserver.unsubscribe(tracker);
-  }
-
-  @override
+  
+@override
   Widget build(BuildContext context) {
     return BasePage(
       title: 'Pay to Contact',
@@ -58,14 +37,20 @@ class _PayContactPageState extends State<PayContactPage> {
           Container(
             color: Colors.white,
             padding: EdgeInsets.all(16),
-            child: TextField(
+            child: TypingFieldTracker(
               controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search contacts or enter mobile number',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              fieldName: 'search_contact',
+              screenName: 'Pay_Contact',
+              logger: logger,
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search contacts or enter mobile number',
+                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onChanged: (value) => setState(() {}),
               ),
-              onChanged: (value) => setState(() {}),
             ),
           ),
           Expanded(
@@ -94,13 +79,22 @@ class _PayContactPageState extends State<PayContactPage> {
                           Text(contact['upi']!, style: TextStyle(color: Colors.green[600])),
                         ],
                       ),
-                      trailing: ElevatedButton(
-                        onPressed: () => _showPaymentDialog(context, contact),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue[600],
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      trailing: LoggedButton(
+                        eventName: 'button_press',
+                        logger: logger,
+                        eventData: {
+                          'button_name': 'button_pay',
+                          'screen': 'Pay_Contact',
+                        },
+                        onTap: () => _showPaymentDialog(context, contact),
+                        child: ElevatedButton(
+                          onPressed: null, // Disabled, handled by LoggedButton
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue[600],
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          ),
+                          child: Text('Pay', style: TextStyle(color: Colors.white)),
                         ),
-                        child: Text('Pay', style: TextStyle(color: Colors.white)),
                       ),
                     ),
                   );
@@ -122,27 +116,42 @@ class _PayContactPageState extends State<PayContactPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
+            TypingFieldTracker(
               controller: amountController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Amount',
-                prefixText: '₹ ',
-                border: OutlineInputBorder(),
+              fieldName: 'amount_field',
+              screenName: 'Pay_Contact',
+              logger: logger,
+              child: TextField(
+                controller: amountController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Amount',
+                  prefixText: '₹ ',
+                  border: OutlineInputBorder(),
+                ),
               ),
             ),
           ],
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel')),
-          ElevatedButton(
-            onPressed: () {
+          LoggedButton(
+            eventName: 'send_payment_button',
+            logger: logger,
+            eventData: {
+              'contact_name': contact['name'],
+              'amount': amountController.text,
+            },
+            onTap: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Payment sent to ${contact['name']}')),
               );
             },
-            child: Text('Send'),
+            child: ElevatedButton(
+              onPressed: null, // Disabled, handled by LoggedButton
+              child: Text('Send'),
+            ),
           ),
         ],
       ),

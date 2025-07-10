@@ -1,5 +1,7 @@
 import 'package:canara_ai/screens/login_page.dart';
 import 'package:canara_ai/screens/nav/banking_page.dart';
+import 'package:canara_ai/screens/nav/cards/credit_card.dart';
+import 'package:canara_ai/screens/nav/cards/debit_card.dart';
 import 'package:canara_ai/screens/nav/cards_page.dart';
 import 'package:canara_ai/screens/nav/profile/upi_lite_page.dart';
 import 'package:canara_ai/screens/nav/profile_page.dart';
@@ -79,6 +81,8 @@ class MyApp extends StatelessWidget {
             '/registerupi': (context) => RegisterPage(),
             '/upilite': (context) => const UpiLitePage(),
             '/approvepayment': (context) => ApprovePaymentPage(),
+            '/creditcards': (context) => CreditCardsPage(),
+            '/debitcards': (context) => DebitCardsPage()
           },
           navigatorObservers: [routeObserver],
           home: isLoggedIn ? const AuthPage(isFirst: false) : const LoginPage(isFirst: false),

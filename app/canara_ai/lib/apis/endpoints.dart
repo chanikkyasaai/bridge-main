@@ -1,5 +1,5 @@
 class Endpoints {
-  static const String baseUrl = 'http://192.168.241.41:8000/api/v1';
+  static const String baseUrl = 'http://35.225.176.106:8000/api/v1';
 
   static const String login = "/auth/login";
   static const String register = "/auth/register";

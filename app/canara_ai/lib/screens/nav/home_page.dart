@@ -1,4 +1,5 @@
 import 'package:canara_ai/logging/behaviour_route_tracker.dart';
+import 'package:canara_ai/logging/button_wrapper.dart';
 import 'package:canara_ai/logging/log_touch_data.dart';
 import 'package:canara_ai/logging/logger_instance.dart';
 import 'package:canara_ai/main.dart';
@@ -323,18 +324,32 @@ class _HomePageState extends State<HomePage> {
                   // Show/Hide Switch (optional, can be removed if not needed)
                   Row(
                     children: [
-                      Switch(
-                        value: _showBalance,
-                        onChanged: (val) => setState(() => _showBalance = val),
-                        activeColor: canaraYellow,
-                        inactiveThumbColor: Colors.white,
-                        inactiveTrackColor: Colors.white54,
-                      ),
-                      Text(
-                        'Show',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                      LoggedButton(
+                        eventName: 'button_press',
+                        logger: logger,
+                        eventData: {
+                          'button_name': 'toggle_show_portfolio',
+                          'new_state': !_showBalance,
+                          'screen': 'Home Page',
+                        },
+                        onTap: () => setState(() => _showBalance = !_showBalance),
+                        child: Row(
+                          children: [
+                            Switch(
+                              value: _showBalance,
+                              onChanged: (val) => setState(() => _showBalance = val),
+                              activeColor: canaraYellow,
+                              inactiveThumbColor: Colors.white,
+                              inactiveTrackColor: Colors.white54,
+                            ),
+                            Text(
+                              'Show',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

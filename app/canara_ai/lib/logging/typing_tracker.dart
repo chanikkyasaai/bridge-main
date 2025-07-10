@@ -9,12 +9,14 @@ class TypingFieldTracker extends StatefulWidget {
   final String fieldName;
   final BehaviorLogger logger;
   final Widget child;
+  final String screenName;
 
   const TypingFieldTracker({
     super.key,
     required this.controller,
     required this.fieldName,
     required this.logger,
+    required this.screenName,
     required this.child,
   });
 
@@ -90,6 +92,7 @@ class _TypingFieldTrackerState extends State<TypingFieldTracker> {
     } catch (_) {}
 
     widget.logger.sendEvent('typing_pattern', {
+      'screen': widget.screenName,
       'field': widget.fieldName,
       'typing_speed': double.parse(speed.toStringAsFixed(2)),
       'keystroke_dynamics': _delays.map((e) => double.parse(e.toStringAsFixed(3))).toList(),

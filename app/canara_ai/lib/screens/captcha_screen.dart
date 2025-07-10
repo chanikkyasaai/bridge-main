@@ -1,4 +1,9 @@
+import 'package:canara_ai/logging/behaviour_route_tracker.dart';
+import 'package:canara_ai/logging/button_wrapper.dart';
 import 'package:canara_ai/logging/log_touch_data.dart';
+import 'package:canara_ai/logging/logger_instance.dart';
+import 'package:canara_ai/logging/typing_tracker.dart';
+import 'package:canara_ai/main.dart';
 import 'package:canara_ai/screens/nav/home_page.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
@@ -48,6 +53,10 @@ class _CaptchaPageState extends State<CaptchaPage> {
     'zebra',
   ];
 
+  late BehaviorLogger logger;
+  late BehaviorRouteTracker tracker;
+  bool _subscribed = false;
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +64,9 @@ class _CaptchaPageState extends State<CaptchaPage> {
     _captchaController.addListener(() {
       setState(() {});
     });
+
+    logger = AppLogger.logger;
+
 
     _flutterTts.setLanguage('en-US');
     _flutterTts.setSpeechRate(0.4); // Adjust as needed
@@ -104,8 +116,23 @@ class _CaptchaPageState extends State<CaptchaPage> {
   void dispose() {
     _captchaController.dispose();
     _flutterTts.stop();
+    routeObserver.unsubscribe(tracker);
     super.dispose();
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_subscribed) {
+      final route = ModalRoute.of(context);
+      if (route is PageRoute) {
+        tracker = BehaviorRouteTracker(logger, context);
+        routeObserver.subscribe(tracker, route);
+        _subscribed = true;
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -218,35 +245,41 @@ class _CaptchaPageState extends State<CaptchaPage> {
                   const SizedBox(height: 20),
 
                   // Input Field
-                  TextField(
+                  TypingFieldTracker(
                     controller: _captchaController,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      letterSpacing: 4,
-                      fontWeight: FontWeight.w600,
+                    fieldName: 'captcha_input',
+                    screenName: 'Captcha_Screen',
+                    logger: logger,
+                    child: TextField(
+                      controller: _captchaController,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        letterSpacing: 4,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Type the 3 words shown above',
+                        hintStyle: TextStyle(
+                          color: Colors.grey[400],
+                          letterSpacing: 1,
+                          fontWeight: FontWeight.normal,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.blue, width: 2),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
+                      ),
+                      buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
                     ),
-                    decoration: InputDecoration(
-                      hintText: 'Type the 3 words shown above',
-                      hintStyle: TextStyle(
-                        color: Colors.grey[400],
-                        letterSpacing: 1,
-                        fontWeight: FontWeight.normal,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey[300]!),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                    ),
-                    buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
                   ),
 
                   const SizedBox(height: 20),
@@ -254,22 +287,31 @@ class _CaptchaPageState extends State<CaptchaPage> {
                   // Verify Button
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _verifyCaptcha,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                    child: LoggedButton(
+                      eventName: 'button_press',
+                      logger: logger,
+                      eventData: {
+                        'button_name': 'verify_captcha',
+                        'screen': 'Captcha_Screen',
+                      },
+                      onTap: _verifyCaptcha,
+                      child: ElevatedButton(
+                        onPressed: null, // Disabled, handled by LoggedButton
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 2,
                         ),
-                        elevation: 2,
-                      ),
-                      child: const Text(
-                        'Verify',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                        child: const Text(
+                          'Verify',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),

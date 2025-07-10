@@ -325,10 +325,7 @@ class _BankingPageState extends State<BankingPage> {
                 const Spacer(),
                 TextButton.icon(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => AddBeneficiaryPage()),
-                    );
+                    Navigator.of(context).pushNamed('/addbeneficiary');
                   },
                   icon: Icon(Icons.add, color: canaraBlue),
                   label: Text('Add', style: TextStyle(color: canaraBlue)),
@@ -420,10 +417,7 @@ class _BankingPageState extends State<BankingPage> {
               subtitle: const Text('To Ravi Kumar'),
               trailing: Icon(Icons.chevron_right, color: Colors.grey),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SendMoneyPage()),
-                );
+                Navigator.of(context).pushNamed('/sendmoney');
               },
             ),
             ListTile(
@@ -435,10 +429,7 @@ class _BankingPageState extends State<BankingPage> {
               subtitle: const Text('Electricity Bill'),
               trailing: Icon(Icons.chevron_right, color: Colors.grey),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DirectPayPage()),
-                );
+                Navigator.of(context).pushNamed('/directpay');
               },
             ),
             ListTile(
@@ -450,10 +441,7 @@ class _BankingPageState extends State<BankingPage> {
               subtitle: const Text('To Merchant'),
               trailing: Icon(Icons.chevron_right, color: Colors.grey),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DirectPayPage()),
-                );
+                Navigator.of(context).pushNamed('/directpay');
               },
             ),
           ],
@@ -485,10 +473,10 @@ class _BankingPageState extends State<BankingPage> {
               childAspectRatio: 0.85,
               children: [
                 _dashboardItem('Send Money', Icons.send, canaraBlue, () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => SendMoneyPage()));
+                  Navigator.of(context).pushNamed('/sendmoney');
                 }),
                 _dashboardItem('Direct Pay', Icons.payment, canaraYellow, () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const DirectPayPage()));
+                  Navigator.of(context).pushNamed('/directpay');
                 }),
                 _dashboardItem('My Beneficiary', Icons.group, canaraLightBlue, () {
                   setState(() {
@@ -496,22 +484,22 @@ class _BankingPageState extends State<BankingPage> {
                   });
                 }),
                 _dashboardItem('ePassbook', Icons.book, canaraPurple, () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const EPassbookPage()));
+                  Navigator.of(context).pushNamed('/epassbook');
                 }),
                 _dashboardItem('Bill Pay', Icons.receipt_long, canaraBlue, () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const DirectPayPage()));
+                  Navigator.of(context).pushNamed('/directpay');
                 }),
                 _dashboardItem('Card-less Cash', Icons.atm, canaraYellow, () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CardlessCashPage()));
+                  Navigator.of(context).pushNamed('/cardlesscash');
                 }),
                 _dashboardItem('Other Bank\nAccounts', Icons.account_balance, canaraLightBlue, () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const HistoryPage()));
+                  Navigator.of(context).pushNamed('/directpay');
                 }),
                 _dashboardItem('History', Icons.history, canaraPurple, () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const HistoryPage()));
+                  Navigator.of(context).pushNamed('/history');
                 }),
                 _dashboardItem('Manage\nAccounts', Icons.settings, canaraBlue, () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const HistoryPage()));
+                  Navigator.of(context).pushNamed('/manage-accounts');
                 }),
               ],
             ),

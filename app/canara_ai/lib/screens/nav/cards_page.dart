@@ -71,21 +71,25 @@ class _CardsPageState extends State<CardsPage> {
               buttonText: 'View Debit Cards',
               buttonColor: canaraBlue,
               imageAsset: 'assets/images/atm-card.png', // Replace with your asset
-              onPressed: () {
-                Navigator.of(context).push(_createRoute(const DebitCardsPage()));
-              },
-            ),
-            const SizedBox(height: 24),
-            _cardSection(
-              context: context,
-              icon: Icons.credit_card_outlined,
-              title: 'My Credit Cards',
-              subtitle: 'View your Credit Cards and Manage services',
-              buttonText: 'View Credit Cards',
-              buttonColor: canaraBlue,
-              imageAsset: 'assets/images/atm-card.png', // Replace with your asset
-              onPressed: () {
-                Navigator.of(context).push(_createRoute(const CreditCardsPage()));
+                onPressed: () {
+                Navigator.of(context).pushNamed(
+                  '/debitcards',
+                );
+                },
+              ),
+              const SizedBox(height: 24),
+              _cardSection(
+                context: context,
+                icon: Icons.credit_card_outlined,
+                title: 'My Credit Cards',
+                subtitle: 'View your Credit Cards and Manage services',
+                buttonText: 'View Credit Cards',
+                buttonColor: canaraBlue,
+                imageAsset: 'assets/images/atm-card.png', // Replace with your asset
+                onPressed: () {
+                Navigator.of(context).pushNamed(
+                  '/creditcards',
+                );
               },
             ),
           ],
