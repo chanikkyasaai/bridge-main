@@ -6,6 +6,15 @@ from datetime import datetime
 from app.core.session_manager import session_manager
 from app.core.security import extract_session_info
 
+# ML-Engine Integration
+try:
+    from ...ml_hooks import behavioral_event_hook
+    ML_INTEGRATION_AVAILABLE = True
+except ImportError:
+    async def behavioral_event_hook(*args, **kwargs):
+        return None
+    ML_INTEGRATION_AVAILABLE = False
+
 router = APIRouter()
 
 class WebSocketManager:
@@ -166,18 +175,52 @@ async def process_behavioral_data(session_id: str, behavioral_event: Dict[str, A
     # Store behavioral data
     session.add_behavioral_data(event_type, event_data)
     
+    # Process through ML-Engine for real-time authentication
+    ml_response = None
+    if ML_INTEGRATION_AVAILABLE:
+        try:
+            ml_response = await behavioral_event_hook(
+                session_id, session.user_id, session.device_id, event_type, event_data
+            )
+        except Exception as e:
+            print(f"ML-Engine processing error: {e}")
+    
     # Analyze behavior and update risk score
-    await analyze_behavioral_pattern(session, event_type, event_data)
+    await analyze_behavioral_pattern(session, event_type, event_data, ml_response)
 
-async def analyze_behavioral_pattern(session, event_type: str, event_data: Dict[str, Any]):
+async def analyze_behavioral_pattern(session, event_type: str, event_data: Dict[str, Any], ml_response: Dict[str, Any] = None):
     """
     Analyze behavioral patterns and update risk score
-    This is where you'd integrate with your ML model
+    Integrates ML-Engine response with rule-based analysis
     """
     current_risk = session.risk_score
     risk_adjustment = 0.0
     
-    # Simple rule-based risk scoring (replace with ML model)
+    # Use ML-Engine response if available
+    if ml_response and ML_INTEGRATION_AVAILABLE:
+        ml_risk_score = ml_response.get('risk_score', 0.0)
+        ml_decision = ml_response.get('decision', 'allow')
+        ml_confidence = ml_response.get('confidence', 0.0)
+        
+        # Prioritize ML-Engine assessment
+        if ml_confidence > 0.7:  # High confidence ML decision
+            session.update_risk_score(ml_risk_score)
+            
+            # Handle ML decisions
+            if ml_decision == 'permanent_block':
+                session.block_session("ML-Engine: High risk behavior detected")
+                return
+            elif ml_decision == 'temporary_block':
+                session.block_session("ML-Engine: Temporary security block")
+                return
+            elif ml_decision in ['step_up_auth', 'challenge']:
+                session.request_mpin_verification()
+                return
+        else:
+            # Use ML risk as a factor in traditional analysis
+            risk_adjustment += (ml_risk_score - current_risk) * 0.3
+    
+    # Fallback to rule-based risk scoring when ML is not available or has low confidence
     risk_factors = {
         # Suspicious patterns
         "rapid_clicks": 0.1,

@@ -1,0 +1,106 @@
+2025-07-11 17:47:24,609 - INFO - Starting RIGOROUS LAYER 2 (ADAPTIVE CONTEXT) TESTING SUITE
+2025-07-11 17:47:24,610 - INFO - Setting up Layer 2 Adaptive Context test environment...
+2025-07-11 17:47:24,629 - INFO - Test environment ready at C:\Users\Hp\AppData\Local\Temp\layer2_adaptive_test_fq3fcds_
+2025-07-11 17:47:24,630 - INFO - 
+============================================================
+2025-07-11 17:47:24,630 - INFO - Running TRANSFORMER_ENCODING test...
+2025-07-11 17:47:24,631 - INFO - ============================================================
+2025-07-11 17:47:24,631 - INFO - Testing transformer behavioral encoding...
+2025-07-11 17:47:24,793 - INFO - Transformer Encoding Results: {'basic_encoding_success': True, 'encoding_time_ms': 52.07349997363053, 'embedding_shape': [1, 64], 'confidence_value': 0.949999988079071, 'embedding_magnitude': 8.397525787353516, 'multi_session_encoding': {'normal_session': {'success': True, 'processing_time_ms': 20.68919999874197, 'confidence': 0.949999988079071, 'embedding_norm': 6.913450717926025}, 'stressed_session': {'success': True, 'processing_time_ms': 20.966900017810985, 'confidence': 0.949999988079071, 'embedding_norm': 8.497840881347656}, 'hurried_session': {'success': True, 'processing_time_ms': 20.820000005187467, 'confidence': 0.949999988079071, 'embedding_norm': 7.7325520515441895}, 'fraud_session': {'success': True, 'processing_time_ms': 20.437900006072596, 'confidence': 0.9157610535621643, 'embedding_norm': 8.293041229248047}}, 'avg_encoding_time_ms': 20.728500006953254, 'meets_performance_target': True}
+2025-07-11 17:47:24,795 - INFO - PASSED transformer_encoding PASSED in 0.16s
+2025-07-11 17:47:24,795 - INFO - 
+============================================================
+2025-07-11 17:47:24,797 - INFO - Running GNN_ANALYSIS test...
+2025-07-11 17:47:24,797 - INFO - ============================================================
+2025-07-11 17:47:24,797 - INFO - Testing GNN session graph analysis...
+2025-07-11 17:47:24,887 - INFO - GNN Analysis Results: {'basic_gnn_success': True, 'gnn_processing_time_ms': 15.914999996311963, 'anomaly_score': 0.8842105269432068, 'multi_session_gnn': {'normal_session': {'success': True, 'processing_time_ms': 15.769100020406768, 'anomaly_score': 0.8842105269432068, 'num_nodes': 20, 'num_edges': 22}, 'stressed_session': {'success': True, 'processing_time_ms': 15.427200007252395, 'anomaly_score': 0.8842105269432068, 'num_nodes': 20, 'num_edges': 22}, 'hurried_session': {'success': True, 'processing_time_ms': 15.970999986166134, 'anomaly_score': 0.8476190567016602, 'num_nodes': 15, 'num_edges': 16}, 'fraud_session': {'success': True, 'processing_time_ms': 15.713499975390732, 'anomaly_score': 0.9066666960716248, 'num_nodes': 25, 'num_edges': 28}}, 'anomaly_detection_working': True, 'fraud_anomaly_score': 0.9066666960716248, 'normal_anomaly_score': 0.8842105269432068, 'avg_gnn_time_ms': 15.720199997304007, 'max_gnn_time_ms': 15.970999986166134, 'gnn_meets_performance_target': True}
+2025-07-11 17:47:24,887 - INFO - PASSED gnn_analysis PASSED in 0.09s
+2025-07-11 17:47:24,888 - INFO - 
+============================================================
+2025-07-11 17:47:24,889 - INFO - Running CONTEXTUAL_ADAPTATION test...
+2025-07-11 17:47:24,889 - INFO - ============================================================
+2025-07-11 17:47:24,889 - INFO - Testing contextual adaptation...
+2025-07-11 17:47:24,952 - INFO - Contextual Adaptation Results: {'context_adaptation': {'low_risk': {'success': True, 'confidence': 0.949999988079071, 'processing_time_ms': 20.821500016609207, 'embedding_norm': 7.234214782714844}, 'medium_risk': {'success': True, 'confidence': 0.949999988079071, 'processing_time_ms': 20.570299995597452, 'embedding_norm': 6.709498405456543}, 'high_risk': {'success': True, 'confidence': 0.949999988079071, 'processing_time_ms': 20.639099995605648, 'embedding_norm': 8.142963409423828}}, 'confidence_adapts_to_risk': False, 'confidence_variance': 0.0}
+2025-07-11 17:47:24,953 - INFO - PASSED contextual_adaptation PASSED in 0.06s
+2025-07-11 17:47:24,953 - INFO - 
+============================================================
+2025-07-11 17:47:24,955 - INFO - Running PERFORMANCE_REQUIREMENTS test...
+2025-07-11 17:47:24,955 - INFO - ============================================================
+2025-07-11 17:47:24,955 - INFO - Testing Layer 2 performance requirements...
+2025-07-11 17:47:25,709 - INFO - Layer 2 Performance Results: {'total_iterations': 20, 'avg_analysis_time_ms': 36.803280003368855, 'p50_analysis_time_ms': 36.60620001028292, 'p95_analysis_time_ms': 37.81098998297239, 'p99_analysis_time_ms': 39.68043799541192, 'max_analysis_time_ms': 40.147799998521805, 'min_analysis_time_ms': 36.3167000177782, 'meets_80ms_target': True, 'p95_meets_80ms_target': True, 'all_under_100ms': True}
+2025-07-11 17:47:25,709 - INFO - PASSED performance_requirements PASSED in 0.75s
+2025-07-11 17:47:25,709 - INFO - 
+============================================================
+2025-07-11 17:47:25,711 - INFO - Running EDGE_CASES_ROBUSTNESS test...
+2025-07-11 17:47:25,711 - INFO - ============================================================
+2025-07-11 17:47:25,712 - INFO - Testing edge cases and robustness...
+2025-07-11 17:47:25,797 - INFO - Edge Case Results: {'empty_session_handled': True, 'empty_session_confidence': 0.949999988079071, 'extreme_values_handled': True, 'extreme_values_confidence': 0.949999988079071, 'long_session_handled': True, 'long_session_time_ms': 20.890199986752123, 'long_session_under_limit': True, 'disconnected_graph_handled': True}
+2025-07-11 17:47:25,797 - INFO - PASSED edge_cases_robustness PASSED in 0.09s
+2025-07-11 17:47:25,798 - INFO - 
+============================================================
+2025-07-11 17:47:25,798 - INFO - Running ADVERSARIAL_SCENARIOS test...
+2025-07-11 17:47:25,798 - INFO - ============================================================
+2025-07-11 17:47:25,800 - INFO - Testing adversarial scenarios...
+2025-07-11 17:47:26,102 - INFO - Adversarial Test Results: {'baseline_confidence': 0.949999988079071, 'drift_attack': {'confidences': [0.949999988079071, 0.949999988079071, 0.949999988079071, 0.949999988079071, 0.9396280646324158, 0.9098361134529114, 0.8785127401351929, 0.8437870740890503, 0.7925987243652344, 0.7350525856018066], 'detects_drift': True, 'gradual_degradation': True}, 'context_attacks': [{'attack_type': 'context_manipulation_0', 'confidence': 0.949999988079071, 'detected': False}, {'attack_type': 'context_manipulation_1', 'confidence': 0.949999988079071, 'detected': False}, {'attack_type': 'context_manipulation_2', 'confidence': 0.949999988079071, 'detected': False}]}
+2025-07-11 17:47:26,103 - ERROR - FAILED adversarial_scenarios FAILED: Should detect context manipulation
+2025-07-11 17:47:26,103 - INFO - 
+================================================================================
+2025-07-11 17:47:26,104 - INFO - LAYER 2 (ADAPTIVE CONTEXT) TEST SUITE COMPLETE
+2025-07-11 17:47:26,104 - INFO - ================================================================================
+2025-07-11 17:47:26,105 - INFO - Success Rate: 83.3% (5/6)
+2025-07-11 17:47:26,105 - INFO - Overall Status: FAILED
+2025-07-11 17:47:26,105 - INFO - Cleaning up Layer 2 test environment...
+2025-07-11 17:47:26,108 - INFO - Cleaned up temporary directory: C:\Users\Hp\AppData\Local\Temp\layer2_adaptive_test_fq3fcds_
+2025-07-11 18:33:19,221 - INFO - Starting RIGOROUS LAYER 2 (ADAPTIVE CONTEXT) TESTING SUITE
+2025-07-11 18:33:19,221 - INFO - Setting up Layer 2 Adaptive Context test environment...
+2025-07-11 18:33:19,237 - INFO - Test environment ready at C:\Users\Hp\AppData\Local\Temp\layer2_adaptive_test_c8ln2unj
+2025-07-11 18:33:19,237 - INFO - 
+============================================================
+2025-07-11 18:33:19,237 - INFO - Running TRANSFORMER_ENCODING test...
+2025-07-11 18:33:19,238 - INFO - ============================================================
+2025-07-11 18:33:19,238 - INFO - Testing transformer behavioral encoding...
+2025-07-11 18:33:19,371 - INFO - Transformer Encoding Results: {'basic_encoding_success': True, 'encoding_time_ms': 36.5557000041008, 'embedding_shape': [1, 64], 'confidence_value': 0.949999988079071, 'embedding_magnitude': 8.397525787353516, 'multi_session_encoding': {'normal_session': {'success': True, 'processing_time_ms': 21.147399995243177, 'confidence': 0.949999988079071, 'embedding_norm': 6.913450717926025}, 'stressed_session': {'success': True, 'processing_time_ms': 20.756500016432256, 'confidence': 0.949999988079071, 'embedding_norm': 8.497840881347656}, 'hurried_session': {'success': True, 'processing_time_ms': 20.62980001210235, 'confidence': 0.949999988079071, 'embedding_norm': 7.7325520515441895}, 'fraud_session': {'success': True, 'processing_time_ms': 20.81489999545738, 'confidence': 0.9157610535621643, 'embedding_norm': 8.293041229248047}}, 'avg_encoding_time_ms': 20.83715000480879, 'meets_performance_target': True}
+2025-07-11 18:33:19,373 - INFO - PASSED transformer_encoding PASSED in 0.14s
+2025-07-11 18:33:19,373 - INFO - 
+============================================================
+2025-07-11 18:33:19,373 - INFO - Running GNN_ANALYSIS test...
+2025-07-11 18:33:19,373 - INFO - ============================================================
+2025-07-11 18:33:19,374 - INFO - Testing GNN session graph analysis...
+2025-07-11 18:33:19,458 - INFO - GNN Analysis Results: {'basic_gnn_success': True, 'gnn_processing_time_ms': 15.88719998835586, 'anomaly_score': 0.8842105269432068, 'multi_session_gnn': {'normal_session': {'success': True, 'processing_time_ms': 15.209900011541322, 'anomaly_score': 0.8842105269432068, 'num_nodes': 20, 'num_edges': 22}, 'stressed_session': {'success': True, 'processing_time_ms': 15.594900003634393, 'anomaly_score': 0.8842105269432068, 'num_nodes': 20, 'num_edges': 22}, 'hurried_session': {'success': True, 'processing_time_ms': 16.361899994080886, 'anomaly_score': 0.8476190567016602, 'num_nodes': 15, 'num_edges': 16}, 'fraud_session': {'success': True, 'processing_time_ms': 15.335600008256733, 'anomaly_score': 0.9066666960716248, 'num_nodes': 25, 'num_edges': 28}}, 'anomaly_detection_working': True, 'fraud_anomaly_score': 0.9066666960716248, 'normal_anomaly_score': 0.8842105269432068, 'avg_gnn_time_ms': 15.625575004378334, 'max_gnn_time_ms': 16.361899994080886, 'gnn_meets_performance_target': True}
+2025-07-11 18:33:19,459 - INFO - PASSED gnn_analysis PASSED in 0.08s
+2025-07-11 18:33:19,459 - INFO - 
+============================================================
+2025-07-11 18:33:19,459 - INFO - Running CONTEXTUAL_ADAPTATION test...
+2025-07-11 18:33:19,459 - INFO - ============================================================
+2025-07-11 18:33:19,459 - INFO - Testing contextual adaptation...
+2025-07-11 18:33:19,522 - INFO - Contextual Adaptation Results: {'context_adaptation': {'low_risk': {'success': True, 'confidence': 0.949999988079071, 'processing_time_ms': 20.445600006496534, 'embedding_norm': 7.234214782714844}, 'medium_risk': {'success': True, 'confidence': 0.949999988079071, 'processing_time_ms': 20.314800000051036, 'embedding_norm': 6.709498405456543}, 'high_risk': {'success': True, 'confidence': 0.949999988079071, 'processing_time_ms': 20.756400015670806, 'embedding_norm': 8.142963409423828}}, 'confidence_adapts_to_risk': False, 'confidence_variance': 0.0}
+2025-07-11 18:33:19,523 - INFO - PASSED contextual_adaptation PASSED in 0.06s
+2025-07-11 18:33:19,523 - INFO - 
+============================================================
+2025-07-11 18:33:19,523 - INFO - Running PERFORMANCE_REQUIREMENTS test...
+2025-07-11 18:33:19,523 - INFO - ============================================================
+2025-07-11 18:33:19,523 - INFO - Testing Layer 2 performance requirements...
+2025-07-11 18:33:20,251 - INFO - Layer 2 Performance Results: {'total_iterations': 20, 'avg_analysis_time_ms': 36.27888999617426, 'p50_analysis_time_ms': 36.339500002213754, 'p95_analysis_time_ms': 36.66368000995135, 'p99_analysis_time_ms': 36.78193600353552, 'max_analysis_time_ms': 36.81150000193156, 'min_analysis_time_ms': 35.75579999596812, 'meets_80ms_target': True, 'p95_meets_80ms_target': True, 'all_under_100ms': True}
+2025-07-11 18:33:20,252 - INFO - PASSED performance_requirements PASSED in 0.73s
+2025-07-11 18:33:20,252 - INFO - 
+============================================================
+2025-07-11 18:33:20,252 - INFO - Running EDGE_CASES_ROBUSTNESS test...
+2025-07-11 18:33:20,252 - INFO - ============================================================
+2025-07-11 18:33:20,254 - INFO - Testing edge cases and robustness...
+2025-07-11 18:33:20,345 - INFO - Edge Case Results: {'empty_session_handled': True, 'empty_session_confidence': 0.949999988079071, 'extreme_values_handled': True, 'extreme_values_confidence': 0.949999988079071, 'long_session_handled': True, 'long_session_time_ms': 20.52039999398403, 'long_session_under_limit': True, 'disconnected_graph_handled': True}
+2025-07-11 18:33:20,345 - INFO - PASSED edge_cases_robustness PASSED in 0.09s
+2025-07-11 18:33:20,345 - INFO - 
+============================================================
+2025-07-11 18:33:20,345 - INFO - Running ADVERSARIAL_SCENARIOS test...
+2025-07-11 18:33:20,345 - INFO - ============================================================
+2025-07-11 18:33:20,347 - INFO - Testing adversarial scenarios...
+2025-07-11 18:33:20,640 - INFO - Adversarial Test Results: {'baseline_confidence': 0.949999988079071, 'drift_attack': {'confidences': [0.949999988079071, 0.949999988079071, 0.949999988079071, 0.949999988079071, 0.9396280646324158, 0.9098361134529114, 0.8785127401351929, 0.8437870740890503, 0.7925987243652344, 0.7350525856018066], 'detects_drift': True, 'gradual_degradation': True}, 'context_attacks': [{'attack_type': 'context_manipulation_0', 'confidence': 0.949999988079071, 'detected': False}, {'attack_type': 'context_manipulation_1', 'confidence': 0.949999988079071, 'detected': False}, {'attack_type': 'context_manipulation_2', 'confidence': 0.949999988079071, 'detected': False}]}
+2025-07-11 18:33:20,641 - ERROR - FAILED adversarial_scenarios FAILED: Should detect context manipulation
+2025-07-11 18:33:20,641 - INFO - 
+================================================================================
+2025-07-11 18:33:20,642 - INFO - LAYER 2 (ADAPTIVE CONTEXT) TEST SUITE COMPLETE
+2025-07-11 18:33:20,642 - INFO - ================================================================================
+2025-07-11 18:33:20,642 - INFO - Success Rate: 83.3% (5/6)
+2025-07-11 18:33:20,642 - INFO - Overall Status: FAILED
+2025-07-11 18:33:20,643 - INFO - Cleaning up Layer 2 test environment...
+2025-07-11 18:33:20,643 - INFO - Cleaned up temporary directory: C:\Users\Hp\AppData\Local\Temp\layer2_adaptive_test_c8ln2unj
