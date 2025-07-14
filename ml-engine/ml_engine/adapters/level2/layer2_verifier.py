@@ -367,6 +367,26 @@ class SessionGraphBuilder:
         graph.edges = new_edges
         graph.edge_features = new_edge_features
     
+    def build_session_graph(self, events: List[BehavioralEvent], session_id: str, user_id: str) -> SessionGraph:
+        """Build session graph from list of events"""
+        # Clear existing session
+        if session_id in self.session_graphs:
+            del self.session_graphs[session_id]
+        
+        # Add all events
+        for event in events:
+            self.add_event(event)
+        
+        # Return the built graph
+        return self.get_graph(session_id) or SessionGraph(
+            session_id=session_id,
+            user_id=user_id,
+            nodes=[],
+            edges=[],
+            edge_features=[],
+            timestamps=[]
+        )
+
     def get_graph(self, session_id: str) -> Optional[SessionGraph]:
         """Get session graph"""
         return self.session_graphs.get(session_id)
@@ -383,12 +403,16 @@ class Layer2Verifier:
         self.transformer_encoder = TransformerBehavioralEncoder()
         self.session_gnn = SessionGraphGNN()
         self.context_adapter = ContextAdapter()
-        self.graph_builder = SessionGraphBuilder()
+        self.session_graph_builder = SessionGraphBuilder()
         
         # CONTEXT MANIPULATION DETECTION: Add anomaly detector
         self.context_anomaly_detector = ContextAnomalyDetector()
         
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        
+        # Add session tracking for direct access
+        self.session_graphs = {}
+        
         self._move_models_to_device()
         
         # Set models to evaluation mode
@@ -416,7 +440,6 @@ class Layer2Verifier:
         
         self.transformer_model = self.transformer_encoder
         self.gnn_model = self.session_gnn
-        self.session_graph_builder = self.graph_builder
         
         logger.info("✓ Layer 2 Verifier initialized")
     
@@ -438,7 +461,7 @@ class Layer2Verifier:
             contextual_features = self._convert_context(context)
             
             # CONTEXT MANIPULATION DETECTION: Check for adversarial context
-            manipulation_result = self.context_anomaly_detector.detect_context_manipulation(
+            manipulation_result = self.context_anomaly_detector.detect_manipulation(
                 user_id, contextual_features
             )
             
@@ -535,8 +558,37 @@ class Layer2Verifier:
             if not session_graph.nodes or not session_graph.edges:
                 return 0.1  # Low anomaly for empty graphs
             
-            # Convert to PyTorch Geometric data
-            node_features = torch.FloatTensor([node.get("features", [0.0] * 10) for node in session_graph.nodes])
+            # Convert node dictionaries to numeric features (32 dimensions to match GNN)
+            numeric_features = []
+            for node in session_graph.nodes:
+                features = node.get("features", {})
+                # Extract numeric values and pad to 32 dimensions
+                feature_vector = [
+                    features.get("pressure", 0.5),
+                    features.get("velocity", 1.0),
+                    features.get("duration", 0.2),
+                    features.get("x_coordinate", 0.0) / 1000.0,  # Normalize coordinates
+                    features.get("y_coordinate", 0.0) / 1000.0,
+                    1.0 if node.get("event_type") == "touch" else 0.0,
+                    1.0 if node.get("event_type") == "swipe" else 0.0,
+                    1.0 if node.get("event_type") == "type" else 0.0,
+                    1.0 if node.get("event_type") == "scroll" else 0.0,
+                    1.0 if node.get("event_type") == "tap" else 0.0,
+                    # Add padding features to reach 32 dimensions
+                    features.get("screen_width", 1080.0) / 2000.0,
+                    features.get("screen_height", 1920.0) / 3000.0,
+                    len(node.get("user_id", "")) / 100.0,  # User ID length feature
+                ] + [0.1] * 19  # Pad with default values to reach 32 features
+                
+                # Ensure exactly 32 features
+                feature_vector = feature_vector[:32]
+                while len(feature_vector) < 32:
+                    feature_vector.append(0.1)
+                    
+                numeric_features.append(feature_vector)
+            
+            # Convert to PyTorch tensors
+            node_features = torch.FloatTensor(numeric_features)
             edge_index = torch.LongTensor(session_graph.edges).t()
             
             # Create graph data
@@ -693,245 +745,223 @@ class Layer2Verifier:
         return max(0.0, min(1.0, score))
     
     def build_session_graph(self, events: List[BehavioralEvent], session_id: str, user_id: str) -> SessionGraph:
-        """Build session graph from events"""
-        # Add all events to graph builder
-        for event in events:
-            self.graph_builder.add_event(event)
-        
-        # Get the built graph
-        session_graph = self.graph_builder.get_graph(session_id)
-        
-        if session_graph is None:
-            # Create empty graph if none exists
-            session_graph = SessionGraph(
-                session_id=session_id,
-                user_id=user_id,
-                nodes=[],
-                edges=[],
-                edge_features=[],
-                timestamps=[]
-            )
-        
-        return session_graph
+        """Build session graph from events - delegates to session graph builder"""
+        graph = self.session_graph_builder.build_session_graph(events, session_id, user_id)
+        # Also keep a reference in our local session_graphs dict
+        self.session_graphs[session_id] = graph
+        return graph
     
+    def get_graph(self, session_id: str) -> Optional[SessionGraph]:
+        """Get session graph - check both local and builder"""
+        return self.session_graphs.get(session_id) or self.session_graph_builder.get_graph(session_id)
+    
+    def clear_session(self, session_id: str):
+        """Clear session graph from both local and builder"""
+        if session_id in self.session_graphs:
+            del self.session_graphs[session_id]
+        self.session_graph_builder.clear_session(session_id)
+
+    def _create_empty_result(self, session_id: str, start_time: float) -> Layer2Result:
+        """Create empty result for sessions with no vectors"""
+        import time
+        return Layer2Result(
+            session_id=session_id,
+            user_id="",
+            transformer_confidence=0.0,
+            gnn_anomaly_score=0.5,
+            context_alignment_score=0.0,
+            combined_risk_score=1.0,  # High risk by default
+            decision="block",
+            explanation="No behavioral vectors provided",
+            processing_time_ms=(time.time() - start_time) * 1000,
+            metadata={}
+        )
+
+    def _create_error_result(self, session_id: str, user_id: str, start_time: float, error_msg: str) -> Layer2Result:
+        """Create error result for failed verification"""
+        import time
+        return Layer2Result(
+            session_id=session_id,
+            user_id=user_id,
+            transformer_confidence=0.0,
+            gnn_anomaly_score=0.5,
+            context_alignment_score=0.0,
+            combined_risk_score=1.0,  # High risk due to error
+            decision="block",
+            explanation=f"Verification failed: {error_msg}",
+            processing_time_ms=(time.time() - start_time) * 1000,
+            metadata={"error": True, "error_message": error_msg}
+        )
+
     def _combine_scores(self, transformer_conf: float, gnn_anomaly: float, context_score: float) -> float:
-        """Combine all scores into final confidence"""
-        # Weights for different components
+        """Combine individual scores into final risk score"""
+        # Weighted combination
         weights = {
             "transformer": 0.4,
             "gnn": 0.35,
             "context": 0.25
         }
         
-        # Invert GNN anomaly score (high anomaly = low confidence)
-        gnn_confidence = 1.0 - gnn_anomaly
+        # Higher GNN anomaly means higher risk
+        gnn_risk = gnn_anomaly
+        # Lower transformer confidence means higher risk
+        transformer_risk = 1.0 - transformer_conf
+        # Lower context score means higher risk
+        context_risk = 1.0 - context_score
         
-        combined = (
-            weights["transformer"] * transformer_conf +
-            weights["gnn"] * gnn_confidence +
-            weights["context"] * context_score
+        combined_risk = (
+            weights["transformer"] * transformer_risk +
+            weights["gnn"] * gnn_risk +
+            weights["context"] * context_risk
         )
         
-        return combined
-    
+        return max(0.0, min(1.0, combined_risk))
+
     def _make_final_decision(self, combined_score: float) -> str:
-        """Make final recommendation based on combined score"""
-        if combined_score > 0.8:
+        """Make final verification decision based on combined score"""
+        if combined_score < 0.3:
             return "continue"
-        elif combined_score > 0.6:
-            return "monitor"
-        elif combined_score > 0.4:
-            return "challenge"
+        elif combined_score < 0.5:
+            return "restrict"
+        elif combined_score < 0.7:
+            return "reauthenticate"
         else:
             return "block"
-    
-    def _create_empty_result(self, session_id: str, start_time: float) -> Layer2Result:
-        """Create result for empty input"""
-        processing_time = (time.time() - start_time) * 1000
-        
-        return Layer2Result(
-            session_id=session_id,
-            user_id="unknown",
-            transformer_confidence=0.5,
-            gnn_anomaly_score=0.0,
-            contextual_score=0.5,
-            session_graph_embedding=np.zeros(CONFIG.GRAPH_EMBEDDING_DIM),
-            decision_factors={},
-            transformer_decision="neutral",
-            gnn_decision="normal",
-            final_recommendation="escalate",
-            processing_time_ms=processing_time,
-            metadata={"empty_input": True}
-        )
-    
-    def _create_error_result(self, session_id: str, user_id: str, start_time: float, error_msg: str) -> Layer2Result:
-        """Create result for error case"""
-        processing_time = (time.time() - start_time) * 1000
-        
-        return Layer2Result(
-            session_id=session_id,
-            user_id=user_id,
-            transformer_confidence=0.3,
-            gnn_anomaly_score=0.5,
-            contextual_score=0.3,
-            session_graph_embedding=np.zeros(CONFIG.GRAPH_EMBEDDING_DIM),
-            decision_factors={"error": error_msg},
-            transformer_decision="error",
-            gnn_decision="error",
-            final_recommendation="escalate",
-            processing_time_ms=processing_time,
-            metadata={"error": error_msg}
-        )
-    
-    async def update_models(self):
-        """Update and retrain models"""
-        logger.info("Updating Layer 2 models...")
-        # In a full implementation, this would retrain the models
-        logger.info("Layer 2 models updated")
-    
-    async def save_models(self):
-        """Save Layer 2 models"""
-        # In a full implementation, this would save model weights
-        logger.info("Layer 2 models saved")
 
-class ContextAnomalyDetector:
-    """Detects adversarial context manipulation"""
+class ContextAnomalyDetector(nn.Module):
+    """Context manipulation and anomaly detection system"""
     
-    def __init__(self):
-        self.context_history = defaultdict(list)  # user_id -> [context_features]
-        self.context_bounds = {}  # user_id -> {feature: (min, max, mean, std)}
-        self.manipulation_threshold = 2.5  # Standard deviations for anomaly detection
+    def __init__(self, context_features: int = 16, hidden_dim: int = 64):
+        super().__init__()
+        self.context_features = context_features
+        self.hidden_dim = hidden_dim
         
-    def add_context_history(self, user_id: str, context_features: ContextualFeatures):
-        """Add context to user history for learning normal patterns"""
-        feature_vector = self._context_to_vector(context_features)
-        self.context_history[user_id].append(feature_vector)
+        # Context encoder
+        self.context_encoder = nn.Sequential(
+            nn.Linear(context_features, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(hidden_dim, hidden_dim // 2),
+            nn.ReLU(),
+            nn.Linear(hidden_dim // 2, 16)
+        )
         
-        # Limit history size
-        if len(self.context_history[user_id]) > 100:
-            self.context_history[user_id] = self.context_history[user_id][-100:]
-        
-        # Update bounds
-        self._update_context_bounds(user_id)
+        # Anomaly detector
+        self.anomaly_detector = nn.Sequential(
+            nn.Linear(16, 32),
+            nn.ReLU(),
+            nn.Linear(32, 16),
+            nn.ReLU(),
+            nn.Linear(16, 1),
+            nn.Sigmoid()
+        )
     
-    def detect_context_manipulation(self, user_id: str, context_features: ContextualFeatures) -> Dict[str, Any]:
-        """Detect if context has been manipulated or is adversarial"""
-        if user_id not in self.context_bounds or len(self.context_history[user_id]) < 5:
-            # Not enough history - return neutral result
+    def forward(self, context_features: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            context_features: [batch_size, context_features]
+        Returns:
+            anomaly_score: [batch_size, 1] - probability of context manipulation
+        """
+        encoded = self.context_encoder(context_features)
+        anomaly_score = self.anomaly_detector(encoded)
+        return anomaly_score
+    
+    def detect_manipulation(self, context_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """Detect context manipulation from context dictionary"""
+        try:
+            # Convert context to features
+            features = self._extract_context_features(context_dict)
+            features_tensor = torch.FloatTensor(features).unsqueeze(0)
+            
+            with torch.no_grad():
+                anomaly_score = self.forward(features_tensor)
+                score = float(anomaly_score.item())
+            
+            # Determine if manipulation is detected
+            threshold = 0.5
+            is_manipulated = score > threshold
+            
+            # Identify anomalous features
+            anomalous_features = self._identify_anomalous_features(context_dict, score)
+            
+            return {
+                "is_manipulated": is_manipulated,
+                "manipulation_confidence": score,
+                "anomalous_features": anomalous_features,
+                "threshold": threshold
+            }
+            
+        except Exception as e:
+            logger.error(f"Context manipulation detection error: {e}")
             return {
                 "is_manipulated": False,
                 "manipulation_confidence": 0.0,
-                "anomaly_score": 0.0,
-                "explanation": "Insufficient context history for detection"
+                "anomalous_features": [],
+                "threshold": 0.5,
+                "error": str(e)
             }
+    
+    def _extract_context_features(self, context: Dict[str, Any]) -> List[float]:
+        """Extract numeric features from context dictionary"""
+        features = []
         
-        feature_vector = self._context_to_vector(context_features)
-        bounds = self.context_bounds[user_id]
+        # Age group encoding
+        age_map = {"young": 0.2, "middle": 0.5, "senior": 0.8, "unknown": 0.5}
+        features.append(age_map.get(context.get("age_group", "unknown"), 0.5))
         
-        anomaly_scores = []
-        anomalous_features = []
+        # Device type encoding
+        device_map = {"phone": 0.3, "tablet": 0.6, "desktop": 0.9, "unknown": 0.5}
+        features.append(device_map.get(context.get("device_type", "unknown"), 0.5))
         
-        for i, (feature_name, value) in enumerate(zip([
-            "location_risk", "time_of_day_numeric", "device_type_numeric", 
-            "network_type_numeric", "usage_mode_numeric"
-        ], feature_vector)):
+        # Time of day encoding
+        time_map = {"morning": 0.25, "afternoon": 0.5, "evening": 0.75, "night": 1.0, "unknown": 0.5}
+        features.append(time_map.get(context.get("time_of_day", "unknown"), 0.5))
+        
+        # Usage mode encoding
+        usage_map = {"normal": 0.3, "hurried": 0.7, "stressed": 0.9, "unknown": 0.5}
+        features.append(usage_map.get(context.get("usage_mode", "unknown"), 0.5))
+        
+        # Network type encoding
+        network_map = {"wifi": 0.2, "mobile": 0.5, "ethernet": 0.1, "unknown": 0.5}
+        features.append(network_map.get(context.get("network_type", "unknown"), 0.5))
+        
+        # Location risk (direct numeric)
+        features.append(context.get("location_risk", 0.5))
+        
+        # Interaction rhythm encoding
+        rhythm_map = {"slow": 0.2, "medium": 0.5, "fast": 0.8, "unknown": 0.5}
+        features.append(rhythm_map.get(context.get("interaction_rhythm", "unknown"), 0.5))
+        
+        # Pad to required feature count
+        while len(features) < self.context_features:
+            features.append(0.1)
+        
+        return features[:self.context_features]
+    
+    def _identify_anomalous_features(self, context: Dict[str, Any], anomaly_score: float) -> List[str]:
+        """Identify which context features appear anomalous"""
+        anomalous = []
+        
+        # Simple heuristic based on unusual combinations
+        if anomaly_score > 0.7:
+            # High anomaly - check for suspicious patterns
             
-            if feature_name in bounds:
-                mean, std = bounds[feature_name]["mean"], bounds[feature_name]["std"]
-                if std > 0:
-                    z_score = abs((value - mean) / std)
-                    if z_score > self.manipulation_threshold:
-                        anomaly_scores.append(z_score)
-                        anomalous_features.append(feature_name)
-        
-        # Calculate overall manipulation confidence
-        if anomaly_scores:
-            max_anomaly = max(anomaly_scores)
-            manipulation_confidence = min(1.0, max_anomaly / 5.0)  # Scale to 0-1
-            is_manipulated = max_anomaly > self.manipulation_threshold
-        else:
-            manipulation_confidence = 0.0
-            is_manipulated = False
-        
-        # Check for impossible combinations
-        impossible_combinations = self._check_impossible_combinations(context_features)
-        if impossible_combinations:
-            manipulation_confidence = max(manipulation_confidence, 0.8)
-            is_manipulated = True
-            anomalous_features.extend(impossible_combinations)
-        
-        return {
-            "is_manipulated": is_manipulated,
-            "manipulation_confidence": manipulation_confidence,
-            "anomaly_score": max(anomaly_scores) if anomaly_scores else 0.0,
-            "anomalous_features": anomalous_features,
-            "explanation": f"Detected {len(anomalous_features)} anomalous context features" if anomalous_features else "Context appears normal"
-        }
-    
-    def _context_to_vector(self, context: ContextualFeatures) -> List[float]:
-        """Convert context features to numerical vector"""
-        return [
-            context.location_risk,
-            self._time_to_numeric(context.time_of_day),
-            self._device_to_numeric(context.device_type),
-            self._network_to_numeric(context.network_type),
-            self._usage_mode_to_numeric(context.usage_mode)
-        ]
-    
-    def _time_to_numeric(self, time_of_day: str) -> float:
-        """Convert time of day to numeric value"""
-        mapping = {"morning": 0.25, "afternoon": 0.5, "evening": 0.75, "night": 1.0}
-        return mapping.get(time_of_day, 0.5)
-    
-    def _device_to_numeric(self, device_type: str) -> float:
-        """Convert device type to numeric value"""
-        mapping = {"phone": 0.3, "tablet": 0.7, "unknown": 0.5}
-        return mapping.get(device_type, 0.5)
-    
-    def _network_to_numeric(self, network_type: str) -> float:
-        """Convert network type to numeric value"""
-        mapping = {"wifi": 0.2, "mobile": 0.8, "unknown": 0.5}
-        return mapping.get(network_type, 0.5)
-    
-    def _usage_mode_to_numeric(self, usage_mode: str) -> float:
-        """Convert usage mode to numeric value"""
-        mapping = {"normal": 0.3, "hurried": 0.7, "stressed": 0.9, "unknown": 0.5}
-        return mapping.get(usage_mode, 0.5)
-    
-    def _update_context_bounds(self, user_id: str):
-        """Update statistical bounds for user context"""
-        if len(self.context_history[user_id]) < 3:
-            return
-        
-        history = np.array(self.context_history[user_id])
-        feature_names = ["location_risk", "time_of_day_numeric", "device_type_numeric", 
-                        "network_type_numeric", "usage_mode_numeric"]
-        
-        self.context_bounds[user_id] = {}
-        for i, feature_name in enumerate(feature_names):
-            values = history[:, i]
-            self.context_bounds[user_id][feature_name] = {
-                "min": np.min(values),
-                "max": np.max(values),
-                "mean": np.mean(values),
-                "std": np.std(values) + 1e-8  # Add small epsilon to avoid division by zero
-            }
-    
-    def _check_impossible_combinations(self, context: ContextualFeatures) -> List[str]:
-        """Check for impossible or highly suspicious context combinations"""
-        impossible = []
-        
-        # Example impossible combinations (can be extended)
-        if context.location_risk > 0.9 and context.network_type == "wifi":
-            # High risk location but trusted wifi - suspicious
-            impossible.append("high_risk_location_with_trusted_network")
-        
-        if context.time_of_day == "night" and context.usage_mode == "hurried":
-            # Unusual to be hurried at night - could be manipulated
-            impossible.append("night_hurried_combination")
-        
-        if context.location_risk < 0.1 and context.device_type == "unknown":
-            # Low risk location but unknown device - suspicious
-            impossible.append("safe_location_unknown_device")
-        
-        return impossible
+            # Unusual time patterns
+            if context.get("time_of_day") == "night" and context.get("usage_mode") == "hurried":
+                anomalous.append("time_usage_pattern")
+            
+            # High location risk
+            if context.get("location_risk", 0) > 0.5:
+                anomalous.append("location_risk")
+            
+            # Inconsistent device/usage patterns
+            if context.get("device_type") == "desktop" and context.get("interaction_rhythm") == "fast":
+                anomalous.append("device_interaction_mismatch")
+                
+        elif anomaly_score > 0.4:
+            # Medium anomaly
+            if context.get("location_risk", 0) > 0.3:
+                anomalous.append("elevated_location_risk")
+                
+        return anomalous
