@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import uuid
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
@@ -10,20 +11,26 @@ from app.core.config import settings
 
 # ML-Engine Integration
 try:
-    from ...ml_hooks import (
-        session_created_hook, behavioral_event_hook, session_ended_hook,
-        get_session_ml_status
+    from ml_hooks import (
+        hook_session_start, hook_behavioral_event, hook_session_end,
+        get_ml_session_status
     )
     ML_INTEGRATION_AVAILABLE = True
+    
+    print("Imported ML-Engine integration in session manager")
 except ImportError:
+    print("ML-Engine integration not available in session manager")
     # Fallback functions if ML integration is not available
-    async def session_created_hook(*args, **kwargs):
+
+    async def hook_session_start(*args, **kwargs):
         return True
-    async def behavioral_event_hook(*args, **kwargs):
+    async def hook_behavioral_event(*args, **kwargs):
         return None
-    async def session_ended_hook(*args, **kwargs):
+
+    async def hook_session_end(*args, **kwargs):
         return True
-    async def get_session_ml_status(*args, **kwargs):
+
+    async def get_ml_session_status(*args, **kwargs):
         return None
     ML_INTEGRATION_AVAILABLE = False
 
@@ -62,6 +69,7 @@ class UserSession:
         
         # Process through ML-Engine for real-time authentication
         if ML_INTEGRATION_AVAILABLE:
+            logging.info(f"Processing Behavioral event for session: {self.session_id} @sessionmanager")
             asyncio.create_task(self._process_ml_behavioral_event(event_type, data))
         
         # No longer save to file immediately - keep in memory until session ends
@@ -69,11 +77,19 @@ class UserSession:
     async def _process_ml_behavioral_event(self, event_type: str, data: Dict[str, Any]):
         """Process behavioral event through ML-Engine"""
         try:
-            ml_response = await behavioral_event_hook(
-                self.session_id, self.user_id, self.device_id, event_type, data
+            combined_event = {
+                "event_type": event_type,
+                "event_data": data
+            }
+            
+            ml_response = await hook_behavioral_event(
+                self.session_id, self.user_id, self.device_id, combined_event
             )
             
+            logging.info(f"ML-Engine response for session: {self.session_id} @sessionmanager")
+            
             if ml_response:
+                logging.info(f"ML-Engine response recvd")
                 # Handle ML authentication response
                 decision = ml_response.get('decision', 'allow')
                 risk_score = ml_response.get('risk_score', 0.0)
@@ -334,11 +350,13 @@ class SessionManager:
         self.active_sessions: Dict[str, UserSession] = {}
         self.user_sessions: Dict[str, List[str]] = {}  # user_id -> [session_ids]
         
-    async def create_session(self, user_id: str, phone: str, device_id: str, session_token: str = None) -> str:
+    async def create_session(self, user_id: str, phone: str, device_id: str, session_token: str = None, context: Dict[str, Any] = None,) -> str:
         """Create a new user session with Supabase integration"""
         from app.core.supabase_client import supabase_client
         
         session_id = str(uuid.uuid4())
+        
+        logging.info(f"New session created: {session_id}")
         
         # Create session in Supabase database
         try:
@@ -361,9 +379,15 @@ class SessionManager:
         self.user_sessions[user_id].append(session_id)
         
         # Initialize ML-Engine for this session
-        if ML_INTEGRATION_AVAILABLE:
+        if ML_INTEGRATION_AVAILABLE :
             try:
-                await session_created_hook(session_id, user_id, phone, device_id)
+                print(f"Initializing ML-Engine for session {session_id}")
+                ml_result = await hook_session_start(session_id=session_id, user_id=user_id, phone=phone, device_id=device_id, context=context)
+                print(f"ML-Engine session_created_hook result: {ml_result}")
+                if not ml_result:
+                    logging.error(f"ML-Engine session creation failed for session {session_id}")
+                    # Optionally, raise an exception or handle as needed
+                    # raise RuntimeError(f"ML-Engine session creation failed for session {session_id}")
             except Exception as e:
                 print(f"Failed to initialize ML-Engine for session {session_id}: {e}")
         
@@ -414,7 +438,7 @@ class SessionManager:
             # End ML-Engine session
             if ML_INTEGRATION_AVAILABLE:
                 try:
-                    await session_ended_hook(
+                    await hook_session_end(
                         session_id, session.user_id, final_decision, 
                         {"duration_minutes": summary.get("duration_minutes", 0), 
                          "total_events": summary.get("total_events", 0)}

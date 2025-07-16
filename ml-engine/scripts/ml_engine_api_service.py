@@ -19,6 +19,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from mlengine.core.industry_engine import IndustryGradeMLEngine, BehavioralVector, BehavioralEvent, SessionContext
+from mlengine.core.industry_engine import RiskLevel
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -133,7 +134,7 @@ async def health_check():
             "error": str(e)
         }
 
-@app.post("/session/start")
+@app.post("/sessions/start")
 async def start_session(request: SessionStartRequest):
     """Start a new behavioral analysis session"""
     if not ml_engine:
@@ -166,7 +167,11 @@ async def start_session(request: SessionStartRequest):
             # Security context
             is_known_device=request.context.get("is_known_device", False),
             is_trusted_location=request.context.get("is_trusted_location", False),
-            recent_security_events=request.context.get("recent_security_events", [])
+            recent_security_events=request.context.get("recent_security_events", []),
+            current_risk_level=RiskLevel.LOW,  # <-- add this
+            account_age_days=request.context.get("account_age_days", 0),  # <-- add this
+            transaction_history_risk=request.context.get("transaction_history_risk", 0.0),  # <-- add this
+            current_transaction_context=request.context.get("current_transaction_context", {})  # <-- add this
         )
         
         # Track session in ML-Engine
@@ -188,7 +193,7 @@ async def start_session(request: SessionStartRequest):
         logger.error(f"❌ Error starting session {request.session_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to start session: {str(e)}")
 
-@app.post("/session/verify")
+@app.post("/sessions/verify")
 async def verify_session(request: SessionVerifyRequest):
     """Perform behavioral verification for ongoing session"""
     if not ml_engine:
@@ -248,7 +253,7 @@ async def verify_session(request: SessionVerifyRequest):
         logger.error(f"❌ Error verifying session {request.session_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Verification failed: {str(e)}")
 
-@app.post("/session/end")
+@app.post("/sessions/end")
 async def end_session(request: SessionEndRequest):
     """End behavioral analysis session"""
     if not ml_engine:

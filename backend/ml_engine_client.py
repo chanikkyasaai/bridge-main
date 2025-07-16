@@ -96,11 +96,12 @@ class MLEngineClient:
     async def start_session(self, session_id: str, user_id: str, phone: str, device_id: str, 
                            context: Dict[str, Any] = None) -> bool:
         """Start ML-Engine session"""
-        if not await self.health_check():
-            logger.warning("ML-Engine not available for session start")
-            return False
+        # if not await self.health_check():
+        #     logger.warning("ML-Engine not available for session start")
+        #     return False
         
         try:
+            logger.info(f"Starting ML-Engine session: {session_id}")
             data = {
                 "session_id": session_id,
                 "user_id": user_id,
@@ -115,6 +116,8 @@ class MLEngineClient:
                 "is_known_device": context.get("is_known_device", False) if context else False,
                 "is_trusted_location": context.get("is_trusted_location", False) if context else False
             }
+            
+            print(f"ML-Engine session data: {data} backend")
             
             response = await self._make_request('POST', '/session/start', data)
             if response and response.get('status') == 'success':

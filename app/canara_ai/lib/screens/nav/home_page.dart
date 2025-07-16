@@ -2,6 +2,7 @@ import 'package:canara_ai/logging/behaviour_route_tracker.dart';
 import 'package:canara_ai/logging/button_wrapper.dart';
 import 'package:canara_ai/logging/log_touch_data.dart';
 import 'package:canara_ai/logging/logger_instance.dart';
+import 'package:canara_ai/logging/monitor_logging.dart';
 import 'package:canara_ai/main.dart';
 import 'package:canara_ai/screens/nav/banking_page.dart';
 import 'package:canara_ai/screens/nav/cards_page.dart';
@@ -35,6 +36,39 @@ class _HomePageState extends State<HomePage> {
 
   late final BehaviorLogger logger;
   late BehaviorRouteTracker tracker;
+
+  Future<bool> _onWillPop(BuildContext context) async {
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Exit App'),
+        content: Text('Do you want to close the app?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('No'),
+          ),
+          TextButton(
+            onPressed: () async {
+              BehaviorMonitorState? monitorState = context.findAncestorStateOfType<BehaviorMonitorState>();
+              await monitorState?.sendUserCloseEvent();
+
+              print('end session'); 
+
+              await logger.endSession('app_close');
+
+              if(context.mounted) {
+                Navigator.of(context).pop(true);
+              }
+            },
+            child: Text('Yes'),
+          ),
+        ],
+      ),
+    );
+    return shouldExit ?? false;
+  }
+
 
   void _showSearchSheet() {
     Navigator.push(
@@ -113,26 +147,27 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FB),
-      body: SafeArea(
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: _pages,
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: canaraBlue,
-        onPressed: () {
-          logger.sendEvent('fab_qr_tap', { 'from': _tabName(_selectedIndex) }); // ✅ log QR tap here too
-          _showQRScanSheet();
-        },
-        child: const Icon(Icons.qr_code, color: Colors.white),
-      ),
-
-      bottomNavigationBar: _customNavBar(),
-    );
+    return WillPopScope(
+        onWillPop: () async => await _onWillPop(context),
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF7F9FB),
+          body: SafeArea(
+            child: IndexedStack(
+              index: _selectedIndex,
+              children: _pages,
+            ),
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: canaraBlue,
+            onPressed: () {
+              logger.sendEvent('fab_qr_tap', {'from': _tabName(_selectedIndex)}); // ✅ log QR tap here too
+              _showQRScanSheet();
+            },
+            child: const Icon(Icons.qr_code, color: Colors.white),
+          ),
+          bottomNavigationBar: _customNavBar(),
+        ));
   }
 
   void _onNavBarItemTapped(int index, String label) {
@@ -148,7 +183,6 @@ class _HomePageState extends State<HomePage> {
       _selectedIndex = index;
     });
   }
-
 
   String _tabName(int index) {
     switch (index) {
@@ -674,7 +708,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 
   Widget _portfolioGridTileWithAmount({
     required String icon,

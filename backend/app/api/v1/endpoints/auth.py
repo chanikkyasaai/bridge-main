@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from datetime import timedelta, datetime
-from typing import Optional
+from typing import Any, Dict, Optional
 from app.core.security import (
     create_access_token, create_refresh_token, create_session_token, 
     verify_password, get_password_hash, verify_access_token, 
@@ -25,6 +25,12 @@ class UserLogin(BaseModel):
     phone: str
     password: str
     device_id: str
+
+
+class StartSessionRequest(BaseModel):
+    device_id: str
+    context: Optional[Dict[str, Any]] = {}
+    mpin: str
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -276,13 +282,14 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
 @router.post("/verify-mpin", response_model=SessionResponse)
 async def verify_mpin_endpoint(
-    mpin_data: MPINVerification,
+    mpin_data: StartSessionRequest,
     current_user: dict = Depends(get_current_user)
 ):
     """
     Verify MPIN for the current user (requires valid access token)
     """
     try:
+        print(mpin_data)
         user_id = current_user["user_id"]
         phone = current_user["phone"]
         
@@ -297,11 +304,14 @@ async def verify_mpin_endpoint(
         # Verify MPIN
         if verify_mpin(mpin_data.mpin, user["mpin_hash"]):
             # Create behavioral logging session first
+            print("Creating behavioral logging session...")
+            print("Context data:", mpin_data.context)
             session_id = await session_manager.create_session(
-                user_id,
-                phone,
-                current_user["device_id"],
-                None  # Pass None for session_token, we'll update it after creation
+                user_id=user_id,
+                phone=phone,
+                device_id=mpin_data.device_id,
+                session_token=None,
+                context=mpin_data.context
             )
             # Create session token with the actual session_id
             session_token = create_session_token(

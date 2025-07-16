@@ -1,6 +1,8 @@
 import 'package:canara_ai/apis/endpoints.dart';
+import 'package:canara_ai/main.dart';
 import 'package:canara_ai/utils/token_storage.dart';
 import 'package:dio/dio.dart';
+
 
 class AuthInterceptor extends Interceptor {
   final Dio _dio;
@@ -96,6 +98,6 @@ class AuthInterceptor extends Interceptor {
   void _handleLogout() async {
     await _storage.clearTokens();
     print('User logged out. Redirect to login.');
-    
+    navigatorKey.currentState?.pushNamedAndRemoveUntil('/login', (route) => false);
   }
 }

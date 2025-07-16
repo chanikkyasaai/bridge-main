@@ -7,6 +7,7 @@ import 'package:canara_ai/logging/logger_instance.dart';
 import 'package:canara_ai/logging/monitor_logging.dart';
 import 'package:canara_ai/screens/captcha_screen.dart';
 import 'package:canara_ai/screens/nav/home_page.dart';
+import 'package:canara_ai/utils/get_advanced_info.dart';
 import 'package:canara_ai/utils/token_storage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -124,7 +125,20 @@ class _AuthPageState extends State<AuthPage> {
     AppLogger.logger.dio.options.headers['Content-Type'] = 'application/json';
 
     try {
-      final api = await AppLogger.logger.dio.post('${Endpoints.baseUrl}${Endpoints.verifympin}', data: {"mpin": pin.toString().trim()});
+      // Wait for SessionStartRequest to be built
+      final sessionRequest = await SessionStartRequest.build(
+        isKnownDevice: true,
+        isTrustedLocation: true,
+        mpin: pin.toString().trim(),
+      );
+
+      print(sessionRequest.toJson());
+
+      final api = await AppLogger.logger.dio.post(
+        '${Endpoints.baseUrl}${Endpoints.verifympin}',
+        data: sessionRequest.toJson(),
+      );
+
       if (api.statusCode == 200) {
         if (widget.isFirst == true) {
           Navigator.pushAndRemoveUntil(
@@ -135,18 +149,15 @@ class _AuthPageState extends State<AuthPage> {
         } else {
           print('User ID: ${api.data['user_id']} Phone: ${api.data['phone']}');
 
-          // Retry pending exit event
           await _retryPendingExitEvent(context);
-
-          // Start session
-          await logger.startSession(api.data['session_id'], api.data['session_token']);
+          // await logger.startSession(api.data['session_id'], api.data['session_token'], context);
 
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
               builder: (_) => BehaviorMonitor(
                 logger: AppLogger.logger,
-                child: HomePage(), // your main UI
+                child: HomePage(),
               ),
             ),
             (route) => false,
@@ -161,6 +172,7 @@ class _AuthPageState extends State<AuthPage> {
         );
       }
     } catch (e) {
+      print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Invalid PIN !'),
@@ -170,6 +182,7 @@ class _AuthPageState extends State<AuthPage> {
       return;
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

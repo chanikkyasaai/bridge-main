@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, Query
 from typing import Dict, Any, Optional
 import json
@@ -8,10 +9,13 @@ from app.core.security import extract_session_info
 
 # ML-Engine Integration
 try:
-    from ...ml_hooks import behavioral_event_hook
+    from ml_hooks import hook_behavioral_event
     ML_INTEGRATION_AVAILABLE = True
+
+    print("Imported ML-Engine integration in websocket")
 except ImportError:
-    async def behavioral_event_hook(*args, **kwargs):
+    print("ML-Engine integration not available in websocket")
+    async def hook_behavioral_event(*args, **kwargs):
         return None
     ML_INTEGRATION_AVAILABLE = False
 
@@ -113,7 +117,7 @@ async def behavioral_websocket(websocket: WebSocket, session_id: str, token: str
 
             try:
                 behavioral_event = json.loads(data)
-                print(f"Received behavioral event: {behavioral_event}")
+                # print(f"Received behavioral event: {behavioral_event}")
                 await process_behavioral_data(session_id, behavioral_event)
 
                 # Send acknowledgment
@@ -162,25 +166,30 @@ async def process_behavioral_data(session_id: str, behavioral_event: Dict[str, A
         raise ValueError("Missing event_type in behavioral data")
     
     event_type = behavioral_event["event_type"]
-    event_data = behavioral_event.get("data", {})
+    event_data = behavioral_event["features"]
     
-    # Add session context to data
-    event_data.update({
-        "session_id": session_id,
-        "user_id": session.user_id,
-        "phone": session.phone,
-        "device_id": session.device_id
-    })
+    # Log event    
+    print(f"Processing behavioral event: {event_type} @ websocket")
+    print(f"Event data: {event_data}")
     
     # Store behavioral data
     session.add_behavioral_data(event_type, event_data)
     
     # Process through ML-Engine for real-time authentication
     ml_response = None
+    
+    combined_event = {
+        "event_type": event_type,
+        "event_data": event_data
+    }
+
+    
+    print(f"ML-Engine integration available: {ML_INTEGRATION_AVAILABLE}")
     if ML_INTEGRATION_AVAILABLE:
         try:
-            ml_response = await behavioral_event_hook(
-                session_id, session.user_id, session.device_id, event_type, event_data
+            logging.info(f"Processing ML-Engine for session: {session_id}")
+            ml_response = await hook_behavioral_event(
+                session_id, session.user_id, session.device_id, combined_event
             )
         except Exception as e:
             print(f"ML-Engine processing error: {e}")
@@ -237,7 +246,11 @@ async def analyze_behavioral_pattern(session, event_type: str, event_data: Dict[
         # Authentication
         "mpin_failed": 0.25,
         "mpin_verified": -0.1,
-        "multiple_login_attempts": 0.3
+        "multiple_login_attempts": 0.3,
+        
+        "shake_detected": 0.1,
+        "flip_detected": 0.15,
+        "fast_rotation": 0.08,
     }
     
     # Apply risk adjustment based on event type
