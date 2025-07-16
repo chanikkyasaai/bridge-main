@@ -1,1 +1,0 @@
-# FAISS index module

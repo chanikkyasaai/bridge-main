@@ -11,17 +11,6 @@ from app.api.v1.api import api_router
 from app.core.config import settings
 from app.core.session_manager import cleanup_sessions_task
 
-# ML-Engine Integration
-try:
-    from ml_hooks import initialize_ml_integration, shutdown_ml_integration
-    ML_INTEGRATION_AVAILABLE = True
-except ImportError:
-    async def initialize_ml_integration():
-        return False
-    async def shutdown_ml_integration():
-        pass
-    ML_INTEGRATION_AVAILABLE = False
-
 # Load environment variables
 load_dotenv()
 
@@ -34,17 +23,6 @@ async def lifespan(app: FastAPI):
     # Create session buffers directory
     os.makedirs("session_buffers", exist_ok=True)
     
-    # Initialize ML-Engine integration
-    if ML_INTEGRATION_AVAILABLE:
-        print("Initializing ML-Engine integration...")
-        ml_success = await initialize_ml_integration()
-        if ml_success:
-            print("ML-Engine integration initialized successfully")
-        else:
-            print("Warning: ML-Engine integration failed to initialize")
-    else:
-        print("Warning: ML-Engine integration not available")
-    
     # Start background task for session cleanup
     cleanup_task = asyncio.create_task(cleanup_sessions_task())
     
@@ -52,12 +30,6 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     print("Shutting down Canara AI Security Backend...")
-    
-    # Shutdown ML-Engine
-    if ML_INTEGRATION_AVAILABLE:
-        print("Shutting down ML-Engine integration...")
-        await shutdown_ml_integration()
-    
     cleanup_task.cancel()
     try:
         await cleanup_task
