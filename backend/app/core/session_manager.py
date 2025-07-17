@@ -9,6 +9,7 @@ import aiofiles
 import os
 from app.core.config import settings
 
+<<<<<<< HEAD
 # ML-Engine Integration
 try:
     from ml_hooks import (
@@ -34,6 +35,8 @@ except ImportError:
         return None
     ML_INTEGRATION_AVAILABLE = False
 
+=======
+>>>>>>> origin/main-cleanup
 class BehavioralData:
     """Structure to hold behavioral data points"""
     def __init__(self, event_type: str, data: Dict[str, Any]):
@@ -67,6 +70,7 @@ class UserSession:
         self.behavioral_buffer.append(behavior_data)
         self.last_activity = datetime.utcnow()
         
+<<<<<<< HEAD
         # Process through ML-Engine for real-time authentication
         if ML_INTEGRATION_AVAILABLE:
             logging.info(f"Processing Behavioral event for session: {self.session_id} @sessionmanager")
@@ -116,6 +120,10 @@ class UserSession:
         except Exception as e:
             print(f"Error processing ML behavioral event: {e}")
     
+=======
+        # No longer save to file immediately - keep in memory until session ends
+    
+>>>>>>> origin/main-cleanup
     async def save_behavioral_data_to_supabase(self):
         """Save all behavioral data to Supabase Storage when session ends"""
         from app.core.supabase_client import supabase_client
@@ -208,9 +216,9 @@ class UserSession:
         # Log session completion
         print(f"Session {self.session_id} ended. Total behavioral events: {len(self.behavioral_buffer)}")
     
-    async def get_session_stats(self) -> Dict[str, Any]:
-        """Get session statistics including ML-Engine status"""
-        stats = {
+    def get_session_stats(self) -> Dict[str, Any]:
+        """Get session statistics"""
+        return {
             "session_id": self.session_id,
             "supabase_session_id": self.supabase_session_id,
             "user_id": self.user_id,
@@ -224,17 +232,6 @@ class UserSession:
             "behavioral_events_count": len(self.behavioral_buffer),
             "mpin_attempts": self.mpin_attempts
         }
-        
-        # Add ML-Engine status if available
-        if ML_INTEGRATION_AVAILABLE:
-            try:
-                ml_status = await get_session_ml_status(self.session_id)
-                if ml_status:
-                    stats["ml_engine"] = ml_status
-            except Exception as e:
-                stats["ml_engine"] = {"error": str(e)}
-        
-        return stats
     
     def get_behavioral_summary(self) -> Dict[str, Any]:
         """Get summary of behavioral data collected during session"""
@@ -378,6 +375,7 @@ class SessionManager:
             self.user_sessions[user_id] = []
         self.user_sessions[user_id].append(session_id)
         
+<<<<<<< HEAD
         # Initialize ML-Engine for this session
         if ML_INTEGRATION_AVAILABLE :
             try:
@@ -391,25 +389,9 @@ class SessionManager:
             except Exception as e:
                 print(f"Failed to initialize ML-Engine for session {session_id}: {e}")
         
+=======
+>>>>>>> origin/main-cleanup
         print(f"Created session: {session_id}")
-        return session_id
-        
-        # Create local session object
-        session = UserSession(session_id, user_id, phone, device_id, supabase_session_id)
-        session.session_token = session_token  # Set the session token
-        
-        self.active_sessions[session_id] = session
-        
-        if user_id not in self.user_sessions:
-            self.user_sessions[user_id] = []
-        self.user_sessions[user_id].append(session_id)
-        
-        print(f"Created session: {session_id}")
-        
-        # ML-Engine integration: Notify session creation
-        if ML_INTEGRATION_AVAILABLE:
-            await session_created_hook(session_id=session_id, user_id=user_id, device_id=device_id)
-        
         return session_id
     
     def get_session(self, session_id: str) -> Optional[UserSession]:
@@ -435,6 +417,7 @@ class SessionManager:
             summary = session.get_behavioral_summary()
             print(f"Terminating session {session_id}: {summary}")
             
+<<<<<<< HEAD
             # End ML-Engine session
             if ML_INTEGRATION_AVAILABLE:
                 try:
@@ -446,6 +429,8 @@ class SessionManager:
                 except Exception as e:
                     print(f"Failed to end ML-Engine session {session_id}: {e}")
             
+=======
+>>>>>>> origin/main-cleanup
             # Validate and save behavioral data to permanent storage
             log_file_path = await session.validate_and_save_behavioral_data()
             
@@ -470,11 +455,6 @@ class SessionManager:
             del self.active_sessions[session_id]
             
             print(f"Session {session_id} terminated successfully. Log file: {log_file_path}")
-            
-            # ML-Engine integration: Notify session end
-            if ML_INTEGRATION_AVAILABLE:
-                await session_ended_hook(session_id=session_id, user_id=session.user_id, device_id=session.device_id)
-            
             return True
         return False
     

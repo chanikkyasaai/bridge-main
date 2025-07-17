@@ -187,9 +187,28 @@ async def process_behavioral_data(session_id: str, behavioral_event: Dict[str, A
     print(f"ML-Engine integration available: {ML_INTEGRATION_AVAILABLE}")
     if ML_INTEGRATION_AVAILABLE:
         try:
+<<<<<<< HEAD
             logging.info(f"Processing ML-Engine for session: {session_id}")
             ml_response = await hook_behavioral_event(
                 session_id, session.user_id, session.device_id, combined_event
+=======
+            # Collect recent events for ML analysis (last 10 events including current)
+            recent_events = session.behavioral_events[-9:] if len(session.behavioral_events) > 9 else session.behavioral_events[:]
+            
+            # Add current event to the list for analysis
+            current_event = {
+                "event_type": event_type,
+                "timestamp": datetime.utcnow().isoformat(),
+                "data": event_data
+            }
+            recent_events.append(current_event)
+            
+            # Call ML Engine for analysis
+            ml_response = await behavioral_event_hook(
+                session.user_id, 
+                session_id, 
+                recent_events
+>>>>>>> origin/main-cleanup
             )
         except Exception as e:
             print(f"ML-Engine processing error: {e}")
@@ -206,28 +225,35 @@ async def analyze_behavioral_pattern(session, event_type: str, event_data: Dict[
     risk_adjustment = 0.0
     
     # Use ML-Engine response if available
-    if ml_response and ML_INTEGRATION_AVAILABLE:
-        ml_risk_score = ml_response.get('risk_score', 0.0)
+    if ml_response and ML_INTEGRATION_AVAILABLE and ml_response.get("status") == "success":
         ml_decision = ml_response.get('decision', 'allow')
         ml_confidence = ml_response.get('confidence', 0.0)
+        ml_similarity_score = ml_response.get('similarity_score', 0.0)
         
-        # Prioritize ML-Engine assessment
-        if ml_confidence > 0.7:  # High confidence ML decision
-            session.update_risk_score(ml_risk_score)
-            
-            # Handle ML decisions
-            if ml_decision == 'permanent_block':
-                session.block_session("ML-Engine: High risk behavior detected")
+        # Handle ML decisions based on confidence
+        if ml_confidence > 0.8:  # High confidence ML decision
+            if ml_decision == 'block':
+                session.block_session(f"ML-Engine: High risk behavior detected (confidence: {ml_confidence:.2f})")
                 return
-            elif ml_decision == 'temporary_block':
-                session.block_session("ML-Engine: Temporary security block")
-                return
-            elif ml_decision in ['step_up_auth', 'challenge']:
+            elif ml_decision == 'challenge':
                 session.request_mpin_verification()
                 return
+            elif ml_decision == 'allow':
+                # Lower risk for high-confidence allow decisions
+                risk_adjustment = -0.1
+        elif ml_confidence > 0.6:  # Medium confidence
+            if ml_decision == 'block':
+                risk_adjustment = 0.3  # Increase risk but don't block immediately
+            elif ml_decision == 'challenge':
+                risk_adjustment = 0.2
+            elif ml_decision == 'allow':
+                risk_adjustment = -0.05
         else:
-            # Use ML risk as a factor in traditional analysis
-            risk_adjustment += (ml_risk_score - current_risk) * 0.3
+            # Low confidence - use similarity score as risk factor
+            if ml_similarity_score < 0.5:
+                risk_adjustment = 0.15  # Unusual behavior pattern
+            elif ml_similarity_score > 0.8:
+                risk_adjustment = -0.05  # Very familiar behavior
     
     # Fallback to rule-based risk scoring when ML is not available or has low confidence
     risk_factors = {

@@ -30,16 +30,16 @@ class Settings(BaseSettings):
     # Session Management
     SESSION_CLEANUP_INTERVAL: int = 300  # 5 minutes
     
-    # ML-Engine Integration
+    # CORS
+    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8080"]
+    CORS_ORIGINS: str = '["http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:3000"]'
+    
+    # ML Engine Configuration
     ML_ENGINE_URL: str = "http://localhost:8001"
     ML_ENGINE_ENABLED: bool = True
     ML_ENGINE_TIMEOUT: int = 30
     ML_ENGINE_HEALTH_CHECK_INTERVAL: int = 60
-    ML_ENGINE_API_KEY: str = ""
-    
-    # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8080"]
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8080"]
+    ML_ENGINE_API_KEY: str = "your-ml-engine-api-key-here"
     
     # Supabase Configuration
     SUPABASE_URL: str = ""

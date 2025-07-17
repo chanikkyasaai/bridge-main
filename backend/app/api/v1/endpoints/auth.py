@@ -13,6 +13,17 @@ from app.core.config import settings
 from app.core.supabase_client import supabase_client
 from app.core.token_manager import token_manager
 
+# ML Engine Integration
+try:
+    from app.ml_hooks import start_session_hook, end_session_hook
+    ML_INTEGRATION_AVAILABLE = True
+except ImportError:
+    async def start_session_hook(*args, **kwargs):
+        return {"status": "unavailable"}
+    async def end_session_hook(*args, **kwargs):
+        return {"status": "unavailable"}
+    ML_INTEGRATION_AVAILABLE = False
+
 router = APIRouter()
 security = HTTPBearer()
 
@@ -46,6 +57,7 @@ class SessionResponse(BaseModel):
     session_token: str
     behavioral_logging: str
     phone: str
+    ml_session_started: Optional[bool] = False
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
@@ -333,6 +345,21 @@ async def verify_mpin_endpoint(
                     "timestamp": session.last_activity.isoformat()
                 })
                 
+                # Start ML Engine session
+                ml_session_started = False
+                if ML_INTEGRATION_AVAILABLE:
+                    device_info = {
+                        "device_id": current_user["device_id"],
+                        "phone": phone,
+                        "platform": "mobile"  # You can expand this based on device_id
+                    }
+                    ml_result = await start_session_hook(user_id, session_id, device_info)
+                    if ml_result.get("status") == "success":
+                        print(f"ML session started successfully for {session_id}")
+                        ml_session_started = True
+                    else:
+                        print(f"ML session start failed: {ml_result.get('message')}")
+                
                 # Create security event
                 if session.supabase_session_id:
                     await supabase_client.create_security_event(
@@ -351,7 +378,8 @@ async def verify_mpin_endpoint(
                 status="verified",
                 session_id=session_id,
                 session_token=session_token,
-                behavioral_logging="started"
+                behavioral_logging="started",
+                ml_session_started=ml_session_started
             )
         else:
             # MPIN verification failed
@@ -397,14 +425,31 @@ async def logout(current_user: dict = Depends(get_current_user)):
             token_manager.revoke_user_tokens(user_id)
         
         # End session if exists
+        ml_sessions_ended = 0
+        backend_sessions_ended = 0
+        
         user_sessions = session_manager.get_user_sessions(user_id)
         for session in user_sessions:
             if not device_id or session.device_id == device_id:
+                # End ML session first
+                if ML_INTEGRATION_AVAILABLE:
+                    ml_result = await end_session_hook(session.session_id, "logout")
+                    if ml_result.get("status") == "success":
+                        ml_sessions_ended += 1
+                        print(f"ML session ended successfully for {session.session_id}")
+                    else:
+                        print(f"ML session end failed: {ml_result.get('message')}")
+                
+                # End backend session
                 session.end_session()
+                backend_sessions_ended += 1
         
         return {
             "message": "Logged out successfully",
-            "user_id": user_id
+            "user_id": user_id,
+            "ml_session_ended": ml_sessions_ended > 0,
+            "sessions_ended": backend_sessions_ended,
+            "ml_sessions_ended": ml_sessions_ended
         }
         
     except Exception as e:
