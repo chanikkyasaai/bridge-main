@@ -35,6 +35,8 @@ class UserSession:
         self.websocket_connection = None
         self.ended_at = None
         self.session_token = None  # JWT session token for this session
+        self.user_phase = None  # Track user's learning phase
+        self.session_count = 0  # Track user's session count
         
     def add_behavioral_data(self, event_type: str, data: Dict[str, Any]):
         """Add behavioral data to the session buffer (kept in memory during session)"""
@@ -81,13 +83,37 @@ class UserSession:
             return None
     
     def update_risk_score(self, new_score: float):
-        """Update risk score and handle security actions"""
+        """Update risk score and handle security actions - respects learning phase"""
         self.risk_score = new_score
         
-        if new_score >= settings.HIGH_RISK_THRESHOLD:
+        # Get learning phase-aware thresholds
+        suspicious_threshold, high_risk_threshold = self._get_phase_aware_thresholds()
+        
+        if new_score >= high_risk_threshold:
             self.block_session("High risk behavior detected")
-        elif new_score >= settings.SUSPICIOUS_THRESHOLD:
+        elif new_score >= suspicious_threshold:
             self.request_mpin_verification()
+    
+    def _get_phase_aware_thresholds(self) -> tuple:
+        """Get phase-aware risk thresholds based on user's learning phase"""
+        from app.core.config import settings
+        
+        # Default thresholds for production users
+        suspicious_threshold = settings.SUSPICIOUS_THRESHOLD  # 0.7
+        high_risk_threshold = settings.HIGH_RISK_THRESHOLD    # 0.9
+        
+        # Adjust thresholds based on user phase and session count
+        if self.user_phase in ['learning', 'cold_start'] or self.session_count <= 5:
+            # Learning phase - much higher thresholds (essentially disable blocking)
+            suspicious_threshold = 0.95  # Very high threshold
+            high_risk_threshold = 0.99   # Almost never block
+        elif self.user_phase == 'gradual_risk' or self.session_count <= 15:
+            # Gradual risk phase - moderate thresholds
+            suspicious_threshold = 0.85  # Higher than normal
+            high_risk_threshold = 0.95   # Still conservative
+        # else: use default production thresholds for full_auth phase
+        
+        return suspicious_threshold, high_risk_threshold
     
     def block_session(self, reason: str):
         """Block the session due to suspicious activity"""
@@ -288,6 +314,24 @@ class SessionManager:
         # Create local session object
         session = UserSession(session_id, user_id, phone, device_id, supabase_session_id)
         session.session_token = session_token  # Set the session token
+        
+        # Get user profile information for phase-aware risk assessment
+        try:
+            user_profile = await supabase_client.get_user_profile(user_id)
+            if user_profile:
+                session.user_phase = user_profile.get('current_phase', 'learning')
+                session.session_count = user_profile.get('current_session_count', 0)
+                print(f"Session {session_id}: User in {session.user_phase} phase (session #{session.session_count})")
+            else:
+                # New user - set learning defaults
+                session.user_phase = 'learning'
+                session.session_count = 0
+                print(f"Session {session_id}: New user - setting to learning phase")
+        except Exception as e:
+            print(f"Failed to get user profile for phase info: {e}")
+            # Safe defaults for new/unknown users
+            session.user_phase = 'learning'
+            session.session_count = 0
         
         self.active_sessions[session_id] = session
         

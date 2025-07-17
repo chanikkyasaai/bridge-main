@@ -282,7 +282,7 @@ class Phase1LearningSystem:
             
             # Generate cluster analysis if enough data
             cluster_analysis = None
-            if len(user_vectors) >= 10:
+            if len(user_vectors) >= 5:  # Reduced from 10 to 5 for learning phase
                 cluster_analysis = await self._perform_cluster_analysis(user_vectors)
                 if cluster_analysis:
                     learning_profile.cluster_centers = cluster_analysis['centers']
@@ -610,7 +610,9 @@ class Phase1LearningSystem:
     async def _perform_cluster_analysis(self, user_vectors: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         """Perform cluster analysis on user vectors"""
         try:
+            # Need at least 10 vectors for meaningful clustering
             if len(user_vectors) < 10:
+                logger.debug(f"Insufficient data for clustering: {len(user_vectors)} vectors (need 10+)")
                 return None
             
             from sklearn.cluster import KMeans
@@ -618,28 +620,63 @@ class Phase1LearningSystem:
             
             vectors = np.array([v['vector_data'] for v in user_vectors])
             
+            # Additional validation: ensure we have enough unique vectors
+            if len(np.unique(vectors, axis=0)) < 5:
+                logger.debug("Too few unique vectors for clustering")
+                return None
+            
             # Try different cluster numbers
             best_k = 2
             best_score = -1
+            max_clusters = min(6, len(vectors) // 3, len(np.unique(vectors, axis=0)) - 1)
             
-            for k in range(2, min(6, len(vectors) // 3)):
-                kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
-                labels = kmeans.fit_predict(vectors)
-                score = silhouette_score(vectors, labels)
-                
-                if score > best_score:
-                    best_score = score
-                    best_k = k
+            if max_clusters < 2:
+                logger.debug(f"Cannot perform clustering: max_clusters={max_clusters}")
+                return None
+            
+            for k in range(2, max_clusters + 1):
+                try:
+                    kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+                    labels = kmeans.fit_predict(vectors)
+                    
+                    # Check if we have valid clustering (at least 2 different labels)
+                    unique_labels = len(np.unique(labels))
+                    if unique_labels < 2:
+                        logger.debug(f"Invalid clustering result with k={k}: only {unique_labels} unique labels")
+                        continue
+                    
+                    score = silhouette_score(vectors, labels)
+                    
+                    if score > best_score:
+                        best_score = score
+                        best_k = k
+                        
+                except Exception as cluster_error:
+                    logger.debug(f"Clustering failed for k={k}: {cluster_error}")
+                    continue
+            
+            # Check if we found a valid clustering
+            if best_score == -1:
+                logger.debug("No valid clustering configuration found")
+                return None
             
             # Final clustering with best k
             kmeans = KMeans(n_clusters=best_k, random_state=42, n_init=10)
             labels = kmeans.fit_predict(vectors)
             
+            # Validate final result
+            unique_labels = len(np.unique(labels))
+            if unique_labels < 2:
+                logger.debug(f"Final clustering invalid: only {unique_labels} unique labels")
+                return None
+            
             return {
                 'num_clusters': best_k,
                 'silhouette_score': float(best_score),
                 'centers': kmeans.cluster_centers_,
-                'cluster_sizes': [np.sum(labels == i) for i in range(best_k)]
+                'cluster_sizes': [int(np.sum(labels == i)) for i in range(best_k)],
+                'total_vectors': len(vectors),
+                'unique_vectors': len(np.unique(vectors, axis=0))
             }
             
         except Exception as e:
