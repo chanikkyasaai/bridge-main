@@ -1,9 +1,9 @@
 # Core ML Libraries
-torch==2.1.0
+torch==2.2.0
 scikit-learn==1.3.0
 faiss-cpu==1.7.4
 transformers==4.34.0
-numpy==1.24.3
+numpy==1.26.4
 pandas==2.0.3
 h5py==3.9.0
 

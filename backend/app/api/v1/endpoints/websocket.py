@@ -187,11 +187,6 @@ async def process_behavioral_data(session_id: str, behavioral_event: Dict[str, A
     print(f"ML-Engine integration available: {ML_INTEGRATION_AVAILABLE}")
     if ML_INTEGRATION_AVAILABLE:
         try:
-<<<<<<< HEAD
-            logging.info(f"Processing ML-Engine for session: {session_id}")
-            ml_response = await hook_behavioral_event(
-                session_id, session.user_id, session.device_id, combined_event
-=======
             # Collect recent events for ML analysis (last 10 events including current)
             recent_events = session.behavioral_events[-9:] if len(session.behavioral_events) > 9 else session.behavioral_events[:]
             
@@ -208,7 +203,6 @@ async def process_behavioral_data(session_id: str, behavioral_event: Dict[str, A
                 session.user_id, 
                 session_id, 
                 recent_events
->>>>>>> origin/main-cleanup
             )
         except Exception as e:
             print(f"ML-Engine processing error: {e}")

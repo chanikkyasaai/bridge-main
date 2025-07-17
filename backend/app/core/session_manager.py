@@ -9,34 +9,6 @@ import aiofiles
 import os
 from app.core.config import settings
 
-<<<<<<< HEAD
-# ML-Engine Integration
-try:
-    from ml_hooks import (
-        hook_session_start, hook_behavioral_event, hook_session_end,
-        get_ml_session_status
-    )
-    ML_INTEGRATION_AVAILABLE = True
-    
-    print("Imported ML-Engine integration in session manager")
-except ImportError:
-    print("ML-Engine integration not available in session manager")
-    # Fallback functions if ML integration is not available
-
-    async def hook_session_start(*args, **kwargs):
-        return True
-    async def hook_behavioral_event(*args, **kwargs):
-        return None
-
-    async def hook_session_end(*args, **kwargs):
-        return True
-
-    async def get_ml_session_status(*args, **kwargs):
-        return None
-    ML_INTEGRATION_AVAILABLE = False
-
-=======
->>>>>>> origin/main-cleanup
 class BehavioralData:
     """Structure to hold behavioral data points"""
     def __init__(self, event_type: str, data: Dict[str, Any]):
@@ -70,60 +42,8 @@ class UserSession:
         self.behavioral_buffer.append(behavior_data)
         self.last_activity = datetime.utcnow()
         
-<<<<<<< HEAD
-        # Process through ML-Engine for real-time authentication
-        if ML_INTEGRATION_AVAILABLE:
-            logging.info(f"Processing Behavioral event for session: {self.session_id} @sessionmanager")
-            asyncio.create_task(self._process_ml_behavioral_event(event_type, data))
-        
         # No longer save to file immediately - keep in memory until session ends
     
-    async def _process_ml_behavioral_event(self, event_type: str, data: Dict[str, Any]):
-        """Process behavioral event through ML-Engine"""
-        try:
-            combined_event = {
-                "event_type": event_type,
-                "event_data": data
-            }
-            
-            ml_response = await hook_behavioral_event(
-                self.session_id, self.user_id, self.device_id, combined_event
-            )
-            
-            logging.info(f"ML-Engine response for session: {self.session_id} @sessionmanager")
-            
-            if ml_response:
-                logging.info(f"ML-Engine response recvd")
-                # Handle ML authentication response
-                decision = ml_response.get('decision', 'allow')
-                risk_score = ml_response.get('risk_score', 0.0)
-                
-                # Update session risk score
-                self.update_risk_score(risk_score)
-                
-                # Handle critical ML decisions
-                if decision == 'permanent_block':
-                    self.block_session("ML-Engine: High risk behavior detected")
-                elif decision == 'temporary_block':
-                    self.block_session("ML-Engine: Temporary security block")
-                elif decision == 'step_up_auth':
-                    self.request_mpin_verification()
-                elif decision == 'challenge':
-                    # Send soft challenge to user
-                    if self.websocket_connection:
-                        await self._notify_client({
-                            "type": "security_challenge",
-                            "message": "Additional verification required",
-                            "timestamp": datetime.utcnow().isoformat(),
-                            "ml_confidence": ml_response.get('confidence', 0.0)
-                        })
-        except Exception as e:
-            print(f"Error processing ML behavioral event: {e}")
-    
-=======
-        # No longer save to file immediately - keep in memory until session ends
-    
->>>>>>> origin/main-cleanup
     async def save_behavioral_data_to_supabase(self):
         """Save all behavioral data to Supabase Storage when session ends"""
         from app.core.supabase_client import supabase_client
@@ -375,22 +295,6 @@ class SessionManager:
             self.user_sessions[user_id] = []
         self.user_sessions[user_id].append(session_id)
         
-<<<<<<< HEAD
-        # Initialize ML-Engine for this session
-        if ML_INTEGRATION_AVAILABLE :
-            try:
-                print(f"Initializing ML-Engine for session {session_id}")
-                ml_result = await hook_session_start(session_id=session_id, user_id=user_id, phone=phone, device_id=device_id, context=context)
-                print(f"ML-Engine session_created_hook result: {ml_result}")
-                if not ml_result:
-                    logging.error(f"ML-Engine session creation failed for session {session_id}")
-                    # Optionally, raise an exception or handle as needed
-                    # raise RuntimeError(f"ML-Engine session creation failed for session {session_id}")
-            except Exception as e:
-                print(f"Failed to initialize ML-Engine for session {session_id}: {e}")
-        
-=======
->>>>>>> origin/main-cleanup
         print(f"Created session: {session_id}")
         return session_id
     
@@ -417,20 +321,6 @@ class SessionManager:
             summary = session.get_behavioral_summary()
             print(f"Terminating session {session_id}: {summary}")
             
-<<<<<<< HEAD
-            # End ML-Engine session
-            if ML_INTEGRATION_AVAILABLE:
-                try:
-                    await hook_session_end(
-                        session_id, session.user_id, final_decision, 
-                        {"duration_minutes": summary.get("duration_minutes", 0), 
-                         "total_events": summary.get("total_events", 0)}
-                    )
-                except Exception as e:
-                    print(f"Failed to end ML-Engine session {session_id}: {e}")
-            
-=======
->>>>>>> origin/main-cleanup
             # Validate and save behavioral data to permanent storage
             log_file_path = await session.validate_and_save_behavioral_data()
             
