@@ -1,1 +1,0 @@
-# FAISS verifier module

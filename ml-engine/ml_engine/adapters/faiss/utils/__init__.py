@@ -1,1 +1,0 @@
-# FAISS utils module
