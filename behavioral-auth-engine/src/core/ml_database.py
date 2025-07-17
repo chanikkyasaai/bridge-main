@@ -177,6 +177,50 @@ class MLSupabaseClient:
             logger.error(f"Failed to create session for {user_id}: {e}")
             return None
     
+    async def _ensure_session_exists(self, user_id: str, session_id: str) -> Optional[str]:
+        """Ensure session exists in database, create if needed, return actual session UUID"""
+        try:
+            # First, try to find existing session by UUID (direct match)
+            try:
+                direct_result = self.supabase.table('sessions')\
+                    .select('id')\
+                    .eq('id', session_id)\
+                    .eq('user_id', user_id)\
+                    .execute()
+                
+                if direct_result.data:
+                    logger.debug(f"Found session by direct UUID match: {session_id}")
+                    return session_id
+            except Exception as e:
+                logger.debug(f"Direct UUID lookup failed: {e}")
+            
+            # If not found by UUID, try by session_token
+            try:
+                token_result = self.supabase.table('sessions')\
+                    .select('id')\
+                    .eq('session_token', session_id)\
+                    .eq('user_id', user_id)\
+                    .execute()
+                
+                if token_result.data:
+                    actual_session_id = token_result.data[0]['id']
+                    logger.debug(f"Found session by token: {session_id} -> {actual_session_id}")
+                    return actual_session_id
+            except Exception as e:
+                logger.debug(f"Token lookup failed: {e}")
+            
+            # Session doesn't exist, create it
+            logger.info(f"Session {session_id} not found, creating new session")
+            return await self.create_session(
+                user_id=user_id,
+                session_name=session_id,
+                device_info="Auto-created for ML operations"
+            )
+            
+        except Exception as e:
+            logger.error(f"Failed to ensure session exists for {session_id}: {e}")
+            return None
+    
     # ============================================================================
     # BEHAVIORAL VECTOR STORAGE
     # ============================================================================
@@ -187,14 +231,10 @@ class MLSupabaseClient:
         """Store behavioral vector in database"""
         try:
             # Ensure session exists - create if not exists
-            db_session_id = await self.create_session(
-                user_id=user_id,
-                session_name=session_id,
-                device_info="Auto-created for vector storage"
-            )
-            
-            # Use the database session ID if we created one, otherwise use the provided session_id
-            actual_session_id = db_session_id if db_session_id else session_id
+            actual_session_id = await self._ensure_session_exists(user_id, session_id)
+            if not actual_session_id:
+                logger.error(f"Failed to ensure session exists for {session_id}")
+                return None
             
             vector_record = {
                 'user_id': user_id,
@@ -257,14 +297,10 @@ class MLSupabaseClient:
         """Store authentication decision in database"""
         try:
             # Ensure session exists - create if not exists
-            db_session_id = await self.create_session(
-                user_id=user_id,
-                session_name=session_id,
-                device_info="Auto-created for decision storage"
-            )
-            
-            # Use the database session ID if we created one, otherwise use the provided session_id
-            actual_session_id = db_session_id if db_session_id else session_id
+            actual_session_id = await self._ensure_session_exists(user_id, session_id)
+            if not actual_session_id:
+                logger.error(f"Failed to ensure session exists for {session_id}")
+                return None
             
             decision_record = {
                 'user_id': user_id,
