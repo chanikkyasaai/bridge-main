@@ -2,10 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:canara_ai/apis/endpoints.dart';
 import 'package:canara_ai/apis/interceptor.dart';
+import 'package:canara_ai/main.dart';
+import 'package:canara_ai/utils/get_advanced_info.dart';
 import 'package:canara_ai/utils/token_storage.dart';
 import 'package:dio/dio.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
+import 'package:flutter/material.dart'; // Added for BuildContext
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class BehaviorLogger {
   final Dio dio;
@@ -14,6 +18,7 @@ class BehaviorLogger {
   String? sessionToken;
 
   final tokenstorage = TokenStorage();
+  final storage = FlutterSecureStorage();
 
   BehaviorLogger(this.dio);
 
@@ -30,12 +35,42 @@ class BehaviorLogger {
   final _eventQueue = StreamController<String>();
   bool _isSending = false;
 
-  void _startEventQueue() {
+  Future<void> logoutUser() async {
+    
+    await storage.delete(key: 'email');
+    await storage.delete(key: 'isLoggedIn');
+    await tokenstorage.clearTokens();
+  }
+
+  void _startEventQueue(BuildContext context) {
     if (_isSending) return;
 
     _isSending = true;
     _eventQueue.stream.listen((eventJson) async {
       try {
+        final event = jsonDecode(eventJson);
+
+        if (event['type'] == 'mpin_required') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(event['reason'] ?? 'Temporary security block')),
+          );
+          navigatorKey.currentState?.pushNamedAndRemoveUntil('/auth', (route) => false);
+          return;
+        }
+
+        if (event['type'] == 'session_blocked') {
+          // Log out and show reason in a toast/snackbar
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(event['reason'] ?? 'Session blocked')),
+          );
+
+          await logoutUser(); // Your logout logic
+          
+          // Optionally, navigate to login page
+          navigatorKey.currentState?.pushNamedAndRemoveUntil('/login', (route) => false);
+          return;
+        }
+
         _ws?.sink.add(eventJson);
       } catch (e) {
         print("WebSocket send error: $e");
@@ -44,20 +79,15 @@ class BehaviorLogger {
   }
 
 
-  Future<void> startSession(String _sessionId, String _sessionToken) async {
+  Future<void> startSession(String _sessionId, String _sessionToken, BuildContext context) async {
     // dio.interceptors.add(AuthInterceptor(dio, tokenstorage));
-    // final deviceInfo = await getExtendedAndroidDeviceSummary();
-    // final deviceid = await getAndroidDeviceId();
-    // final sessionId = const Uuid().v4();
+    // final phone = await storage.read(key: 'email');
 
-    // final response = await dio.post('${Endpoints.baseUrl}${Endpoints.log_start}', data: {
-    //   'phone': phone,
-    //   'device_id': deviceid,
-    //   'device_info': deviceInfo,
-    // });
+    // final response = await dio.post('${Endpoints.baseUrl}${Endpoints.log_start}', 
+    //   data: SessionStartRequest.build(sessionId: _sessionId, phone: phone, isKnownDevice: true, isTrustedLocation: true));
 
-    final token = (await tokenstorage.getAccessToken())?.replaceAll('#', '');
-    dio.options.headers['Authorization'] = 'Bearer $token';
+    // final token = (await tokenstorage.getAccessToken())?.replaceAll('#', '');
+    // dio.options.headers['Authorization'] = 'Bearer $token';
 
     print('Session ID: $_sessionId');
     print('Session Token: $_sessionToken');
@@ -65,12 +95,11 @@ class BehaviorLogger {
     sessionId = _sessionId;
     sessionToken = _sessionToken;
 
-    final uri = Uri.parse('ws://35.225.176.106:8000/api/v1/ws/behavior/$_sessionId?token=${Uri.encodeComponent(_sessionToken)}');
+    final uri = Uri.parse('ws://192.168.241.41:8000/api/v1/ws/behavior/$_sessionId?token=${Uri.encodeComponent(_sessionToken)}');
 
     print(uri);
 
     _ws = WebSocketChannel.connect(uri);
-    _startEventQueue();
 
     _ws!.stream.listen(
       _handleServerMessage,
@@ -85,6 +114,7 @@ class BehaviorLogger {
     );
 
     _startHeartbeat();
+    _startEventQueue(context);
     print("WebSocket connected and heartbeat started");
   }
 
@@ -138,7 +168,7 @@ class BehaviorLogger {
       print('Event processed: ${data['timestamp']}');
     } else if (data['type'] == 'error') {
       print('WebSocket error: ${data['message']}');
-    }
+    } 
   }
 
   void _retryConnection({int retries = 5}) async {
@@ -150,7 +180,7 @@ class BehaviorLogger {
         print('Session ID: $sessionId');
         print('Session Token: $sessionToken');
         final token = await tokenstorage.getAccessToken();
-        final uri = Uri.parse('ws://35.225.176.106:8000/api/v1/ws/behavior/$sessionId?token=${Uri.encodeComponent(sessionToken!)}');
+        final uri = Uri.parse('ws://192.168.241.41:8000/api/v1/ws/behavior/$sessionId?token=${Uri.encodeComponent(sessionToken!)}');
 
         _ws = WebSocketChannel.connect(uri);
 

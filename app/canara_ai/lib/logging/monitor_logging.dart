@@ -45,7 +45,7 @@ class BehaviorMonitorState extends State<BehaviorMonitor> with WidgetsBindingObs
   void _resetIdleTimer() {
     _idleTimer?.cancel();
     _idleTimer = Timer(const Duration(minutes: 1), () {
-      widget.logger.sendEvent('idle_behavior', {'idle_seconds': 60});
+      widget.logger.sendEvent('idle_timeout', {'idle_seconds': 60});
     });
   }
 
@@ -56,10 +56,15 @@ class BehaviorMonitorState extends State<BehaviorMonitor> with WidgetsBindingObs
     // await widget.logger.endSession(_exitReason!);
   }
 
+  Future<void> sendUserCloseEvent() async {
+    _exitReason = 'app_close';
+    await _sendExitEvent();
+  }
+
   /// Sends an exit event (logout, app close, etc.) to the backend.
   /// If sending fails, saves the event locally for retry.
   Future<void> _sendExitEvent() async {
-    final payload = {'session_id': sessionId ?? widget.logger.sessionId, 'reason': _exitReason ?? 'app_close', 'session_token': widget.logger.sessionToken};
+    final payload = {'session_id': sessionId ?? widget.logger.sessionId, 'event_type': _exitReason ?? 'app_close', 'session_token': widget.logger.sessionToken};
 
     try {
       // Ensure Dio has up-to-date token access

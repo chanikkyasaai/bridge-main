@@ -15,7 +15,8 @@ security = HTTPBearer()
 class StartSessionRequest(BaseModel):
     phone: str
     device_id: str
-    device_info: Optional[str] = ""
+    context: Optional[Dict[str, Any]] = {}
+    mpin: str
 
 
 class BehaviorDataRequest(BaseModel):
@@ -70,7 +71,8 @@ async def start_session(request: StartSessionRequest, current_user: dict = Depen
             user_id=user_id,
             phone=request.phone,
             device_id=request.device_id,
-            session_token=session_token
+            session_token=session_token,
+            context=request.context
         )
         
         session = session_manager.get_session(session_id)

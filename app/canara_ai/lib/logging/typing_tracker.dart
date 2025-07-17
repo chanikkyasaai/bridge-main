@@ -91,6 +91,11 @@ class _TypingFieldTrackerState extends State<TypingFieldTracker> {
       size = (result?['size'] as num?)?.toDouble();
     } catch (_) {}
 
+    final text = widget.controller.text;
+    final wordCount = text.trim().isEmpty ? 0 : text.trim().split(RegExp(r'\s+')).length;
+    final totalTimeMinutes = now.difference(_typingStartTime).inMilliseconds / 60000.0;
+    final wordsPerMinute = totalTimeMinutes > 0 ? wordCount / totalTimeMinutes : 0.0;
+
     widget.logger.sendEvent('typing_pattern', {
       'screen': widget.screenName,
       'field': widget.fieldName,
@@ -101,6 +106,7 @@ class _TypingFieldTrackerState extends State<TypingFieldTracker> {
       'total_time_ms': now.difference(_typingStartTime).inMilliseconds,
       'keystroke_count': _delays.length,
       'average_delay': double.parse((_delays.reduce((a, b) => a + b) / _delays.length).toStringAsFixed(2)),
+      'words_per_minute': double.parse(wordsPerMinute.toStringAsFixed(2)),
       if (pressure != null) 'touch_pressure': pressure,
       if (orientation != null) 'touch_angle': orientation,
       if (size != null) 'touch_area': size,

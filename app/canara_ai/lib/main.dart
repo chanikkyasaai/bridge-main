@@ -26,6 +26,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'screens/auth_page.dart';
 
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   runApp(const MyApp());
@@ -52,6 +53,7 @@ class MyApp extends StatelessWidget {
         final isLoggedIn = snapshot.data == "true";
 
         return MaterialApp(
+          navigatorKey: navigatorKey,
           debugShowCheckedModeBanner: false,
           title: 'Flutter Demo',
           theme: ThemeData(
@@ -59,8 +61,8 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
           ),
           routes: {
-            '/login': (context) => const LoginPage(isFirst: true),
-            '/auth': (context) => const AuthPage(isFirst: true),
+            '/login': (context) => const LoginPage(isFirst: false),
+            '/auth': (context) => const AuthPage(isFirst: false),
             '/profile': (context) => const ProfilePage(),
             '/cards': (context) => const CardsPage(),
             '/directpay': (context) => const DirectPayPage(),

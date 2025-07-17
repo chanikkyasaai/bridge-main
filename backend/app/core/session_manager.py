@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import uuid
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
@@ -271,6 +272,8 @@ class SessionManager:
         from app.core.supabase_client import supabase_client
         
         session_id = str(uuid.uuid4())
+        
+        logging.info(f"New session created: {session_id}")
         
         # Create session in Supabase database
         try:

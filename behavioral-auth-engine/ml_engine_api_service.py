@@ -16,6 +16,7 @@ from datetime import datetime
 import sys
 import os
 from contextlib import asynccontextmanager
+import numpy as np
 
 # Add the src directory to the Python path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
@@ -204,7 +205,8 @@ async def start_session(request: SessionStartRequest):
         session_id = await session_manager.create_session(
             user_id=request.user_id,
             device_id=request.device_info.get("device_id") if request.device_info else None,
-            user_agent=request.device_info.get("user_agent") if request.device_info else None
+            user_agent=request.device_info.get("user_agent") if request.device_info else None,
+            ip_address=request.device_info.get("ip_address")
         )
         
         # Get user profile for session context
@@ -276,34 +278,110 @@ async def analyze_behavior(request: BehavioralAnalysisRequest):
         
         # Extract basic features from events (simplified for demo)
         now = datetime.utcnow()
-        
-        # Create a minimal behavioral features object with required fields
+
+        # --- Aggregate features from events ---
+        # Typing features
+        typing_speeds = []
+        keystroke_intervals = []
+        typing_rhythm_variances = []
+        backspace_counts = []
+        typing_pressures = []
+        typing_areas = []
+        for e in request.events:
+            if e.event_type == "typing_pattern":
+                data = e.data
+                if "typing_speed" in data:
+                    typing_speeds.append(float(data["typing_speed"]))
+                if "keystroke_dynamics" in data:
+                    keystroke_intervals.extend([float(x) for x in data["keystroke_dynamics"]])
+                if "average_delay" in data:
+                    typing_rhythm_variances.append(float(data["average_delay"]))
+                if "delete_count" in data and "keystroke_count" in data and data["keystroke_count"]:
+                    backspace_counts.append(float(data["delete_count"]) / float(data["keystroke_count"]))
+                if "touch_pressure" in data:
+                    typing_pressures.append(float(data["touch_pressure"]))
+                if "touch_area" in data:
+                    typing_areas.append(float(data["touch_area"]))
+
+        # Touch features
+        touch_pressures = []
+        touch_durations = []
+        touch_areas = []
+        touch_coordinates = []
+        for e in request.events:
+            if e.event_type == "touch_down":
+                data = e.data
+                if "pressure" in data:
+                    touch_pressures.append(float(data["pressure"]))
+                if "coordinates" in data and isinstance(data["coordinates"], list) and len(data["coordinates"]) == 2:
+                    touch_coordinates.append({"x": float(data["coordinates"][0]), "y": float(data["coordinates"][1])})
+            if e.event_type == "touch_up":
+                data = e.data
+                if "touch_duration_ms" in data:
+                    touch_durations.append(float(data["touch_duration_ms"]))
+                if "coordinates" in data and isinstance(data["coordinates"], list) and len(data["coordinates"]) == 2:
+                    touch_coordinates.append({"x": float(data["coordinates"][0]), "y": float(data["coordinates"][1])})
+            # Optionally, add area if present
+                if "touch_area" in data:
+                    touch_areas.append(float(data["touch_area"]))
+
+        # Navigation features
+        navigation_patterns = []
+        screen_time_distribution = {}
+        for e in request.events:
+            if e.event_type == "navigation_pattern":
+                data = e.data
+                if "route" in data:
+                    navigation_patterns.append(str(data["route"]))
+                if "duration" in data and "route" in data:
+                    screen = str(data["route"])
+                    screen_time_distribution[screen] = screen_time_distribution.get(screen, 0.0) + float(data["duration"])
+
+        # Contextual features
+        device_orientation = "portrait"
+        for e in request.events:
+            if e.event_type == "orientation_change":
+                data = e.data
+                if "orientation" in data:
+                    device_orientation = str(data["orientation"])
+        time_of_day = now.hour
+        day_of_week = now.weekday()
+        app_version = "1.0.0"
+
+        # Calculate aggregate values or use defaults
+        typing_speed = float(np.mean(typing_speeds)) if typing_speeds else 0.0
+        typing_rhythm_variance = float(np.var(keystroke_intervals)) if keystroke_intervals else 0.0
+        backspace_frequency = float(np.mean(backspace_counts)) if backspace_counts else 0.0
+        typing_pressure = typing_pressures or [0.0]
+        touch_pressure = touch_pressures or [0.0]
+        touch_duration = touch_durations or [0.0]
+        touch_area = typing_areas + touch_areas or [0.0]
+        swipe_velocity = [0.0]  # Not tracked in frontend, set to default
+        touch_coordinates = touch_coordinates or [{"x": 0.0, "y": 0.0}]
+        navigation_patterns = navigation_patterns or ["unknown"]
+        screen_time_distribution = screen_time_distribution or {"unknown": 0.0}
+        interaction_frequency = float(len(request.events)) / 300.0  # crude default
+        session_duration = 300.0  # Could be improved if session start/end events are present
+
         behavioral_features_data = BehavioralFeatures(
-            # Typing features (25 dimensions)
-            typing_speed=60.0,
-            keystroke_intervals=[120.0, 110.0, 130.0],
-            typing_rhythm_variance=0.15,
-            backspace_frequency=0.05,
-            typing_pressure=[0.8, 0.7, 0.9],
-            
-            # Touch features (30 dimensions)
-            touch_pressure=[0.8, 0.7, 0.9],
-            touch_duration=[150.0, 140.0, 160.0],
-            touch_area=[10.5, 11.2, 9.8],
-            swipe_velocity=[2.1, 1.8, 2.3],
-            touch_coordinates=[{"x": 100, "y": 200}, {"x": 150, "y": 250}],
-            
-            # Navigation features (20 dimensions)
-            navigation_patterns=["login", "dashboard", "settings"],
-            screen_time_distribution={"login": 30.0, "dashboard": 120.0},
-            interaction_frequency=0.5,
-            session_duration=300.0,
-            
-            # Contextual features (15 dimensions)
-            device_orientation="portrait",
-            time_of_day=now.hour,
-            day_of_week=now.weekday(),
-            app_version="1.0.0"
+            typing_speed=typing_speed,
+            keystroke_intervals=keystroke_intervals or [0.0],
+            typing_rhythm_variance=typing_rhythm_variance,
+            backspace_frequency=backspace_frequency,
+            typing_pressure=typing_pressure,
+            touch_pressure=touch_pressure,
+            touch_duration=touch_duration,
+            touch_area=touch_area,
+            swipe_velocity=swipe_velocity,
+            touch_coordinates=touch_coordinates,
+            navigation_patterns=navigation_patterns,
+            screen_time_distribution=screen_time_distribution,
+            interaction_frequency=interaction_frequency,
+            session_duration=session_duration,
+            device_orientation=device_orientation,
+            time_of_day=time_of_day,
+            day_of_week=day_of_week,
+            app_version=app_version
         )
         
         # Process behavioral events to create vector
