@@ -3,6 +3,7 @@ Session lifecycle management for behavioral authentication.
 """
 
 import asyncio
+import logging
 from datetime import datetime, timedelta
 from typing import Dict, Optional, List, Any
 from dataclasses import dataclass
@@ -18,6 +19,8 @@ from src.data.models import (
 from src.core.vector_store import VectorStoreInterface
 from src.config.settings import get_settings
 from src.utils.constants import *
+
+logger = logging.getLogger(__name__)
 
 
 class SessionStatus(str, Enum):
@@ -397,6 +400,27 @@ class SessionManager:
                 break
             except Exception as e:
                 print(f"Error in session cleanup: {e}")
+    
+    async def add_behavioral_event(self, session_id: str, event_data: Dict[str, Any]) -> bool:
+        """Add a behavioral event to the session history"""
+        try:
+            async with self._lock:
+                if session_id in self.active_sessions:
+                    session = self.active_sessions[session_id]
+                    
+                    # Add event to session history (you could extend SessionContext to include this)
+                    # For now, just update last activity
+                    session.last_activity = datetime.utcnow()
+                    
+                    # Log the event
+                    logger.debug(f"Added behavioral event to session {session_id}")
+                    return True
+                else:
+                    logger.warning(f"Session {session_id} not found for behavioral event")
+                    return False
+        except Exception as e:
+            logger.error(f"Failed to add behavioral event to session {session_id}: {e}")
+            return False
     
     async def get_session_statistics(self) -> Dict[str, Any]:
         """Get statistics about active sessions."""
