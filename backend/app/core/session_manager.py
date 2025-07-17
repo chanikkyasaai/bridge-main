@@ -267,7 +267,7 @@ class SessionManager:
         self.active_sessions: Dict[str, UserSession] = {}
         self.user_sessions: Dict[str, List[str]] = {}  # user_id -> [session_ids]
         
-    async def create_session(self, user_id: str, phone: str, device_id: str, session_token: str = None, context: Dict[str, Any] = None,) -> str:
+    async def create_session(self, user_id: str, phone: str, device_id: str, session_token: str = None) -> str:
         """Create a new user session with Supabase integration"""
         from app.core.supabase_client import supabase_client
         

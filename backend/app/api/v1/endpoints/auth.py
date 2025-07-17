@@ -322,8 +322,7 @@ async def verify_mpin_endpoint(
                 user_id=user_id,
                 phone=phone,
                 device_id=mpin_data.device_id,
-                session_token=None,
-                context=mpin_data.context
+                session_token=None
             )
             # Create session token with the actual session_id
             session_token = create_session_token(
@@ -348,12 +347,7 @@ async def verify_mpin_endpoint(
                 # Start ML Engine session
                 ml_session_started = False
                 if ML_INTEGRATION_AVAILABLE:
-                    device_info = {
-                        "device_id": current_user["device_id"],
-                        "phone": phone,
-                        "platform": "mobile"  # You can expand this based on device_id
-                    }
-                    ml_result = await start_session_hook(user_id, session_id, device_info)
+                    ml_result = await start_session_hook(user_id, session_id, mpin_data.context)
                     if ml_result.get("status") == "success":
                         print(f"ML session started successfully for {session_id}")
                         ml_session_started = True

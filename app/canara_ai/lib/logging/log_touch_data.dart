@@ -125,7 +125,7 @@ class BehaviorLogger {
 
     final payload = {
       'event_type': eventType,
-      'features': data,
+      'data': data,
       'timestamp': DateTime.now().toIso8601String(),
     };
 

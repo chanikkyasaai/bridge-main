@@ -15,6 +15,7 @@ class SessionStartRequest {
   final Map<String, dynamic> locationData;
   final bool isKnownDevice;
   final bool isTrustedLocation;
+  final String userAgent;
 
   SessionStartRequest({
     required this.mpin,
@@ -27,12 +28,13 @@ class SessionStartRequest {
     required this.locationData,
     required this.isKnownDevice,
     required this.isTrustedLocation,
+    required this.userAgent,
   });
 
   Map<String, dynamic> toJson() => {
-        "device_id": deviceId,
         "mpin": mpin,
         "context": {
+          "device_id": deviceId,
           "device_type": deviceType,
           "device_model": deviceModel,
           "os_version": osVersion,
@@ -40,7 +42,8 @@ class SessionStartRequest {
           "network_type": networkType,
           "location_data": locationData,
           "is_known_device": isKnownDevice,
-          "is_trusted_location": isTrustedLocation
+          "is_trusted_location": isTrustedLocation,
+          "user_agent": userAgent
         }
       };
 
@@ -120,7 +123,7 @@ class SessionStartRequest {
       locationData: locationData,
       isKnownDevice: isKnownDevice,
       isTrustedLocation: isTrustedLocation,
+      userAgent: 'CanaraAI1/${packageInfo.version} ($deviceType; $deviceModel; Android $osVersion)',
     );
   }
-
-} 
+}

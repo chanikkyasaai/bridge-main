@@ -9,13 +9,13 @@ from app.core.security import extract_session_info
 
 # ML-Engine Integration
 try:
-    from ml_hooks import hook_behavioral_event
+    from ml_hooks import behavioral_event_hook
     ML_INTEGRATION_AVAILABLE = True
 
     print("Imported ML-Engine integration in websocket")
 except ImportError:
     print("ML-Engine integration not available in websocket")
-    async def hook_behavioral_event(*args, **kwargs):
+    async def behavioral_event_hook(*args, **kwargs):
         return None
     ML_INTEGRATION_AVAILABLE = False
 
@@ -188,7 +188,8 @@ async def process_behavioral_data(session_id: str, behavioral_event: Dict[str, A
     if ML_INTEGRATION_AVAILABLE:
         try:
             # Collect recent events for ML analysis (last 10 events including current)
-            recent_events = session.behavioral_events[-9:] if len(session.behavioral_events) > 9 else session.behavioral_events[:]
+            recent_events = session.behavioral_buffer[-9:] if len(
+                session.behavioral_buffer) > 9 else session.behavioral_buffer[:]
             
             # Add current event to the list for analysis
             current_event = {
