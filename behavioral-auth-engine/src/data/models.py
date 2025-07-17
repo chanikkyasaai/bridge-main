@@ -37,6 +37,7 @@ class AuthenticationDecision(str, Enum):
     ALLOW = "allow"
     CHALLENGE = "challenge"
     BLOCK = "block"
+    DENY = "deny"  # Added for backward compatibility
     LEARN = "learn"
 
 

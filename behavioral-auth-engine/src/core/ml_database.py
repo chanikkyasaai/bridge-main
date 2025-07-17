@@ -144,6 +144,22 @@ class MLSupabaseClient:
         try:
             await self._ensure_user_exists(user_id)
             
+            # Check if session already exists by session_token (our session name)
+            if session_name:
+                try:
+                    existing_result = self.supabase.table('sessions')\
+                        .select('id')\
+                        .eq('session_token', session_name)\
+                        .eq('user_id', user_id)\
+                        .execute()
+                    
+                    if existing_result.data:
+                        session_id = existing_result.data[0]['id']
+                        logger.info(f"Found existing session {session_id} for {session_name}")
+                        return session_id
+                except Exception as e:
+                    logger.warning(f"Error checking existing session: {e}")
+            
             session_record = {
                 'user_id': user_id,
                 'device_info': device_info or 'ML Engine Session',
@@ -170,9 +186,19 @@ class MLSupabaseClient:
                                     feature_source: str) -> Optional[str]:
         """Store behavioral vector in database"""
         try:
+            # Ensure session exists - create if not exists
+            db_session_id = await self.create_session(
+                user_id=user_id,
+                session_name=session_id,
+                device_info="Auto-created for vector storage"
+            )
+            
+            # Use the database session ID if we created one, otherwise use the provided session_id
+            actual_session_id = db_session_id if db_session_id else session_id
+            
             vector_record = {
                 'user_id': user_id,
-                'session_id': session_id,
+                'session_id': actual_session_id,
                 'vector_data': vector_data,  # PostgreSQL array
                 'confidence_score': confidence_score,
                 'feature_source': feature_source
@@ -230,9 +256,19 @@ class MLSupabaseClient:
                                           processing_time_ms: Optional[int] = None) -> Optional[str]:
         """Store authentication decision in database"""
         try:
+            # Ensure session exists - create if not exists
+            db_session_id = await self.create_session(
+                user_id=user_id,
+                session_name=session_id,
+                device_info="Auto-created for decision storage"
+            )
+            
+            # Use the database session ID if we created one, otherwise use the provided session_id
+            actual_session_id = db_session_id if db_session_id else session_id
+            
             decision_record = {
                 'user_id': user_id,
-                'session_id': session_id,
+                'session_id': actual_session_id,
                 'decision': decision,
                 'confidence': confidence,
                 'similarity_score': similarity_score,

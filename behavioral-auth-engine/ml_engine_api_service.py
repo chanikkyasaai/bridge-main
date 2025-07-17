@@ -273,6 +273,22 @@ async def analyze_behavior(request: BehavioralAnalysisRequest):
     try:
         logger.info(f"Analyzing behavior for session {request.session_id}")
         
+        # Ensure session exists in database - create if not exists
+        from src.core.ml_database import ml_db
+        try:
+            # Try to create session in database if it doesn't exist
+            db_session_id = await ml_db.create_session(
+                user_id=request.user_id,
+                session_name=request.session_id,
+                device_info="ML Analysis Session"
+            )
+            if db_session_id:
+                logger.info(f"Created database session {db_session_id} for ML session {request.session_id}")
+            else:
+                logger.warning(f"Session {request.session_id} may already exist in database")
+        except Exception as e:
+            logger.warning(f"Session creation/check failed: {e} - continuing with analysis")
+        
         # Convert events to BehavioralFeatures format
         from src.data.models import BehavioralFeatures
         
