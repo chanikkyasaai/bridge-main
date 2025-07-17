@@ -225,6 +225,8 @@ async def analyze_behavioral_pattern(session, event_type: str, event_data: Dict[
         ml_confidence = ml_response.get('confidence', 0.0)
         ml_similarity_score = ml_response.get('similarity_score', 0.0)
         
+        print(f"ML Decision for {session.session_id}: {ml_decision} (confidence: {ml_confidence:.2f})")
+        
         # Handle ML decisions based on confidence
         if ml_confidence > 0.8:  # High confidence ML decision
             if ml_decision == 'block':
@@ -236,6 +238,11 @@ async def analyze_behavioral_pattern(session, event_type: str, event_data: Dict[
             elif ml_decision == 'allow':
                 # Lower risk for high-confidence allow decisions
                 risk_adjustment = -0.1
+            elif ml_decision == 'learn':
+                # Learning phase - allow learning and minimal risk adjustment
+                risk_adjustment = -0.05
+                print(f"ML Decision: Learning phase - allowing user to continue learning")
+                return  # Don't proceed to rule-based risk scoring
         elif ml_confidence > 0.6:  # Medium confidence
             if ml_decision == 'block':
                 risk_adjustment = 0.3  # Increase risk but don't block immediately
@@ -243,9 +250,19 @@ async def analyze_behavioral_pattern(session, event_type: str, event_data: Dict[
                 risk_adjustment = 0.2
             elif ml_decision == 'allow':
                 risk_adjustment = -0.05
+            elif ml_decision == 'learn':
+                # Learning phase - very minimal risk adjustment
+                risk_adjustment = -0.02
+                print(f"ML Decision: Learning phase (medium confidence) - allowing user to continue")
+                return  # Don't proceed to rule-based risk scoring
         else:
-            # Low confidence - use similarity score as risk factor
-            if ml_similarity_score < 0.5:
+            # Low confidence - handle learn decision or use similarity score
+            if ml_decision == 'learn':
+                # Learning phase with low confidence - still allow learning
+                print(f"ML Decision: Learning phase (low confidence) - allowing user to continue")
+                return  # Don't proceed to rule-based risk scoring
+            # For other decisions, use similarity score as risk factor
+            elif ml_similarity_score < 0.5:
                 risk_adjustment = 0.15  # Unusual behavior pattern
             elif ml_similarity_score > 0.8:
                 risk_adjustment = -0.05  # Very familiar behavior
