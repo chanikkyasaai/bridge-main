@@ -13,7 +13,7 @@ from enum import Enum
 import json
 
 from src.data.models import (
-    BehavioralVector, UserProfile, AuthenticationDecision, 
+    BehavioralVector, BehavioralFeatures, UserProfile, AuthenticationDecision, 
     RiskLevel, SessionPhase, LearningPhase
 )
 from src.core.ml_database import ml_db
@@ -319,10 +319,35 @@ class Phase1LearningSystem:
             # Convert stored vectors back to BehavioralVector objects
             baseline_vectors = []
             for vector_data in user_vectors[:20]:  # Keep last 20 for baseline
+                # Create a minimal BehavioralFeatures object for feature_source
+                minimal_features = BehavioralFeatures(
+                    typing_speed=0.0,
+                    keystroke_intervals=[],
+                    typing_rhythm_variance=0.0,
+                    backspace_frequency=0.0,
+                    typing_pressure=[],
+                    touch_pressure=[],
+                    touch_duration=[],
+                    touch_area=[],
+                    swipe_velocity=[],
+                    touch_coordinates=[],
+                    navigation_patterns=[],
+                    screen_time_distribution={},
+                    interaction_frequency=0.0,
+                    session_duration=0.0,
+                    device_orientation="portrait",
+                    time_of_day=12,
+                    day_of_week=1,
+                    app_version="1.0.0"
+                )
+                
                 behavioral_vector = BehavioralVector(
-                    vector=np.array(vector_data['vector_data']),
-                    confidence=vector_data['confidence_score'],
-                    timestamp=datetime.fromisoformat(vector_data['created_at'].replace('Z', '+00:00'))
+                    user_id=vector_data.get('user_id', user_id),
+                    session_id=vector_data.get('session_id', 'unknown'),
+                    vector=vector_data['vector'],  # Use the raw vector data
+                    confidence_score=vector_data.get('confidence_score', 1.0),
+                    timestamp=datetime.fromisoformat(vector_data['created_at'].replace('Z', '+00:00')),
+                    feature_source=minimal_features
                 )
                 baseline_vectors.append(behavioral_vector)
             
