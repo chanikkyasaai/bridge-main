@@ -18,8 +18,8 @@ import os
 from contextlib import asynccontextmanager
 import numpy as np
 
-# Add the src directory to the Python path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+# Add the current directory to the Python path to enable src imports
+sys.path.append(os.path.dirname(__file__))
 
 def make_json_safe(obj):
     """Make any object JSON-serializable by replacing NaN/infinity values"""
