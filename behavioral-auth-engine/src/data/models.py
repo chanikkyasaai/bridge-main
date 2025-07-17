@@ -16,6 +16,14 @@ class SessionPhase(str, Enum):
     FULL_AUTH = "full_auth"
 
 
+class LearningPhase(str, Enum):
+    """Learning phases for user behavioral profile development"""
+    COLD_START = "cold_start"
+    LEARNING = "learning"
+    GRADUAL_RISK = "gradual_risk"
+    FULL_AUTH = "full_auth"
+
+
 class RiskLevel(str, Enum):
     """Risk assessment levels."""
     LOW = "low"
