@@ -1,0 +1,426 @@
+{
+  "user_id": "0253510c-6e29-46b0-b3ec-8d612dc63765",
+  "sessions": [
+    {
+      "session_num": 1,
+      "session_id": "session_0253510c-6e29-46b0-b3ec-8d612dc63765_1",
+      "vector_id": "f623ccc2-925a-440a-bf84-2f72e7e314be",
+      "non_zero_elements": 56,
+      "learning_status": {
+        "learning_phase": "learning",
+        "vector_count": 2,
+        "sessions_needed": 3,
+        "baseline_created": false,
+        "last_updated": "2025-07-18T11:43:52.774222"
+      },
+      "result": {
+        "similarity_score": 0.9,
+        "confidence": 0.5,
+        "decision": "learn",
+        "risk_level": "low",
+        "vector_id": "f623ccc2-925a-440a-bf84-2f72e7e314be"
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "session_num": 2,
+      "session_id": "session_0253510c-6e29-46b0-b3ec-8d612dc63765_2",
+      "vector_id": "92ae4f60-cca8-4072-a3aa-003501f8576e",
+      "non_zero_elements": 56,
+      "learning_status": {
+        "learning_phase": "learning",
+        "vector_count": 4,
+        "sessions_needed": 1,
+        "baseline_created": false,
+        "last_updated": "2025-07-18T11:43:54.695251"
+      },
+      "result": {
+        "similarity_score": 0.9,
+        "confidence": 0.5,
+        "decision": "learn",
+        "risk_level": "low",
+        "vector_id": "92ae4f60-cca8-4072-a3aa-003501f8576e"
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "session_num": 3,
+      "session_id": "session_0253510c-6e29-46b0-b3ec-8d612dc63765_3",
+      "vector_id": "70d52552-976d-44fa-a611-953c97201d84",
+      "non_zero_elements": 56,
+      "learning_status": {
+        "learning_phase": "learning",
+        "vector_count": 6,
+        "sessions_needed": 0,
+        "baseline_created": false,
+        "last_updated": "2025-07-18T11:43:56.844004"
+      },
+      "result": {
+        "similarity_score": 0.9,
+        "confidence": 0.5,
+        "decision": "learn",
+        "risk_level": "low",
+        "vector_id": "70d52552-976d-44fa-a611-953c97201d84"
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "session_num": 4,
+      "session_id": "session_0253510c-6e29-46b0-b3ec-8d612dc63765_4",
+      "vector_id": "1be1efc7-a3e8-47cd-aa85-a1889b2fab59",
+      "non_zero_elements": 56,
+      "learning_status": {
+        "learning_phase": "learning",
+        "vector_count": 8,
+        "sessions_needed": 0,
+        "baseline_created": false,
+        "last_updated": "2025-07-18T11:44:02.189995"
+      },
+      "result": {
+        "similarity_score": 0.9,
+        "confidence": 0.5,
+        "decision": "learn",
+        "risk_level": "low",
+        "vector_id": "1be1efc7-a3e8-47cd-aa85-a1889b2fab59"
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "session_num": 5,
+      "session_id": "session_0253510c-6e29-46b0-b3ec-8d612dc63765_5",
+      "vector_id": "215879c9-88bf-4b67-97d7-0b95d59a8850",
+      "non_zero_elements": 56,
+      "learning_status": {
+        "learning_phase": "learning",
+        "vector_count": 10,
+        "sessions_needed": 0,
+        "baseline_created": false,
+        "last_updated": "2025-07-18T11:44:04.024833"
+      },
+      "result": {
+        "similarity_score": 0.9,
+        "confidence": 0.5,
+        "decision": "learn",
+        "risk_level": "low",
+        "vector_id": "215879c9-88bf-4b67-97d7-0b95d59a8850"
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "session_num": 6,
+      "session_id": "session_0253510c-6e29-46b0-b3ec-8d612dc63765_6",
+      "vector_id": "8ddf2193-feb2-4abb-bc40-c99430a8670e",
+      "non_zero_elements": 56,
+      "learning_status": {
+        "learning_phase": "learning",
+        "vector_count": 12,
+        "sessions_needed": 0,
+        "baseline_created": false,
+        "last_updated": "2025-07-18T11:44:05.756984"
+      },
+      "result": {
+        "similarity_score": 0.9,
+        "confidence": 0.5,
+        "decision": "learn",
+        "risk_level": "low",
+        "vector_id": "8ddf2193-feb2-4abb-bc40-c99430a8670e"
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "session_num": 7,
+      "session_id": "session_0253510c-6e29-46b0-b3ec-8d612dc63765_7",
+      "vector_id": "370843e9-c0c5-4992-912c-9af4027f85ed",
+      "non_zero_elements": 56,
+      "learning_status": {
+        "learning_phase": "learning",
+        "vector_count": 14,
+        "sessions_needed": 0,
+        "baseline_created": false,
+        "last_updated": "2025-07-18T11:44:07.724857"
+      },
+      "result": {
+        "similarity_score": 0.9,
+        "confidence": 0.5,
+        "decision": "learn",
+        "risk_level": "low",
+        "vector_id": "370843e9-c0c5-4992-912c-9af4027f85ed"
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "session_num": 8,
+      "session_id": "session_0253510c-6e29-46b0-b3ec-8d612dc63765_8",
+      "vector_id": "f8ee7bf8-0baa-4288-9557-3d8ed6f98eb4",
+      "non_zero_elements": 56,
+      "learning_status": {
+        "learning_phase": "learning",
+        "vector_count": 16,
+        "sessions_needed": 0,
+        "baseline_created": false,
+        "last_updated": "2025-07-18T11:44:13.362105"
+      },
+      "result": {
+        "similarity_score": 0.9,
+        "confidence": 0.5,
+        "decision": "learn",
+        "risk_level": "low",
+        "vector_id": "f8ee7bf8-0baa-4288-9557-3d8ed6f98eb4"
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "session_num": 9,
+      "session_id": "session_0253510c-6e29-46b0-b3ec-8d612dc63765_9",
+      "vector_id": "0d0a1855-0357-4431-a74b-084135fa4a29",
+      "non_zero_elements": 56,
+      "learning_status": {
+        "learning_phase": "learning",
+        "vector_count": 18,
+        "sessions_needed": 0,
+        "baseline_created": false,
+        "last_updated": "2025-07-18T11:44:16.835229"
+      },
+      "result": {
+        "similarity_score": 0.9,
+        "confidence": 0.5,
+        "decision": "learn",
+        "risk_level": "low",
+        "vector_id": "0d0a1855-0357-4431-a74b-084135fa4a29"
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "session_num": 10,
+      "session_id": "session_0253510c-6e29-46b0-b3ec-8d612dc63765_10",
+      "vector_id": "22ebff69-7902-43d8-8a80-2732f34aff2d",
+      "non_zero_elements": 56,
+      "learning_status": {
+        "learning_phase": "learning",
+        "vector_count": 20,
+        "sessions_needed": 0,
+        "baseline_created": false,
+        "last_updated": "2025-07-18T11:44:19.928920"
+      },
+      "result": {
+        "similarity_score": 0.9,
+        "confidence": 0.5,
+        "decision": "learn",
+        "risk_level": "low",
+        "vector_id": "22ebff69-7902-43d8-8a80-2732f34aff2d"
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "session_num": 11,
+      "session_id": "session_0253510c-6e29-46b0-b3ec-8d612dc63765_11",
+      "vector_id": "3c7449ab-ce23-46b5-a2f3-51b9caa60a68",
+      "non_zero_elements": 56,
+      "learning_status": {
+        "learning_phase": "learning",
+        "vector_count": 22,
+        "sessions_needed": 0,
+        "baseline_created": false,
+        "last_updated": "2025-07-18T11:44:22.608196"
+      },
+      "result": {
+        "similarity_score": 0.9,
+        "confidence": 0.5,
+        "decision": "learn",
+        "risk_level": "low",
+        "vector_id": "3c7449ab-ce23-46b5-a2f3-51b9caa60a68"
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "session_num": 12,
+      "session_id": "session_0253510c-6e29-46b0-b3ec-8d612dc63765_12",
+      "vector_id": "00a34a53-e092-4748-9a11-951e93c793e8",
+      "non_zero_elements": 56,
+      "learning_status": {
+        "learning_phase": "learning",
+        "vector_count": 24,
+        "sessions_needed": 0,
+        "baseline_created": false,
+        "last_updated": "2025-07-18T11:44:24.096203"
+      },
+      "result": {
+        "similarity_score": 0.9,
+        "confidence": 0.5,
+        "decision": "learn",
+        "risk_level": "low",
+        "vector_id": "00a34a53-e092-4748-9a11-951e93c793e8"
+      },
+      "success": true,
+      "error": null
+    }
+  ],
+  "phase_transitions": [],
+  "final_status": {
+    "learning_phase": "learning",
+    "vector_count": 24,
+    "sessions_needed": 0,
+    "baseline_created": false,
+    "last_updated": "2025-07-18T11:44:24.096203"
+  },
+  "cumulative_analysis": {
+    "cumulative_vector_count": 24,
+    "vector_analysis": [
+      {
+        "update_number": 1,
+        "timestamp": "2025-07-18T11:43:51.884404",
+        "non_zero_elements": 56,
+        "vector_norm": 1.0000000521556267
+      },
+      {
+        "update_number": 2,
+        "timestamp": "2025-07-18T11:43:52.36826",
+        "non_zero_elements": 56,
+        "vector_norm": 1.0000000532709312
+      },
+      {
+        "update_number": 3,
+        "timestamp": "2025-07-18T11:43:53.717637",
+        "non_zero_elements": 56,
+        "vector_norm": 1.0000000434560175
+      },
+      {
+        "update_number": 4,
+        "timestamp": "2025-07-18T11:43:54.30095",
+        "non_zero_elements": 56,
+        "vector_norm": 1.00000000786254
+      },
+      {
+        "update_number": 5,
+        "timestamp": "2025-07-18T11:43:55.844353",
+        "non_zero_elements": 56,
+        "vector_norm": 0.9999999834498869
+      },
+      {
+        "update_number": 6,
+        "timestamp": "2025-07-18T11:43:56.531314",
+        "non_zero_elements": 56,
+        "vector_norm": 1.0000000094957946
+      },
+      {
+        "update_number": 7,
+        "timestamp": "2025-07-18T11:44:00.593373",
+        "non_zero_elements": 56,
+        "vector_norm": 1.0000000082377984
+      },
+      {
+        "update_number": 8,
+        "timestamp": "2025-07-18T11:44:01.832781",
+        "non_zero_elements": 56,
+        "vector_norm": 1.0000000292751547
+      },
+      {
+        "update_number": 9,
+        "timestamp": "2025-07-18T11:44:03.046022",
+        "non_zero_elements": 56,
+        "vector_norm": 1.0000000050148492
+      },
+      {
+        "update_number": 10,
+        "timestamp": "2025-07-18T11:44:03.607407",
+        "non_zero_elements": 56,
+        "vector_norm": 0.9999999775681396
+      },
+      {
+        "update_number": 11,
+        "timestamp": "2025-07-18T11:44:04.852927",
+        "non_zero_elements": 56,
+        "vector_norm": 1.0000000186864095
+      },
+      {
+        "update_number": 12,
+        "timestamp": "2025-07-18T11:44:05.276465",
+        "non_zero_elements": 56,
+        "vector_norm": 1.000000022533775
+      },
+      {
+        "update_number": 13,
+        "timestamp": "2025-07-18T11:44:06.663694",
+        "non_zero_elements": 56,
+        "vector_norm": 1.0000000404763443
+      },
+      {
+        "update_number": 14,
+        "timestamp": "2025-07-18T11:44:08.047828",
+        "non_zero_elements": 56,
+        "vector_norm": 0.9999999742539937
+      },
+      {
+        "update_number": 15,
+        "timestamp": "2025-07-18T11:44:12.205871",
+        "non_zero_elements": 56,
+        "vector_norm": 1.0000000088262813
+      },
+      {
+        "update_number": 16,
+        "timestamp": "2025-07-18T11:44:13.400493",
+        "non_zero_elements": 56,
+        "vector_norm": 0.9999999506497469
+      },
+      {
+        "update_number": 17,
+        "timestamp": "2025-07-18T11:44:15.947864",
+        "non_zero_elements": 56,
+        "vector_norm": 0.9999999688719386
+      },
+      {
+        "update_number": 18,
+        "timestamp": "2025-07-18T11:44:16.379811",
+        "non_zero_elements": 56,
+        "vector_norm": 1.0000000193530523
+      },
+      {
+        "update_number": 19,
+        "timestamp": "2025-07-18T11:44:18.752281",
+        "non_zero_elements": 56,
+        "vector_norm": 1.00000000977487
+      },
+      {
+        "update_number": 20,
+        "timestamp": "2025-07-18T11:44:19.918513",
+        "non_zero_elements": 56,
+        "vector_norm": 0.9999999889892108
+      },
+      {
+        "update_number": 21,
+        "timestamp": "2025-07-18T11:44:21.524732",
+        "non_zero_elements": 56,
+        "vector_norm": 0.999999969971002
+      },
+      {
+        "update_number": 22,
+        "timestamp": "2025-07-18T11:44:22.131795",
+        "non_zero_elements": 56,
+        "vector_norm": 0.9999999790403651
+      },
+      {
+        "update_number": 23,
+        "timestamp": "2025-07-18T11:44:23.207127",
+        "non_zero_elements": 56,
+        "vector_norm": 0.9999999907531449
+      },
+      {
+        "update_number": 24,
+        "timestamp": "2025-07-18T11:44:23.620847",
+        "non_zero_elements": 56,
+        "vector_norm": 1.0000000481873907
+      }
+    ]
+  }
+}

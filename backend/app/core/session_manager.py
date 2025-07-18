@@ -2,12 +2,14 @@ import asyncio
 import json
 import logging
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from typing import Dict, List, Optional, Any
 from collections import deque
 import aiofiles
 import os
 from app.core.config import settings
+
+logging = logging.getLogger(__name__)
 
 class BehavioralData:
     """Structure to hold behavioral data points"""
@@ -35,6 +37,9 @@ class UserSession:
         self.websocket_connection = None
         self.ended_at = None
         self.session_token = None  # JWT session token for this session
+        self.ml_batch_buffer = []
+        self.ml_batch_buffer_lock = asyncio.Lock()
+        self.ml_last_flush = datetime.utcnow()
         self.user_phase = None  # Track user's learning phase
         self.session_count = 0  # Track user's session count
         
@@ -311,6 +316,8 @@ class SessionManager:
             print(f"Failed to create session in Supabase: {e}")
             supabase_session_id = None
         
+        logging.info(f"Supabase session created: {supabase_session_id}")
+
         # Create local session object
         session = UserSession(session_id, user_id, phone, device_id, supabase_session_id)
         session.session_token = session_token  # Set the session token
@@ -339,6 +346,7 @@ class SessionManager:
             self.user_sessions[user_id] = []
         self.user_sessions[user_id].append(session_id)
         
+        logging.info(f"Created session: {session_id}")
         print(f"Created session: {session_id}")
         return session_id
     

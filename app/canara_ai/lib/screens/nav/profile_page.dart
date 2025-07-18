@@ -73,6 +73,8 @@ class _ProfilePageState extends State<ProfilePage> {
       if (context.mounted) {
         BehaviorMonitorState? monitorState = context.findAncestorStateOfType<BehaviorMonitorState>();
         await monitorState?.sendUserLogoutEvent();
+
+        print('Logout event sent');
       }
 
       dio.interceptors.add(AuthInterceptor(dio, tokenStorage));

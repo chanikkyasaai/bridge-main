@@ -38,30 +38,59 @@ class _HomePageState extends State<HomePage> {
   late BehaviorRouteTracker tracker;
 
   Future<bool> _onWillPop(BuildContext context) async {
+    print('DEBUG: _onWillPop called'); // Debug print to trace back press
     final shouldExit = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Exit App'),
-        content: Text('Do you want to close the app?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 8),
+            Container(
+              decoration: BoxDecoration(
+                color: canaraBlue.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.all(8),
+              child: Image.asset(
+                'assets/icons/bank.png',
+                height: 48,
+                width: 48,
+                fit: BoxFit.contain,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Exit App',
+              style: TextStyle(
+                color: canaraBlue,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Do you want to close the app?',
+          style: TextStyle(color: canaraDarkBlue, fontSize: 16),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('No'),
+            child: Text('No', style: TextStyle(color: canaraBlue, fontWeight: FontWeight.bold)),
           ),
           TextButton(
             onPressed: () async {
               BehaviorMonitorState? monitorState = context.findAncestorStateOfType<BehaviorMonitorState>();
               await monitorState?.sendUserCloseEvent();
-
-              print('end session'); 
-
+              print('end session');
               await logger.endSession('app_close');
-
               if(context.mounted) {
                 Navigator.of(context).pop(true);
               }
             },
-            child: Text('Yes'),
+            child: Text('Yes', style: TextStyle(color: canaraBlue, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -147,27 +176,29 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Ensure WillPopScope wraps the Scaffold and is not nested in a way that could be bypassed
     return WillPopScope(
-        onWillPop: () async => await _onWillPop(context),
-        child: Scaffold(
-          backgroundColor: const Color(0xFFF7F9FB),
-          body: SafeArea(
-            child: IndexedStack(
-              index: _selectedIndex,
-              children: _pages,
-            ),
+      onWillPop: () async => await _onWillPop(context),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7F9FB),
+        body: SafeArea(
+          child: IndexedStack(
+            index: _selectedIndex,
+            children: _pages,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-          floatingActionButton: FloatingActionButton(
-            backgroundColor: canaraBlue,
-            onPressed: () {
-              logger.sendEvent('fab_qr_tap', {'from': _tabName(_selectedIndex)}); // ✅ log QR tap here too
-              _showQRScanSheet();
-            },
-            child: const Icon(Icons.qr_code, color: Colors.white),
-          ),
-          bottomNavigationBar: _customNavBar(),
-        ));
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: canaraBlue,
+          onPressed: () {
+            logger.sendEvent('fab_qr_tap', {'from': _tabName(_selectedIndex)}); // ✅ log QR tap here too
+            _showQRScanSheet();
+          },
+          child: const Icon(Icons.qr_code, color: Colors.white),
+        ),
+        bottomNavigationBar: _customNavBar(),
+      ),
+    );
   }
 
   void _onNavBarItemTapped(int index, String label) {

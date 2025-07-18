@@ -29,6 +29,7 @@ class BehaviorMonitorState extends State<BehaviorMonitor> with WidgetsBindingObs
   final tokenstorage = TokenStorage();
   final dio = Dio();
   String? sessionId;
+  String? sessionToken;
 
   /// The sensor tracker instance
   late final SensorTracker sensorTracker;
@@ -52,23 +53,24 @@ class BehaviorMonitorState extends State<BehaviorMonitor> with WidgetsBindingObs
   /// Call this to log a user logout event.
   Future<void> sendUserLogoutEvent() async {
     _exitReason = 'user_logout';
+    await widget.logger.endSession(_exitReason!); // Also end logger session and disable logging
     await _sendExitEvent();
-    // await widget.logger.endSession(_exitReason!);
   }
 
   Future<void> sendUserCloseEvent() async {
     _exitReason = 'app_close';
+    await widget.logger.endSession(_exitReason!); // Also end logger session and disable logging
     await _sendExitEvent();
   }
 
   /// Sends an exit event (logout, app close, etc.) to the backend.
   /// If sending fails, saves the event locally for retry.
   Future<void> _sendExitEvent() async {
-    final payload = {'session_id': sessionId ?? widget.logger.sessionId, 'event_type': _exitReason ?? 'app_close', 'session_token': widget.logger.sessionToken};
+    final payload = {'session_id': sessionId ?? widget.logger.sessionId, 'reason': _exitReason ?? 'app_close', 'session_token': sessionToken ?? widget.logger.sessionToken};
 
     try {
       // Ensure Dio has up-to-date token access
-      dio.interceptors.clear(); // avoid duplicate interceptors
+      dio.interceptors.clear();
       dio.interceptors.add(AuthInterceptor(dio, tokenstorage));
 
       final response = await dio.post('${Endpoints.baseUrl}${Endpoints.log_exit}', data: payload);
@@ -102,6 +104,7 @@ class BehaviorMonitorState extends State<BehaviorMonitor> with WidgetsBindingObs
     WidgetsBinding.instance.addObserver(this);
 
     sessionId = widget.logger.sessionId;
+    sessionToken = widget.logger.sessionToken;
     _resetIdleTimer();
 
     sensorTracker = SensorTracker(widget.logger);
@@ -216,7 +219,6 @@ class BehaviorMonitorState extends State<BehaviorMonitor> with WidgetsBindingObs
 
           return false;
         },
-
         child: Builder(
           builder: (context) {
             sensorTracker.trackOrientation(context);

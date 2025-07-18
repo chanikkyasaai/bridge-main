@@ -7,10 +7,12 @@ from app.api.v1.endpoints.auth import get_current_user
 from app.core.session_manager import session_manager
 from app.core.security import extract_session_info
 from app.core.supabase_client import supabase_client
+import logging
 
 router = APIRouter()
 security = HTTPBearer()
 
+logging = logging.getLogger(__name__)
 
 class StartSessionRequest(BaseModel):
     phone: str
@@ -50,6 +52,19 @@ class AppStateRequest(BaseModel):
     state: str  # "background", "foreground", "minimized", "restored"
     details: Optional[Dict[str, Any]] = None
 
+
+try:
+    from app.ml_hooks import end_session_hook
+    ML_INTEGRATION_AVAILABLE = True
+
+    print("Imported ML-Engine integration in logging")
+except ImportError:
+    print("ML-Engine integration not available in logging")
+
+    async def end_session_hook(*args, **kwargs):
+        return None
+    ML_INTEGRATION_AVAILABLE = False
+
 @router.post("/start-session", response_model=SessionResponse)
 async def start_session(request: StartSessionRequest, current_user: dict = Depends(get_current_user)):
     """
@@ -72,7 +87,6 @@ async def start_session(request: StartSessionRequest, current_user: dict = Depen
             phone=request.phone,
             device_id=request.device_id,
             session_token=session_token,
-            context=request.context
         )
         
         session = session_manager.get_session(session_id)
@@ -145,7 +159,6 @@ async def log_behavior_data(
 @router.post("/end-session")
 async def end_session(
     request: EndSessionRequest,
-    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     """
     End session and upload all behavioral data to Supabase Storage
@@ -173,6 +186,14 @@ async def end_session(
             request.session_id, 
             final_decision
         )
+        
+        # --- ML Engine Integration: Call end_session_hook if available ---
+        try:
+            if ML_INTEGRATION_AVAILABLE:
+                await end_session_hook(request.session_id, final_decision)
+        except Exception as e:
+            import logging
+            logging.warning(f"ML end_session_hook failed: {e}")
         
         if not success:
             raise HTTPException(
@@ -289,7 +310,6 @@ async def get_session_logs(
 @router.post("/app-close")
 async def handle_app_close(
     request: AppCloseRequest,
-    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     """
     Handle explicit app closure by terminating the session and saving behavioral data
