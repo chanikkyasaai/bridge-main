@@ -436,6 +436,130 @@ class MLSupabaseClient:
             logger.error(f"Database health check failed: {e}")
             return False
 
+    # ============================================================================
+    # ENHANCED VECTOR STORAGE (NEW METHODS)
+    # ============================================================================
+    
+    async def store_enhanced_vector(
+        self, 
+        user_id: str, 
+        session_id: str, 
+        vector_data: List[float], 
+        vector_type: str,
+        confidence_score: float,
+        feature_source: str,
+        metadata: Dict[str, Any] = None
+    ) -> Optional[str]:
+        """Store enhanced behavioral vector with type and metadata"""
+        try:
+            vector_record = {
+                'user_id': user_id,
+                'session_id': session_id,
+                'vector_data': vector_data,
+                'vector_type': vector_type,
+                'confidence_score': confidence_score,
+                'feature_source': feature_source,
+                'metadata': metadata or {}
+            }
+            
+            result = self.supabase.table('enhanced_behavioral_vectors').insert(vector_record).execute()
+            if result.data:
+                vector_id = result.data[0]['id']
+                logger.info(f"Stored {vector_type} vector {vector_id} for user {user_id}")
+                return vector_id
+            return None
+        except Exception as e:
+            logger.error(f"Failed to store enhanced vector for {user_id}: {e}")
+            return None
+
+    async def get_vectors_by_type(self, vector_type: str, limit: int = 1000) -> List[Dict[str, Any]]:
+        """Get vectors by type (session, cumulative, baseline)"""
+        try:
+            result = self.supabase.table('enhanced_behavioral_vectors')\
+                .select('*')\
+                .eq('vector_type', vector_type)\
+                .order('created_at', desc=True)\
+                .limit(limit)\
+                .execute()
+            
+            return result.data if result.data else []
+        except Exception as e:
+            logger.error(f"Failed to get vectors by type {vector_type}: {e}")
+            return []
+
+    async def get_user_recent_vectors(self, user_id: str, vector_type: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """Get recent vectors for a user by type"""
+        try:
+            result = self.supabase.table('enhanced_behavioral_vectors')\
+                .select('*')\
+                .eq('user_id', user_id)\
+                .eq('vector_type', vector_type)\
+                .order('created_at', desc=True)\
+                .limit(limit)\
+                .execute()
+            
+            return result.data if result.data else []
+        except Exception as e:
+            logger.error(f"Failed to get recent {vector_type} vectors for {user_id}: {e}")
+            return []
+
+    async def get_user_vector_stats(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get vector statistics for a user"""
+        try:
+            # Use the PostgreSQL function we created
+            result = self.supabase.rpc('get_user_vector_stats', {'target_user_id': user_id}).execute()
+            
+            if result.data and len(result.data) > 0:
+                return result.data[0]
+            
+            # Fallback to manual calculation
+            session_count = len(await self.get_user_recent_vectors(user_id, 'session', 1000))
+            cumulative_count = len(await self.get_user_recent_vectors(user_id, 'cumulative', 100))
+            baseline_count = len(await self.get_user_recent_vectors(user_id, 'baseline', 10))
+            
+            return {
+                'user_id': user_id,
+                'session_vector_count': session_count,
+                'cumulative_vector_count': cumulative_count,
+                'baseline_vector_count': baseline_count,
+                'total_vectors': session_count + cumulative_count + baseline_count
+            }
+        except Exception as e:
+            logger.error(f"Failed to get vector stats for {user_id}: {e}")
+            return None
+
+    async def get_latest_cumulative_vector(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get the latest cumulative vector for a user"""
+        try:
+            result = self.supabase.table('enhanced_behavioral_vectors')\
+                .select('*')\
+                .eq('user_id', user_id)\
+                .eq('vector_type', 'cumulative')\
+                .order('created_at', desc=True)\
+                .limit(1)\
+                .execute()
+            
+            return result.data[0] if result.data else None
+        except Exception as e:
+            logger.error(f"Failed to get latest cumulative vector for {user_id}: {e}")
+            return None
+
+    async def get_baseline_vector(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get the baseline vector for a user"""
+        try:
+            result = self.supabase.table('enhanced_behavioral_vectors')\
+                .select('*')\
+                .eq('user_id', user_id)\
+                .eq('vector_type', 'baseline')\
+                .order('created_at', desc=True)\
+                .limit(1)\
+                .execute()
+            
+            return result.data[0] if result.data else None
+        except Exception as e:
+            logger.error(f"Failed to get baseline vector for {user_id}: {e}")
+            return None
+
 # Global instance
 ml_db = MLSupabaseClient()
     

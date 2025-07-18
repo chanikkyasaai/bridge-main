@@ -46,6 +46,8 @@ from src.core.ml_database import ml_db
 from src.data.behavioral_processor import BehavioralProcessor
 from src.layers.faiss_layer import FAISSLayer
 from src.layers.adaptive_layer import AdaptiveLayer
+from src.core.enhanced_faiss_engine import EnhancedFAISSEngine
+from src.core.enhanced_behavioral_processor import EnhancedBehavioralProcessor
 from src.data.models import BehavioralFeatures, BehavioralVector, AuthenticationDecision
 from src.config.settings import get_settings
 
@@ -62,11 +64,12 @@ faiss_layer = None
 adaptive_layer = None
 learning_system = None
 continuous_analysis = None
+enhanced_faiss_engine = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifespan"""
-    global vector_store, session_manager, behavioral_processor, faiss_layer, adaptive_layer, learning_system, continuous_analysis
+    global vector_store, session_manager, behavioral_processor, faiss_layer, adaptive_layer, learning_system, continuous_analysis, enhanced_faiss_engine
     
     # Startup
     try:
@@ -84,7 +87,11 @@ async def lifespan(app: FastAPI):
         session_manager = SessionManager(vector_store)  # Pass vector_store
         behavioral_processor = BehavioralProcessor()
         
-        # Initialize ML layers
+        # Initialize Enhanced FAISS Engine
+        enhanced_faiss_engine = EnhancedFAISSEngine(vector_dimension=90)
+        await enhanced_faiss_engine.initialize()
+        
+        # Initialize ML layers (legacy support)
         faiss_layer = FAISSLayer(vector_store)
         adaptive_layer = AdaptiveLayer(vector_store)
         
@@ -94,7 +101,7 @@ async def lifespan(app: FastAPI):
         # Initialize Phase 2 Continuous Analysis
         continuous_analysis = Phase2ContinuousAnalysis(vector_store, faiss_layer, adaptive_layer)
         
-        logger.info("ML Engine initialized successfully with Phase 1 & 2 systems")
+        logger.info("ML Engine initialized successfully with Enhanced FAISS Engine & Phase 1 & 2 systems")
         
     except Exception as e:
         logger.error(f"Failed to initialize ML Engine: {e}")
@@ -127,6 +134,11 @@ class BehavioralEvent(BaseModel):
     timestamp: str
     data: Dict[str, Any]
 
+class MobileBehavioralDataRequest(BaseModel):
+    user_id: str
+    session_id: str
+    logs: List[Dict[str, Any]]  # Raw behavioral logs from mobile
+
 class SessionStartRequest(BaseModel):
     user_id: str
     session_id: str
@@ -155,7 +167,7 @@ class MLEngineStatus(BaseModel):
 
 @app.get("/", response_model=MLEngineStatus)
 async def health_check():
-    """Health check endpoint with Phase 1 & 2 systems"""
+    """Health check endpoint with Enhanced FAISS Engine & Phase 1 & 2 systems"""
     try:
         components_status = {
             "vector_store": vector_store is not None,
@@ -165,6 +177,7 @@ async def health_check():
             "adaptive_layer": adaptive_layer is not None,
             "learning_system": learning_system is not None,
             "continuous_analysis": continuous_analysis is not None,
+            "enhanced_faiss_engine": enhanced_faiss_engine is not None,
             "database": await ml_db.health_check()
         }
         
@@ -176,6 +189,8 @@ async def health_check():
             stats["adaptive"] = await adaptive_layer.get_layer_statistics()
         if session_manager:
             stats["sessions"] = await session_manager.get_session_statistics()
+        if enhanced_faiss_engine:
+            stats["enhanced_faiss"] = await enhanced_faiss_engine.get_layer_statistics()
         if learning_system:
             stats["learning"] = await learning_system.get_learning_statistics()
         if continuous_analysis:
@@ -238,7 +253,7 @@ async def start_session(request: SessionStartRequest):
 
 @app.post("/session/end")
 async def end_session(request: SessionEndRequest):
-    """End a behavioral analysis session"""
+    """End a behavioral analysis session with cumulative vector update"""
     try:
         logger.info(f"Ending session {request.session_id}")
         
@@ -250,6 +265,45 @@ async def end_session(request: SessionEndRequest):
                 "risk_scores": session_context.risk_scores,
                 "session_duration": (datetime.utcnow() - session_context.created_at).total_seconds()
             }
+            
+            # CRITICAL: Update cumulative vector at session end
+            if session_context.behavioral_events:
+                try:
+                    # Process all behavioral events from this session into a final session vector
+                    if hasattr(request, 'user_id') and request.user_id:
+                        user_id = request.user_id
+                    else:
+                        # Extract user_id from session context
+                        user_id = session_context.user_id
+                    
+                    # Get the latest session vector for this session from database
+                    session_vectors_result = ml_db.supabase.table('enhanced_behavioral_vectors')\
+                        .select('*')\
+                        .eq('session_id', request.session_id)\
+                        .eq('vector_type', 'session')\
+                        .order('created_at', desc=True)\
+                        .limit(1)\
+                        .execute()
+                    
+                    if session_vectors_result.data:
+                        session_vector_data = session_vectors_result.data[0]['vector_data']
+                        session_vector = np.array(session_vector_data)
+                        
+                        # Update cumulative vector using enhanced FAISS engine
+                        if enhanced_faiss_engine:
+                            await enhanced_faiss_engine._update_cumulative_vector(
+                                user_id, 
+                                session_vector, 
+                                "allow"  # Assume successful session completion
+                            )
+                            
+                            # Check if user should transition learning phases
+                            await enhanced_faiss_engine._check_learning_phase_transition(user_id)
+                            
+                            logger.info(f"Updated cumulative vector for user {user_id} at session end")
+                        
+                except Exception as e:
+                    logger.warning(f"Failed to update cumulative vector at session end: {e}")
         else:
             stats = {}
         
@@ -260,11 +314,84 @@ async def end_session(request: SessionEndRequest):
             "status": "success",
             "session_id": request.session_id,
             "session_statistics": stats,
-            "message": "Session ended successfully"
+            "message": "Session ended successfully with cumulative update"
         }
         
     except Exception as e:
         logger.error(f"Failed to end session: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/analyze-mobile")
+async def analyze_mobile_behavioral_data(request: MobileBehavioralDataRequest):
+    """
+    Enhanced endpoint for processing mobile behavioral data
+    Uses Enhanced FAISS Engine with proper vector embeddings
+    """
+    try:
+        logger.info(f"Processing mobile behavioral data for session {request.session_id}")
+        
+        # Ensure session exists in SessionManager
+        try:
+            session_context = session_manager.get_session_context(request.session_id)
+            if not session_context:
+                # Create session in SessionManager with the specific session_id
+                created_session_id = await session_manager.create_session(
+                    user_id=request.user_id,
+                    session_id=request.session_id
+                )
+                logger.info(f"Created SessionManager session {created_session_id} for mobile data analysis")
+        except Exception as e:
+            logger.warning(f"SessionManager session creation failed: {e} - continuing with analysis")
+        
+        # Get user profile for learning phase determination
+        user_profile = await ml_db.get_user_profile(request.user_id)
+        learning_phase = user_profile.get('current_phase', 'learning') if user_profile else 'learning'
+        
+        # Process using Enhanced FAISS Engine
+        analysis_result = await enhanced_faiss_engine.process_behavioral_data(
+            user_id=request.user_id,
+            session_id=request.session_id,
+            behavioral_logs=request.logs,
+            learning_phase=learning_phase
+        )
+        
+        # Create response
+        response = {
+            "status": "success",
+            "decision": analysis_result.decision,
+            "confidence": analysis_result.confidence,
+            "risk_score": 1.0 - analysis_result.similarity_score,  # Convert similarity to risk
+            "risk_level": analysis_result.risk_level,
+            "similarity_score": analysis_result.similarity_score,
+            "analysis_type": "enhanced_faiss",
+            "processing_time_ms": 0,  # Will be calculated
+            "risk_factors": analysis_result.risk_factors,
+            "similar_vectors": analysis_result.similar_vectors,
+            "vector_id": analysis_result.vector_id,
+            "learning_phase": learning_phase,
+            "message": f"Enhanced FAISS analysis - {analysis_result.decision} decision"
+        }
+        
+        # Store session behavioral event
+        try:
+            await session_manager.add_behavioral_event(
+                request.session_id,
+                {
+                    "logs": request.logs,
+                    "analysis_result": response,
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "analysis_engine": "enhanced_faiss"
+                }
+            )
+        except Exception as e:
+            logger.warning(f"Failed to store session event: {e}")
+        
+        # Make response JSON-safe
+        safe_response = make_json_safe(response)
+        return safe_response
+        
+    except Exception as e:
+        logger.error(f"Failed to analyze mobile behavioral data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/analyze")

@@ -1,0 +1,15 @@
+{
+  "user_id": "40d9a9fa-bfe9-45a9-9252-55684de08114",
+  "sessions": [
+    {
+      "session_num": 1,
+      "session_id": "session_40d9a9fa-bfe9-45a9-9252-55684de08114_1",
+      "vector_id": null,
+      "non_zero_elements": 22,
+      "learning_status": {
+        "learning_phase": "learning",
+        "vector_count": 0,
+        "sessions_needed": 5,
+        "baseline_created": false
+      },
+      "result": 
