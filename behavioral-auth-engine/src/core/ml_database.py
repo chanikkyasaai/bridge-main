@@ -438,3 +438,4 @@ class MLSupabaseClient:
 
 # Global instance
 ml_db = MLSupabaseClient()
+    

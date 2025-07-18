@@ -52,6 +52,7 @@ def create_session_token(phone: str, device_id: str, user_id: str, session_id: s
     """Create a session token for WebSocket and session management"""
     expire = datetime.utcnow() + timedelta(minutes=settings.SESSION_EXPIRE_MINUTES)
     
+    print("Creating session token with key", settings.SECRET_KEY)
     session_data = {
         "user_phone": phone,
         "user_id": user_id,

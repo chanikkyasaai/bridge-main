@@ -26,6 +26,14 @@ class _DirectPayPageState extends State<DirectPayPage> with SingleTickerProvider
   final _beneficiaryController = TextEditingController();
   final _nickNameController = TextEditingController();
 
+  // Controllers for Other Bank forms
+  final _mobileController = TextEditingController();
+  final _mmidController = TextEditingController();
+  final _otherBankBeneficiaryController = TextEditingController();
+  final _otherBankNickNameController = TextEditingController();
+  final _otherBankNameAsPerBankController = TextEditingController();
+  final _accountIfscNameAsPerBankController = TextEditingController();
+
   late final BehaviorLogger logger;
   late BehaviorRouteTracker tracker;
 
@@ -54,6 +62,12 @@ class _DirectPayPageState extends State<DirectPayPage> with SingleTickerProvider
     _ifscController.dispose();
     _beneficiaryController.dispose();
     _nickNameController.dispose();
+    _mobileController.dispose();
+    _mmidController.dispose();
+    _otherBankBeneficiaryController.dispose();
+    _otherBankNickNameController.dispose();
+    _otherBankNameAsPerBankController.dispose();
+    _accountIfscNameAsPerBankController.dispose();
     super.dispose();
 
     routeObserver.unsubscribe(tracker);
@@ -127,12 +141,6 @@ class _DirectPayPageState extends State<DirectPayPage> with SingleTickerProvider
   }
 
   Widget _otherBankForm() {
-    // Controllers for new fields
-    final _mobileController = TextEditingController();
-    final _mmidController = TextEditingController();
-    final _otherBankBeneficiaryController = TextEditingController();
-    final _otherBankNickNameController = TextEditingController();
-
     Widget mobileBankForm() => Column(
           children: [
             TextField(
@@ -190,7 +198,7 @@ class _DirectPayPageState extends State<DirectPayPage> with SingleTickerProvider
                 style: TextStyle(fontSize: 11, color: Colors.black54),
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 24),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(44),
@@ -265,7 +273,7 @@ class _DirectPayPageState extends State<DirectPayPage> with SingleTickerProvider
                 style: TextStyle(fontSize: 11, color: Colors.black54),
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 24),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(44),
@@ -331,6 +339,7 @@ class _DirectPayPageState extends State<DirectPayPage> with SingleTickerProvider
                             ),
                             const SizedBox(height: 12),
                             TextField(
+                              controller: _accountIfscNameAsPerBankController,
                               decoration: const InputDecoration(labelText: 'Name as per Beneficiary Bank'),
                             ),
                             const SizedBox(height: 16),
@@ -358,7 +367,7 @@ class _DirectPayPageState extends State<DirectPayPage> with SingleTickerProvider
                                 style: TextStyle(fontSize: 11, color: Colors.black54),
                               ),
                             ),
-                            const Spacer(),
+                            const SizedBox(height: 24),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 minimumSize: const Size.fromHeight(44),

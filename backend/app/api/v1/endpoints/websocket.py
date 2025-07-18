@@ -9,49 +9,50 @@ from app.core.security import extract_session_info
 
 # ML-Engine Integration
 try:
-    from ml_hooks import behavioral_event_hook
+    from app.ml_hooks import behavioral_event_hook
     ML_INTEGRATION_AVAILABLE = True
 
     print("Imported ML-Engine integration in websocket")
 except ImportError:
     print("ML-Engine integration not available in websocket")
+
     async def behavioral_event_hook(*args, **kwargs):
         return None
     ML_INTEGRATION_AVAILABLE = False
 
 router = APIRouter()
 
+
 class WebSocketManager:
     """Manages WebSocket connections for behavioral data collection"""
-    
+
     def __init__(self):
         self.active_connections: Dict[str, WebSocket] = {}
-        
-    
+
     async def connect(self, websocket: WebSocket, session_id: str):
         """Accept WebSocket connection and link to session"""
         await websocket.accept()
         self.active_connections[session_id] = websocket
-        
+
         # Link WebSocket to session
         session = session_manager.get_session(session_id)
         if session:
             session.websocket_connection = websocket
-        
+
         print(f"WebSocket connected for session: {session_id}")
-    
+
     def disconnect(self, session_id: str):
         """Remove WebSocket connection"""
         if session_id in self.active_connections:
             del self.active_connections[session_id]
-        
+
         # Unlink from session
         session = session_manager.get_session(session_id)
         if session:
             session.websocket_connection = None
-        
+
         print(f"WebSocket disconnected for session: {session_id}")
-    
+
     async def send_message(self, session_id: str, message: dict):
         """Send message to specific session"""
         if session_id in self.active_connections:
@@ -61,15 +62,17 @@ class WebSocketManager:
             except Exception as e:
                 print(f"Failed to send message to {session_id}: {e}")
                 self.disconnect(session_id)
-    
+
     async def broadcast_to_user(self, user_id: str, message: dict):
         """Send message to all sessions of a user"""
         user_sessions = session_manager.get_user_sessions(user_id)
         for session in user_sessions:
             await self.send_message(session.session_id, message)
 
+
 # Global WebSocket manager
 websocket_manager = WebSocketManager()
+
 
 @router.websocket("/behavior/{session_id}")
 async def behavioral_websocket(websocket: WebSocket, session_id: str, token: str = Query(...)):
@@ -82,27 +85,27 @@ async def behavioral_websocket(websocket: WebSocket, session_id: str, token: str
         if not session_info:
             await websocket.close(code=1008, reason="Invalid session token")
             return
-        
+
         # Get session from session manager
         session = session_manager.get_session(session_id)
         if not session:
             await websocket.close(code=1008, reason="Session not found")
             return
-            
+
         if session.is_blocked:
             await websocket.close(code=1008, reason="Session is blocked")
             return
-        
+
         # Verify that the token belongs to this session's user
         token_user_id = session_info.get("user_id")
         token_phone = session_info.get("user_phone")
-        
+
         if token_user_id != session.user_id or token_phone != session.phone:
             await websocket.close(code=1008, reason="Token does not match session user")
             return
-        
+
         await websocket_manager.connect(websocket, session_id)
-        
+
         # Send initial connection confirmation
         await websocket.send_text(json.dumps({
             "type": "connection_established",
@@ -143,7 +146,7 @@ async def behavioral_websocket(websocket: WebSocket, session_id: str, token: str
     except WebSocketDisconnect:
         websocket_manager.disconnect(session_id)
         print(f"WebSocket disconnected for session: {session_id}")
-        
+
         # Handle graceful session cleanup on WebSocket disconnect
         await handle_websocket_disconnect(session_id)
     except Exception as e:
@@ -153,6 +156,7 @@ async def behavioral_websocket(websocket: WebSocket, session_id: str, token: str
         except:
             pass
 
+
 async def process_behavioral_data(session_id: str, behavioral_event: Dict[str, Any]):
     """
     Process incoming behavioral data and update session
@@ -160,56 +164,58 @@ async def process_behavioral_data(session_id: str, behavioral_event: Dict[str, A
     session = session_manager.get_session(session_id)
     if not session:
         return
-    
+
     # Validate required fields
     if "event_type" not in behavioral_event:
         raise ValueError("Missing event_type in behavioral data")
-    
+
     event_type = behavioral_event["event_type"]
-    event_data = behavioral_event["features"]
-    
-    # Log event    
-    print(f"Processing behavioral event: {event_type} @ websocket")
-    print(f"Event data: {event_data}")
-    
+    event_data = behavioral_event["data"]
+
+    # Log event
+    logging.info(f"Processing behavioral event: {event_type} @ websocket")
+    logging.info(f"Event data: {event_data}")
+
     # Store behavioral data
     session.add_behavioral_data(event_type, event_data)
-    
-    # Process through ML-Engine for real-time authentication
-    ml_response = None
-    
-    combined_event = {
-        "event_type": event_type,
-        "event_data": event_data
-    }
 
-    
-    print(f"ML-Engine integration available: {ML_INTEGRATION_AVAILABLE}")
-    if ML_INTEGRATION_AVAILABLE:
+    # --- Batching logic for ML analysis ---
+    if not hasattr(session, "ml_batch_buffer"):
+        session.ml_batch_buffer = []
+    if not hasattr(session, "ml_last_flush"):
+        session.ml_last_flush = datetime.utcnow()
+    session.ml_batch_buffer.append({
+        "event_type": event_type,
+        "timestamp": datetime.utcnow().isoformat(),
+        "data": event_data
+    })
+    BATCH_SIZE = 25  # You can tune this between 20-30 as needed
+    FLUSH_INTERVAL = 2.0  # seconds
+    ml_response = None
+    now_ts = datetime.utcnow()
+    time_since_last_flush = now_ts - session.ml_last_flush
+    should_flush = False
+    if len(session.ml_batch_buffer) >= BATCH_SIZE:
+        should_flush = True
+    elif time_since_last_flush.total_seconds() >= FLUSH_INTERVAL and len(session.ml_batch_buffer) > 0:
+        should_flush = True
+
+    if ML_INTEGRATION_AVAILABLE and should_flush:
         try:
-            # Collect recent events for ML analysis (last 10 events including current)
-            recent_events = session.behavioral_buffer[-9:] if len(
-                session.behavioral_buffer) > 9 else session.behavioral_buffer[:]
-            
-            # Add current event to the list for analysis
-            current_event = {
-                "event_type": event_type,
-                "timestamp": datetime.utcnow().isoformat(),
-                "data": event_data
-            }
-            recent_events.append(current_event)
-            
-            # Call ML Engine for analysis
+            logging.info(
+                f"Flushing batch of {len(session.ml_batch_buffer)} events to ML engine...")
             ml_response = await behavioral_event_hook(
-                session.user_id, 
-                session_id, 
-                recent_events
+                session.user_id,
+                session_id,
+                session.ml_batch_buffer
             )
+            session.ml_batch_buffer = []
+            session.ml_last_flush = now_ts
         except Exception as e:
-            print(f"ML-Engine processing error: {e}")
-    
+            logging.error(f"ML-Engine processing error: {e}")
     # Analyze behavior and update risk score
     await analyze_behavioral_pattern(session, event_type, event_data, ml_response)
+
 
 async def analyze_behavioral_pattern(session, event_type: str, event_data: Dict[str, Any], ml_response: Dict[str, Any] = None):
     """
@@ -218,7 +224,7 @@ async def analyze_behavioral_pattern(session, event_type: str, event_data: Dict[
     """
     current_risk = session.risk_score
     risk_adjustment = 0.0
-    
+
     # Use ML-Engine response if available
     if ml_response and ML_INTEGRATION_AVAILABLE and ml_response.get("status") == "success":
         ml_decision = ml_response.get('decision', 'allow')
@@ -230,7 +236,8 @@ async def analyze_behavioral_pattern(session, event_type: str, event_data: Dict[
         # Handle ML decisions based on confidence
         if ml_confidence > 0.8:  # High confidence ML decision
             if ml_decision == 'block':
-                session.block_session(f"ML-Engine: High risk behavior detected (confidence: {ml_confidence:.2f})")
+                session.block_session(
+                    f"ML-Engine: High risk behavior detected (confidence: {ml_confidence:.2f})")
                 return
             elif ml_decision == 'challenge':
                 session.request_mpin_verification()
@@ -266,7 +273,7 @@ async def analyze_behavioral_pattern(session, event_type: str, event_data: Dict[
                 risk_adjustment = 0.15  # Unusual behavior pattern
             elif ml_similarity_score > 0.8:
                 risk_adjustment = -0.05  # Very familiar behavior
-    
+
     # Fallback to rule-based risk scoring when ML is not available or has low confidence
     risk_factors = {
         # Suspicious patterns
@@ -275,46 +282,46 @@ async def analyze_behavioral_pattern(session, event_type: str, event_data: Dict[
         "copy_paste_behavior": 0.05,
         "idle_timeout": -0.05,
         "normal_typing": -0.02,
-        
+
         # Transaction-related
         "large_transaction": 0.2,
         "new_beneficiary": 0.15,
         "off_hours_activity": 0.1,
-        
+
         # Authentication
         "mpin_failed": 0.25,
         "mpin_verified": -0.1,
         "multiple_login_attempts": 0.3,
-        
+
         "shake_detected": 0.1,
         "flip_detected": 0.15,
         "fast_rotation": 0.08,
     }
-    
+
     # Apply risk adjustment based on event type
     if event_type in risk_factors:
         risk_adjustment = risk_factors[event_type]
-    
+
     # Additional context-based adjustments
     if event_type == "transaction_attempt":
         amount = event_data.get("amount", 0)
         if amount > 50000:  # Large amount
             risk_adjustment += 0.15
-    
+
     elif event_type == "navigation_pattern":
         page_switches = event_data.get("page_switches_per_minute", 0)
         if page_switches > 10:  # Rapid navigation
             risk_adjustment += 0.1
-    
+
     elif event_type == "typing_pattern":
         typing_speed = event_data.get("words_per_minute", 0)
         if typing_speed > 100 or typing_speed < 10:  # Unusual typing speed
             risk_adjustment += 0.05
-    
+
     # Update risk score
     new_risk_score = max(0.0, min(1.0, current_risk + risk_adjustment))
     session.update_risk_score(new_risk_score)
-    
+
     # Log risk score change
     if risk_adjustment != 0:
         session.add_behavioral_data("risk_score_update", {
@@ -324,8 +331,9 @@ async def analyze_behavioral_pattern(session, event_type: str, event_data: Dict[
             "adjustment": risk_adjustment,
             "trigger_event": event_type
         })
-    
+
     print(f"Session {session.session_id}: Risk score updated from {current_risk:.3f} to {new_risk_score:.3f} (Δ{risk_adjustment:+.3f}) due to {event_type}")
+
 
 @router.get("/sessions/{session_id}/behavior-summary")
 async def get_behavior_summary(session_id: str):
@@ -335,13 +343,13 @@ async def get_behavior_summary(session_id: str):
     session = session_manager.get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    
+
     # Analyze behavioral buffer
     event_types = {}
     for behavior_data in session.behavioral_buffer:
         event_type = behavior_data.event_type
         event_types[event_type] = event_types.get(event_type, 0) + 1
-    
+
     return {
         "session_id": session_id,
         "risk_score": session.risk_score,
@@ -352,6 +360,7 @@ async def get_behavior_summary(session_id: str):
         "is_blocked": session.is_blocked
     }
 
+
 @router.post("/sessions/{session_id}/simulate-ml-analysis")
 async def simulate_ml_analysis(session_id: str):
     """
@@ -361,13 +370,13 @@ async def simulate_ml_analysis(session_id: str):
     session = session_manager.get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    
+
     # Simulate ML model prediction
     import random
     simulated_risk_score = random.uniform(0.0, 1.0)
-    
+
     session.update_risk_score(simulated_risk_score)
-    
+
     # Add ML analysis data
     session.add_behavioral_data("ml_analysis_result", {
         "session_id": session_id,
@@ -376,7 +385,7 @@ async def simulate_ml_analysis(session_id: str):
         "confidence": random.uniform(0.7, 0.95),
         "features_analyzed": len(session.behavioral_buffer)
     })
-    
+
     return {
         "message": "ML analysis simulation completed",
         "session_id": session_id,
@@ -384,21 +393,22 @@ async def simulate_ml_analysis(session_id: str):
         "action_taken": "block" if simulated_risk_score >= 0.9 else "monitor" if simulated_risk_score >= 0.7 else "normal"
     }
 
+
 @router.get("/debug/token/{token}")
 async def debug_token(token: str):
     """Debug endpoint to inspect token contents"""
     try:
         from app.core.security import get_token_payload
-        
+
         # Get token payload without verification
         payload = get_token_payload(token)
-        
+
         if not payload:
             return {"error": "Invalid token format"}
-        
+
         # Also try to verify it
         session_info = extract_session_info(token)
-        
+
         return {
             "token_payload": payload,
             "session_info": session_info,
@@ -406,9 +416,10 @@ async def debug_token(token: str):
             "expires": payload.get("exp"),
             "issued_at": payload.get("iat")
         }
-        
+
     except Exception as e:
         return {"error": f"Debug failed: {str(e)}"}
+
 
 async def handle_websocket_disconnect(session_id: str):
     """
@@ -416,7 +427,7 @@ async def handle_websocket_disconnect(session_id: str):
     """
     # Use the new lifecycle event handler
     await session_manager.handle_app_lifecycle_event(
-        session_id, 
+        session_id,
         "websocket_disconnect",
         {"reason": "client_disconnect"}
     )

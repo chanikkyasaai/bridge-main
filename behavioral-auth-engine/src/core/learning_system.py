@@ -340,11 +340,13 @@ class Phase1LearningSystem:
                     day_of_week=1,
                     app_version="1.0.0"
                 )
-                
+                if 'vector_data' not in vector_data:
+                    logger.error(f"Missing 'vector_data' in vector record for {user_id}, skipping vector.")
+                    continue
                 behavioral_vector = BehavioralVector(
                     user_id=vector_data.get('user_id', user_id),
                     session_id=vector_data.get('session_id', 'unknown'),
-                    vector=vector_data['vector'],  # Use the raw vector data
+                    vector=vector_data['vector_data'],  # Use the raw vector data
                     confidence_score=vector_data.get('confidence_score', 1.0),
                     timestamp=datetime.fromisoformat(vector_data['created_at'].replace('Z', '+00:00')),
                     feature_source=minimal_features

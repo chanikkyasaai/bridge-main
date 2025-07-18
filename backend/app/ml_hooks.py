@@ -64,7 +64,7 @@ async def start_session_hook(user_id: str, session_id: str, device_info: Optiona
     """
     try:
         logger.info(f"Starting ML session for {session_id}")
-        
+        print(f"Starting ML session for {session_id}")
         # Start ML session
         result = await start_ml_session(user_id, session_id, device_info)
         

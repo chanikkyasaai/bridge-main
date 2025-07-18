@@ -12,6 +12,9 @@ from app.core.session_manager import session_manager
 from app.core.config import settings
 from app.core.supabase_client import supabase_client
 from app.core.token_manager import token_manager
+import logging
+
+logging = logging.getLogger(__name__)
 
 # ML Engine Integration
 try:
@@ -39,7 +42,6 @@ class UserLogin(BaseModel):
 
 
 class StartSessionRequest(BaseModel):
-    device_id: str
     context: Optional[Dict[str, Any]] = {}
     mpin: str
 
@@ -321,7 +323,7 @@ async def verify_mpin_endpoint(
             session_id = await session_manager.create_session(
                 user_id=user_id,
                 phone=phone,
-                device_id=mpin_data.device_id,
+                device_id=mpin_data.context["device_id"],
                 session_token=None
             )
             # Create session token with the actual session_id

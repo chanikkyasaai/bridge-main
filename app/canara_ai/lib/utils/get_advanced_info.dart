@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -16,6 +17,7 @@ class SessionStartRequest {
   final bool isKnownDevice;
   final bool isTrustedLocation;
   final String userAgent;
+  final String deviceIp;
 
   SessionStartRequest({
     required this.mpin,
@@ -29,6 +31,7 @@ class SessionStartRequest {
     required this.isKnownDevice,
     required this.isTrustedLocation,
     required this.userAgent,
+    required this.deviceIp,
   });
 
   Map<String, dynamic> toJson() => {
@@ -43,9 +46,25 @@ class SessionStartRequest {
           "location_data": locationData,
           "is_known_device": isKnownDevice,
           "is_trusted_location": isTrustedLocation,
-          "user_agent": userAgent
+          "user_agent": userAgent,
+          "ip_address": deviceIp,
         }
       };
+
+  static Future<String> getDeviceIp() async {
+    try {
+      for (var interface in await NetworkInterface.list()) {
+        for (var addr in interface.addresses) {
+          if (addr.type == InternetAddressType.IPv4 && !addr.isLoopback) {
+            return addr.address;
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error getting IP address: $e');
+    }
+    return 'unknown';
+  }
 
   static Future<SessionStartRequest> build({
     required String mpin,
@@ -108,9 +127,9 @@ class SessionStartRequest {
       };
     } catch (e) {
       debugPrint('Location error caught: $e');
-      // Optionally: Log this to backend for diagnostics.
-      // You can also include `location_disabled: true` in context if needed.
     }
+
+    final deviceIp = await getDeviceIp();
 
     return SessionStartRequest(
       mpin: mpin,
@@ -124,6 +143,7 @@ class SessionStartRequest {
       isKnownDevice: isKnownDevice,
       isTrustedLocation: isTrustedLocation,
       userAgent: 'CanaraAI1/${packageInfo.version} ($deviceType; $deviceModel; Android $osVersion)',
+      deviceIp: deviceIp,
     );
   }
 }

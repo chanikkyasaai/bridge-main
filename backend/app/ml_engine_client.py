@@ -80,6 +80,8 @@ class MLEngineClient:
             "device_info": device_info or {}
         }
         
+        print("Starting ML session... at client")
+        
         result = await self._make_request("POST", "/session/start", data)
         if result:
             logger.info(f"ML session started: {session_id}")

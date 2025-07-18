@@ -7,10 +7,12 @@ from app.api.v1.endpoints.auth import get_current_user
 from app.core.session_manager import session_manager
 from app.core.security import extract_session_info
 from app.core.supabase_client import supabase_client
+import logging
 
 router = APIRouter()
 security = HTTPBearer()
 
+logging = logging.getLogger(__name__)
 
 class StartSessionRequest(BaseModel):
     phone: str
@@ -72,7 +74,6 @@ async def start_session(request: StartSessionRequest, current_user: dict = Depen
             phone=request.phone,
             device_id=request.device_id,
             session_token=session_token,
-            context=request.context
         )
         
         session = session_manager.get_session(session_id)
