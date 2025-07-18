@@ -160,19 +160,47 @@ class EnhancedBehavioralProcessor:
     
     def _extract_touch_features(self, events_by_type: Dict[str, List]) -> Dict[str, List[float]]:
         """Extract touch-related behavioral features"""
-        touch_down_events = events_by_type.get('touch_down', [])
-        touch_up_events = events_by_type.get('touch_up', [])
+        # Handle both old and new event types
+        touch_events = events_by_type.get('touch', []) + events_by_type.get('touch_down', []) + events_by_type.get('touch_up', [])
         
-        # Pressure statistics
-        pressures = [event['data'].get('pressure', 1.0) for event in touch_down_events if 'pressure' in event['data']]
+        # Pressure statistics from touch events
+        pressures = []
+        for event in touch_events:
+            if 'data' in event and 'pressure' in event['data']:
+                pressures.append(event['data']['pressure'])
+        
         pressure_stats = self._calculate_stats(pressures, 5)
         
-        # Duration statistics  
-        durations = [event['data'].get('touch_duration_ms', 0) for event in touch_up_events if 'touch_duration_ms' in event['data']]
+        # Calculate touch durations from timestamps
+        durations = []
+        touch_positions = []
+        for event in touch_events:
+            if 'data' in event:
+                # Extract position data for movement calculation
+                x = event['data'].get('x', 0)
+                y = event['data'].get('y', 0)
+                touch_positions.append((x, y))
+        
+        # Calculate movement distances as duration proxy
+        if len(touch_positions) > 1:
+            for i in range(1, len(touch_positions)):
+                dx = touch_positions[i][0] - touch_positions[i-1][0]
+                dy = touch_positions[i][1] - touch_positions[i-1][1]
+                movement = math.sqrt(dx*dx + dy*dy)
+                durations.append(movement)
+        
         duration_stats = self._calculate_stats(durations, 5)
         
-        # Inter-touch gap statistics
-        gaps = [event['data'].get('inter_touch_gap_ms', 0) for event in touch_down_events if 'inter_touch_gap_ms' in event['data']]
+        # Calculate inter-touch gaps from timestamps
+        gaps = []
+        timestamps = [event.get('timestamp', 0) for event in touch_events]
+        timestamps.sort()
+        
+        if len(timestamps) > 1:
+            for i in range(1, len(timestamps)):
+                gap = timestamps[i] - timestamps[i-1]
+                gaps.append(gap)
+        
         gap_stats = self._calculate_stats(gaps, 5)
         
         return {
@@ -183,13 +211,20 @@ class EnhancedBehavioralProcessor:
     
     def _extract_motion_features(self, events_by_type: Dict[str, List]) -> Dict[str, List[float]]:
         """Extract motion sensor features (accelerometer & gyroscope)"""
-        accel_events = events_by_type.get('accel_data', [])
-        gyro_events = events_by_type.get('gyro_data', [])
+        # Handle both old and new event types
+        accel_events = events_by_type.get('accelerometer', []) + events_by_type.get('accel_data', [])
+        gyro_events = events_by_type.get('gyroscope', []) + events_by_type.get('gyro_data', [])
         
         # Accelerometer statistics
-        accel_x = [event['data'].get('x', 0) for event in accel_events]
-        accel_y = [event['data'].get('y', 0) for event in accel_events]
-        accel_z = [event['data'].get('z', 0) for event in accel_events]
+        accel_x = []
+        accel_y = []
+        accel_z = []
+        
+        for event in accel_events:
+            if 'data' in event:
+                accel_x.append(event['data'].get('x', 0))
+                accel_y.append(event['data'].get('y', 0))
+                accel_z.append(event['data'].get('z', 0))
         
         # Calculate magnitude for each reading
         accel_magnitude = [math.sqrt(x**2 + y**2 + z**2) for x, y, z in zip(accel_x, accel_y, accel_z)]
@@ -201,9 +236,15 @@ class EnhancedBehavioralProcessor:
         accel_stats.extend(self._calculate_stats(accel_magnitude, 3))
         
         # Gyroscope statistics
-        gyro_x = [event['data'].get('x', 0) for event in gyro_events]
-        gyro_y = [event['data'].get('y', 0) for event in gyro_events]
-        gyro_z = [event['data'].get('z', 0) for event in gyro_events]
+        gyro_x = []
+        gyro_y = []
+        gyro_z = []
+        
+        for event in gyro_events:
+            if 'data' in event:
+                gyro_x.append(event['data'].get('x', 0))
+                gyro_y.append(event['data'].get('y', 0))
+                gyro_z.append(event['data'].get('z', 0))
         
         gyro_magnitude = [math.sqrt(x**2 + y**2 + z**2) for x, y, z in zip(gyro_x, gyro_y, gyro_z)]
         
@@ -222,12 +263,20 @@ class EnhancedBehavioralProcessor:
         """Extract scrolling behavior features"""
         scroll_events = events_by_type.get('scroll', [])
         
-        # Velocity statistics
-        velocities = [event['data'].get('velocity', 0) for event in scroll_events if 'velocity' in event['data']]
+        # Velocity statistics from scroll events
+        velocities = []
+        pixels = []
+        
+        for event in scroll_events:
+            if 'data' in event:
+                velocities.append(event['data'].get('velocity', 0))
+                # Calculate pixels from delta_y if available
+                delta_y = event['data'].get('delta_y', 0)
+                pixels.append(abs(delta_y))
+        
         velocity_stats = self._calculate_stats(velocities, 4)
         
         # Pixel movement statistics
-        pixels = [event['data'].get('pixels', 0) for event in scroll_events]
         pixel_stats = self._calculate_stats(pixels, 4)
         
         # Pattern analysis
