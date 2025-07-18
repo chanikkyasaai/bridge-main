@@ -44,12 +44,15 @@ class SessionContext:
     user_agent: Optional[str] = None
     risk_scores: List[float] = None
     decision_history: List[AuthenticationDecision] = None
+    behavioral_events: List[Dict[str, Any]] = None
     
     def __post_init__(self):
         if self.risk_scores is None:
             self.risk_scores = []
         if self.decision_history is None:
             self.decision_history = []
+        if self.behavioral_events is None:
+            self.behavioral_events = []
     
     def update_activity(self) -> None:
         """Update last activity timestamp."""
@@ -110,12 +113,14 @@ class SessionManager:
     async def create_session(
         self, 
         user_id: str, 
+        session_id: Optional[str] = None,
         device_id: Optional[str] = None,
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None
     ) -> str:
         """Create a new session for a user."""
-        session_id = str(uuid.uuid4())
+        if session_id is None:
+            session_id = str(uuid.uuid4())
         now = datetime.utcnow()
         
         session_context = SessionContext(
@@ -167,12 +172,13 @@ class SessionManager:
                 return True
             return False
     
-    async def terminate_session(self, session_id: str) -> bool:
+    async def terminate_session(self, session_id: str, reason: str = "terminated") -> bool:
         """Terminate a specific session."""
         async with self._lock:
             session = self.active_sessions.get(session_id)
             if session:
                 session.status = SessionStatus.TERMINATED
+                logger.info(f"Session {session_id} terminated: {reason}")
                 return True
             return False
     
@@ -408,8 +414,14 @@ class SessionManager:
                 if session_id in self.active_sessions:
                     session = self.active_sessions[session_id]
                     
-                    # Add event to session history (you could extend SessionContext to include this)
-                    # For now, just update last activity
+                    # Add event to session history
+                    session.behavioral_events.append(event_data)
+                    
+                    # Keep only last 100 events for memory efficiency
+                    if len(session.behavioral_events) > 100:
+                        session.behavioral_events = session.behavioral_events[-100:]
+                    
+                    # Update last activity
                     session.last_activity = datetime.utcnow()
                     
                     # Log the event
