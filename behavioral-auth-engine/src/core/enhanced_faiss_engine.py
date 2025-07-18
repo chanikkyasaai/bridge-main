@@ -26,6 +26,7 @@ class VectorType(str, Enum):
     BASELINE = "baseline"        # Stable user profile vector
 
 @dataclass
+@dataclass
 class VectorAnalysisResult:
     """Result of FAISS vector analysis"""
     similarity_score: float
@@ -35,6 +36,9 @@ class VectorAnalysisResult:
     risk_factors: List[str]
     similar_vectors: List[Dict[str, Any]]
     vector_id: Optional[str] = None
+    # Add vector details for debugging
+    session_vector: Optional[List[float]] = None
+    vector_stats: Optional[Dict[str, Any]] = None
 
 @dataclass
 class UserVectorProfile:
@@ -68,6 +72,27 @@ class EnhancedFAISSEngine:
             'gradual_risk': 0.6,  # Moderate during gradual phase
             'full_auth': 0.8      # Strict during full authentication
         }
+        
+    def _calculate_vector_stats(self, vector: np.ndarray) -> Dict[str, Any]:
+        """Calculate statistics for a vector to verify it's meaningful"""
+        vector_array = np.array(vector) if not isinstance(vector, np.ndarray) else vector
+        
+        non_zero_count = np.count_nonzero(vector_array)
+        zero_count = len(vector_array) - non_zero_count
+        
+        stats = {
+            "length": len(vector_array),
+            "non_zero_count": int(non_zero_count),
+            "zero_count": int(zero_count),
+            "non_zero_percentage": float(non_zero_count / len(vector_array) * 100),
+            "mean": float(np.mean(vector_array)),
+            "std": float(np.std(vector_array)),
+            "min": float(np.min(vector_array)),
+            "max": float(np.max(vector_array)),
+            "is_meaningful": non_zero_count > len(vector_array) * 0.1  # At least 10% non-zero
+        }
+        
+        return stats
 
     def _initialize_faiss_indices(self):
         """Initialize FAISS indices for different vector types"""
@@ -620,6 +645,10 @@ class EnhancedFAISSEngine:
             session_vector = self.behavioral_processor.process_mobile_behavioral_data(behavioral_data)
             session_vector = self._normalize_vector(session_vector)
             
+            # Calculate vector statistics for debugging
+            vector_stats = self._calculate_vector_stats(session_vector)
+            self.logger.info(f"Generated vector stats: {vector_stats}")
+            
             # Verify vector quality
             vector_sum = np.sum(np.abs(session_vector))
             if vector_sum == 0:
@@ -630,7 +659,9 @@ class EnhancedFAISSEngine:
                     decision="learn",
                     risk_level="medium",
                     risk_factors=["Invalid behavioral vector generated"],
-                    similar_vectors=[]
+                    similar_vectors=[],
+                    session_vector=session_vector.tolist(),
+                    vector_stats=vector_stats
                 )
             
             # Store session vector in database
@@ -649,10 +680,15 @@ class EnhancedFAISSEngine:
             
             result.vector_id = vector_id
             
+            # Add vector details for debugging/verification
+            result.session_vector = session_vector.tolist()
+            result.vector_stats = vector_stats
+            
             # Update cumulative vector
             await self._update_cumulative_vector(user_id, session_vector, result.decision)
             
             self.logger.info(f"Mobile behavioral analysis complete: {result.decision} (confidence: {result.confidence:.3f})")
+            self.logger.info(f"Vector meaningful: {vector_stats['is_meaningful']} ({vector_stats['non_zero_count']}/{vector_stats['length']} non-zero)")
             
             return result
             

@@ -104,14 +104,14 @@ class MLEngineClient:
         return {"status": "error", "message": "Failed to end ML session"}
     
     async def analyze_behavior(self, user_id: str, session_id: str, events: List[Dict]) -> Dict[str, Any]:
-        """Analyze behavioral data"""
+        """Analyze behavioral data using mobile endpoint"""
         data = {
             "user_id": user_id,
             "session_id": session_id,
-            "events": events
+            "logs": events  # Changed from 'events' to 'logs' to match mobile format
         }
         
-        result = await self._make_request("POST", "/analyze", data)
+        result = await self._make_request("POST", "/analyze-mobile", data)
         if result:
             logger.info(f"Behavioral analysis completed for session {session_id}")
             return result

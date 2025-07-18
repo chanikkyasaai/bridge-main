@@ -347,12 +347,15 @@ async def analyze_mobile_behavioral_data(request: MobileBehavioralDataRequest):
         user_profile = await ml_db.get_user_profile(request.user_id)
         learning_phase = user_profile.get('current_phase', 'learning') if user_profile else 'learning'
         
-        # Process using Enhanced FAISS Engine
-        analysis_result = await enhanced_faiss_engine.process_behavioral_data(
+        # Process using Enhanced FAISS Engine with mobile data format
+        analysis_result = await enhanced_faiss_engine.process_mobile_behavioral_data(
             user_id=request.user_id,
             session_id=request.session_id,
-            behavioral_logs=request.logs,
-            learning_phase=learning_phase
+            behavioral_data={
+                "user_id": request.user_id,
+                "session_id": request.session_id,
+                "logs": request.logs
+            }
         )
         
         # Create response
@@ -371,6 +374,14 @@ async def analyze_mobile_behavioral_data(request: MobileBehavioralDataRequest):
             "learning_phase": learning_phase,
             "message": f"Enhanced FAISS analysis - {analysis_result.decision} decision"
         }
+        
+        # Add vector details if available (for debugging)
+        if hasattr(analysis_result, 'vector_stats') and analysis_result.vector_stats:
+            response["vector_stats"] = analysis_result.vector_stats
+        
+        if hasattr(analysis_result, 'session_vector') and analysis_result.session_vector:
+            # Include only first 10 values of vector for debugging (to avoid huge responses)
+            response["vector_sample"] = analysis_result.session_vector[:10]
         
         # Store session behavioral event
         try:
