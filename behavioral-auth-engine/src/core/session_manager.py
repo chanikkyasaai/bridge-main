@@ -113,12 +113,14 @@ class SessionManager:
     async def create_session(
         self, 
         user_id: str, 
+        session_id: Optional[str] = None,
         device_id: Optional[str] = None,
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None
     ) -> str:
         """Create a new session for a user."""
-        session_id = str(uuid.uuid4())
+        if session_id is None:
+            session_id = str(uuid.uuid4())
         now = datetime.utcnow()
         
         session_context = SessionContext(

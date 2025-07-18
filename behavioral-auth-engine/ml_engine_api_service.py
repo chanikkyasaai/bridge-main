@@ -273,10 +273,11 @@ async def analyze_behavior(request: BehavioralAnalysisRequest):
     try:
         logger.info(f"Analyzing behavior for session {request.session_id}")
         
-        # Ensure session exists in database - create if not exists
+        # Ensure session exists in both database and SessionManager
         from src.core.ml_database import ml_db
+        
+        # 1. Ensure session exists in database
         try:
-            # Try to create session in database if it doesn't exist
             db_session_id = await ml_db.create_session(
                 user_id=request.user_id,
                 session_name=request.session_id,
@@ -288,6 +289,24 @@ async def analyze_behavior(request: BehavioralAnalysisRequest):
                 logger.warning(f"Session {request.session_id} may already exist in database")
         except Exception as e:
             logger.warning(f"Session creation/check failed: {e} - continuing with analysis")
+        
+        # 2. Ensure session exists in SessionManager
+        try:
+            session_context = session_manager.get_session_context(request.session_id)
+            if not session_context:
+                # Create session in SessionManager with the specific session_id
+                created_session_id = await session_manager.create_session(
+                    user_id=request.user_id,
+                    session_id=request.session_id,  # Use the specific session_id from request
+                    device_id=getattr(request, 'device_id', None),
+                    ip_address=getattr(request, 'ip_address', None),
+                    user_agent=getattr(request, 'user_agent', None)
+                )
+                logger.info(f"Created SessionManager session {created_session_id} for session {request.session_id}")
+            else:
+                logger.debug(f"Session {request.session_id} already exists in SessionManager")
+        except Exception as e:
+            logger.warning(f"SessionManager session creation failed: {e} - continuing with analysis")
         
         # Convert events to BehavioralFeatures format
         from src.data.models import BehavioralFeatures
