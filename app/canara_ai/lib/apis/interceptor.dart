@@ -75,7 +75,6 @@ class AuthInterceptor extends Interceptor {
       final response = await _dio.post('${Endpoints.baseUrl}/auth/refresh', data: {
         'refresh_token': refreshToken,
       }).timeout(Duration(seconds: 10));
-      ;
 
       print("Refresh token: ${response.data['access_token']}");
 

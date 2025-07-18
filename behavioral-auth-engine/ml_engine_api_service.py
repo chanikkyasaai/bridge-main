@@ -18,8 +18,8 @@ import os
 from contextlib import asynccontextmanager
 import numpy as np
 
-# Add the src directory to the Python path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+# Add the current directory to the Python path to enable src imports
+sys.path.append(os.path.dirname(__file__))
 
 def make_json_safe(obj):
     """Make any object JSON-serializable by replacing NaN/infinity values"""
@@ -272,6 +272,22 @@ async def analyze_behavior(request: BehavioralAnalysisRequest):
     """Analyze behavioral data using Phase 1 Learning + Phase 2 Continuous Analysis"""
     try:
         logger.info(f"Analyzing behavior for session {request.session_id}")
+        
+        # Ensure session exists in database - create if not exists
+        from src.core.ml_database import ml_db
+        try:
+            # Try to create session in database if it doesn't exist
+            db_session_id = await ml_db.create_session(
+                user_id=request.user_id,
+                session_name=request.session_id,
+                device_info="ML Analysis Session"
+            )
+            if db_session_id:
+                logger.info(f"Created database session {db_session_id} for ML session {request.session_id}")
+            else:
+                logger.warning(f"Session {request.session_id} may already exist in database")
+        except Exception as e:
+            logger.warning(f"Session creation/check failed: {e} - continuing with analysis")
         
         # Convert events to BehavioralFeatures format
         from src.data.models import BehavioralFeatures

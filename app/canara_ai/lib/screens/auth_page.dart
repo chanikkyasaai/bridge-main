@@ -150,7 +150,7 @@ class _AuthPageState extends State<AuthPage> {
           print('User ID: ${api.data['user_id']} Phone: ${api.data['phone']}');
 
           await _retryPendingExitEvent(context);
-          // await logger.startSession(api.data['session_id'], api.data['session_token'], context);
+          await logger.startSession(api.data['session_id'], api.data['session_token'], context);
 
           Navigator.pushAndRemoveUntil(
             context,

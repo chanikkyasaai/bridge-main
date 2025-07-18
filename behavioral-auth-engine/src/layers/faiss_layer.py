@@ -237,7 +237,7 @@ class FAISSLayer:
             
         else:
             # Low similarity - suspicious behavior
-            decision = AuthenticationDecision.DENY
+            decision = AuthenticationDecision.BLOCK
             risk_level = RiskLevel.HIGH
             risk_score = min(0.9, 1.0 - avg_similarity)
             confidence = min(0.9, 1.0 - avg_similarity)

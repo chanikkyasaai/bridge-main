@@ -144,6 +144,22 @@ class MLSupabaseClient:
         try:
             await self._ensure_user_exists(user_id)
             
+            # Check if session already exists by session_token (our session name)
+            if session_name:
+                try:
+                    existing_result = self.supabase.table('sessions')\
+                        .select('id')\
+                        .eq('session_token', session_name)\
+                        .eq('user_id', user_id)\
+                        .execute()
+                    
+                    if existing_result.data:
+                        session_id = existing_result.data[0]['id']
+                        logger.info(f"Found existing session {session_id} for {session_name}")
+                        return session_id
+                except Exception as e:
+                    logger.warning(f"Error checking existing session: {e}")
+            
             session_record = {
                 'user_id': user_id,
                 'device_info': device_info or 'ML Engine Session',
@@ -161,6 +177,50 @@ class MLSupabaseClient:
             logger.error(f"Failed to create session for {user_id}: {e}")
             return None
     
+    async def _ensure_session_exists(self, user_id: str, session_id: str) -> Optional[str]:
+        """Ensure session exists in database, create if needed, return actual session UUID"""
+        try:
+            # First, try to find existing session by UUID (direct match)
+            try:
+                direct_result = self.supabase.table('sessions')\
+                    .select('id')\
+                    .eq('id', session_id)\
+                    .eq('user_id', user_id)\
+                    .execute()
+                
+                if direct_result.data:
+                    logger.debug(f"Found session by direct UUID match: {session_id}")
+                    return session_id
+            except Exception as e:
+                logger.debug(f"Direct UUID lookup failed: {e}")
+            
+            # If not found by UUID, try by session_token
+            try:
+                token_result = self.supabase.table('sessions')\
+                    .select('id')\
+                    .eq('session_token', session_id)\
+                    .eq('user_id', user_id)\
+                    .execute()
+                
+                if token_result.data:
+                    actual_session_id = token_result.data[0]['id']
+                    logger.debug(f"Found session by token: {session_id} -> {actual_session_id}")
+                    return actual_session_id
+            except Exception as e:
+                logger.debug(f"Token lookup failed: {e}")
+            
+            # Session doesn't exist, create it
+            logger.info(f"Session {session_id} not found, creating new session")
+            return await self.create_session(
+                user_id=user_id,
+                session_name=session_id,
+                device_info="Auto-created for ML operations"
+            )
+            
+        except Exception as e:
+            logger.error(f"Failed to ensure session exists for {session_id}: {e}")
+            return None
+    
     # ============================================================================
     # BEHAVIORAL VECTOR STORAGE
     # ============================================================================
@@ -170,9 +230,15 @@ class MLSupabaseClient:
                                     feature_source: str) -> Optional[str]:
         """Store behavioral vector in database"""
         try:
+            # Ensure session exists - create if not exists
+            actual_session_id = await self._ensure_session_exists(user_id, session_id)
+            if not actual_session_id:
+                logger.error(f"Failed to ensure session exists for {session_id}")
+                return None
+            
             vector_record = {
                 'user_id': user_id,
-                'session_id': session_id,
+                'session_id': actual_session_id,
                 'vector_data': vector_data,  # PostgreSQL array
                 'confidence_score': confidence_score,
                 'feature_source': feature_source
@@ -230,9 +296,15 @@ class MLSupabaseClient:
                                           processing_time_ms: Optional[int] = None) -> Optional[str]:
         """Store authentication decision in database"""
         try:
+            # Ensure session exists - create if not exists
+            actual_session_id = await self._ensure_session_exists(user_id, session_id)
+            if not actual_session_id:
+                logger.error(f"Failed to ensure session exists for {session_id}")
+                return None
+            
             decision_record = {
                 'user_id': user_id,
-                'session_id': session_id,
+                'session_id': actual_session_id,
                 'decision': decision,
                 'confidence': confidence,
                 'similarity_score': similarity_score,
@@ -366,3 +438,4 @@ class MLSupabaseClient:
 
 # Global instance
 ml_db = MLSupabaseClient()
+    

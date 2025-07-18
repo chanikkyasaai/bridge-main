@@ -16,9 +16,12 @@ class BehaviorLogger {
   WebSocketChannel? _ws;
   String? sessionId;
   String? sessionToken;
+  BuildContext? _context;
 
   final tokenstorage = TokenStorage();
   final storage = FlutterSecureStorage();
+
+  bool _sessionActive = true; // Add this flag
 
   BehaviorLogger(this.dio);
 
@@ -88,14 +91,14 @@ class BehaviorLogger {
 
     // final token = (await tokenstorage.getAccessToken())?.replaceAll('#', '');
     // dio.options.headers['Authorization'] = 'Bearer $token';
-
+    
     print('Session ID: $_sessionId');
     print('Session Token: $_sessionToken');
 
     sessionId = _sessionId;
     sessionToken = _sessionToken;
 
-    final uri = Uri.parse('ws://192.168.241.41:8000/api/v1/ws/behavior/$_sessionId?token=${Uri.encodeComponent(_sessionToken)}');
+    final uri = Uri.parse('ws://10.128.113.41:8000/api/v1/ws/behavior/$_sessionId?token=${Uri.encodeComponent(_sessionToken)}');
 
     print(uri);
 
@@ -119,6 +122,7 @@ class BehaviorLogger {
   }
 
   void sendEvent(String eventType, Map<String, dynamic> data) {
+    if (!_sessionActive) return; // Prevent logging if session ended
     print('Sending event: $eventType');
     print(data);
     if (_ws == null || sessionId == null) return;
@@ -158,6 +162,7 @@ class BehaviorLogger {
     await _ws?.sink.close(status.normalClosure);
     _ws = null;
     sessionId = null;
+    _sessionActive = false; // Disable further logging
   }
 
   void _handleServerMessage(dynamic message) {
@@ -180,7 +185,7 @@ class BehaviorLogger {
         print('Session ID: $sessionId');
         print('Session Token: $sessionToken');
         final token = await tokenstorage.getAccessToken();
-        final uri = Uri.parse('ws://192.168.241.41:8000/api/v1/ws/behavior/$sessionId?token=${Uri.encodeComponent(sessionToken!)}');
+        final uri = Uri.parse('ws://10.128.113.41:8000/api/v1/ws/behavior/$sessionId?token=${Uri.encodeComponent(sessionToken!)}');
 
         _ws = WebSocketChannel.connect(uri);
 

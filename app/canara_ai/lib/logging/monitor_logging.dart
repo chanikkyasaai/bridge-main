@@ -53,7 +53,7 @@ class BehaviorMonitorState extends State<BehaviorMonitor> with WidgetsBindingObs
   Future<void> sendUserLogoutEvent() async {
     _exitReason = 'user_logout';
     await _sendExitEvent();
-    // await widget.logger.endSession(_exitReason!);
+    await widget.logger.endSession(_exitReason!); // Also end logger session and disable logging
   }
 
   Future<void> sendUserCloseEvent() async {

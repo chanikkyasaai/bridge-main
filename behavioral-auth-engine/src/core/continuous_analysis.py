@@ -217,10 +217,13 @@ class Phase2ContinuousAnalysis:
             elif user_profile.current_phase.value == 'gradual_risk':
                 return AnalysisLevel.ENHANCED_FAISS
             else:  # full_auth
-                # Use risk score to determine level
-                if user_profile.risk_score > 0.7:
+                # Use drift score and false positive rate to determine level
+                # Calculate a risk indicator from available data
+                risk_indicator = user_profile.drift_score + user_profile.false_positive_rate
+                
+                if risk_indicator > 0.7:
                     return AnalysisLevel.FULL_ENSEMBLE
-                elif user_profile.risk_score > 0.4:
+                elif risk_indicator > 0.4:
                     return AnalysisLevel.GNN_TRANSFORMER
                 else:
                     return AnalysisLevel.ENHANCED_FAISS
@@ -307,7 +310,7 @@ class Phase2ContinuousAnalysis:
                 gnn_decision = AuthenticationDecision.CHALLENGE
                 gnn_risk = RiskLevel.MEDIUM
             else:
-                gnn_decision = AuthenticationDecision.DENY
+                gnn_decision = AuthenticationDecision.BLOCK
                 gnn_risk = RiskLevel.HIGH
             
             result = {
@@ -614,8 +617,8 @@ class Phase2ContinuousAnalysis:
                     final_confidence = min(0.95, ensemble_confidence + 0.1)  # Boost for agreement
                 else:
                     # Disagreement - use more conservative approach
-                    if base_decision == AuthenticationDecision.DENY or gnn_result['decision'] == AuthenticationDecision.DENY:
-                        final_decision = AuthenticationDecision.DENY
+                    if base_decision == AuthenticationDecision.BLOCK or gnn_result['decision'] == AuthenticationDecision.BLOCK:
+                        final_decision = AuthenticationDecision.BLOCK
                     elif base_decision == AuthenticationDecision.CHALLENGE or gnn_result['decision'] == AuthenticationDecision.CHALLENGE:
                         final_decision = AuthenticationDecision.CHALLENGE
                     else:
@@ -643,7 +646,7 @@ class Phase2ContinuousAnalysis:
                 
                 # Adjust decision based on drift severity
                 if drift_analysis.severity > 0.7:
-                    final_decision = AuthenticationDecision.DENY
+                    final_decision = AuthenticationDecision.BLOCK
                     final_confidence = max(0.8, final_confidence)
                     risk_factors.append(f"High behavioral drift detected: {drift_analysis.drift_type.value}")
                     base_risk_level = RiskLevel.HIGH
@@ -715,7 +718,7 @@ class Phase2ContinuousAnalysis:
             
             if result.decision == AuthenticationDecision.ALLOW:
                 self.analysis_statistics['successful_authentications'] += 1
-            elif result.decision == AuthenticationDecision.DENY:
+            elif result.decision == AuthenticationDecision.BLOCK:
                 self.analysis_statistics['blocked_attempts'] += 1
                 
         except Exception as e:
