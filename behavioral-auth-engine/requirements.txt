@@ -4,6 +4,8 @@ scikit-learn==1.3.0
 transformers==4.34.0
 numpy==1.26.4
 pandas==2.0.3
+faiss-cpu==1.7.4
+networkx==3.1
 
 # API & WebSocket
 fastapi==0.104.1

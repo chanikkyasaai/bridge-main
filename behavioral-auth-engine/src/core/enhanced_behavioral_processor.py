@@ -160,47 +160,50 @@ class EnhancedBehavioralProcessor:
     
     def _extract_touch_features(self, events_by_type: Dict[str, List]) -> Dict[str, List[float]]:
         """Extract touch-related behavioral features"""
-        # Handle both old and new event types
+        # Handle both old format and new touch_sequence format
         touch_events = events_by_type.get('touch', []) + events_by_type.get('touch_down', []) + events_by_type.get('touch_up', [])
         
-        # Pressure statistics from touch events
+        # NEW: Handle touch_sequence format
+        touch_sequence_events = events_by_type.get('touch_sequence', [])
+        
+        # Extract touch data from touch_sequence events
         pressures = []
+        durations = []
+        touch_positions = []
+        
+        # Process old format
         for event in touch_events:
             if 'data' in event and 'pressure' in event['data']:
                 pressures.append(event['data']['pressure'])
-        
+                
+        # Process NEW format (touch_sequence)
+        for event in touch_sequence_events:
+            if 'data' in event and 'touch_events' in event['data']:
+                for touch_event in event['data']['touch_events']:
+                    # Extract pressure
+                    if 'pressure' in touch_event:
+                        pressures.append(float(touch_event['pressure']))
+                    
+                    # Extract duration
+                    if 'duration' in touch_event:
+                        durations.append(float(touch_event['duration']))
+                    
+                    # Extract position
+                    if 'x' in touch_event and 'y' in touch_event:
+                        touch_positions.append((float(touch_event['x']), float(touch_event['y'])))
+
         pressure_stats = self._calculate_stats(pressures, 5)
+        duration_stats = self._calculate_stats(durations, 5)
         
-        # Calculate touch durations from timestamps
-        durations = []
-        touch_positions = []
-        for event in touch_events:
-            if 'data' in event:
-                # Extract position data for movement calculation
-                x = event['data'].get('x', 0)
-                y = event['data'].get('y', 0)
-                touch_positions.append((x, y))
-        
-        # Calculate movement distances as duration proxy
+        # Calculate inter-touch gaps from positions (movement distances)
+        gaps = []
         if len(touch_positions) > 1:
             for i in range(1, len(touch_positions)):
                 dx = touch_positions[i][0] - touch_positions[i-1][0]
                 dy = touch_positions[i][1] - touch_positions[i-1][1]
-                movement = math.sqrt(dx*dx + dy*dy)
-                durations.append(movement)
-        
-        duration_stats = self._calculate_stats(durations, 5)
-        
-        # Calculate inter-touch gaps from timestamps
-        gaps = []
-        timestamps = [event.get('timestamp', 0) for event in touch_events]
-        timestamps.sort()
-        
-        if len(timestamps) > 1:
-            for i in range(1, len(timestamps)):
-                gap = timestamps[i] - timestamps[i-1]
+                gap = math.sqrt(dx*dx + dy*dy)
                 gaps.append(gap)
-        
+
         gap_stats = self._calculate_stats(gaps, 5)
         
         return {
@@ -211,23 +214,48 @@ class EnhancedBehavioralProcessor:
     
     def _extract_motion_features(self, events_by_type: Dict[str, List]) -> Dict[str, List[float]]:
         """Extract motion sensor features (accelerometer & gyroscope)"""
-        # Handle both old and new event types
+        # Handle both old format and new touch_sequence format
         accel_events = events_by_type.get('accelerometer', []) + events_by_type.get('accel_data', [])
         gyro_events = events_by_type.get('gyroscope', []) + events_by_type.get('gyro_data', [])
+        
+        # NEW: Handle touch_sequence format which contains accelerometer/gyroscope data
+        touch_sequence_events = events_by_type.get('touch_sequence', [])
         
         # Accelerometer statistics
         accel_x = []
         accel_y = []
         accel_z = []
         
+        # Process old format
         for event in accel_events:
             if 'data' in event:
-                accel_x.append(event['data'].get('x', 0))
-                accel_y.append(event['data'].get('y', 0))
-                accel_z.append(event['data'].get('z', 0))
+                accel_x.append(float(event['data'].get('x', 0)))
+                accel_y.append(float(event['data'].get('y', 0)))
+                accel_z.append(float(event['data'].get('z', 0)))
+        
+        # Process NEW format (motion data from touch_sequence)
+        for event in touch_sequence_events:
+            if 'data' in event:
+                # Extract accelerometer data
+                if 'accelerometer' in event['data']:
+                    accel_data = event['data']['accelerometer']
+                    if isinstance(accel_data, list):
+                        # Handle array of accelerometer readings
+                        for accel_item in accel_data:
+                            if isinstance(accel_item, dict):
+                                accel_x.append(float(accel_item.get('x', 0)))
+                                accel_y.append(float(accel_item.get('y', 0)))
+                                accel_z.append(float(accel_item.get('z', 0)))
+                    elif isinstance(accel_data, dict):
+                        # Handle single accelerometer reading
+                        accel_x.append(float(accel_data.get('x', 0)))
+                        accel_y.append(float(accel_data.get('y', 0)))
+                        accel_z.append(float(accel_data.get('z', 0)))
         
         # Calculate magnitude for each reading
-        accel_magnitude = [math.sqrt(x**2 + y**2 + z**2) for x, y, z in zip(accel_x, accel_y, accel_z)]
+        accel_magnitude = []
+        if accel_x and accel_y and accel_z:
+            accel_magnitude = [math.sqrt(x**2 + y**2 + z**2) for x, y, z in zip(accel_x, accel_y, accel_z)]
         
         accel_stats = []
         accel_stats.extend(self._calculate_stats(accel_x, 3))
@@ -240,13 +268,36 @@ class EnhancedBehavioralProcessor:
         gyro_y = []
         gyro_z = []
         
+        # Process old format
         for event in gyro_events:
             if 'data' in event:
-                gyro_x.append(event['data'].get('x', 0))
-                gyro_y.append(event['data'].get('y', 0))
-                gyro_z.append(event['data'].get('z', 0))
+                gyro_x.append(float(event['data'].get('x', 0)))
+                gyro_y.append(float(event['data'].get('y', 0)))
+                gyro_z.append(float(event['data'].get('z', 0)))
         
-        gyro_magnitude = [math.sqrt(x**2 + y**2 + z**2) for x, y, z in zip(gyro_x, gyro_y, gyro_z)]
+        # Process NEW format (motion data from touch_sequence)
+        for event in touch_sequence_events:
+            if 'data' in event:
+                # Extract gyroscope data
+                if 'gyroscope' in event['data']:
+                    gyro_data = event['data']['gyroscope']
+                    if isinstance(gyro_data, list):
+                        # Handle array of gyroscope readings
+                        for gyro_item in gyro_data:
+                            if isinstance(gyro_item, dict):
+                                gyro_x.append(float(gyro_item.get('x', 0)))
+                                gyro_y.append(float(gyro_item.get('y', 0)))
+                                gyro_z.append(float(gyro_item.get('z', 0)))
+                    elif isinstance(gyro_data, dict):
+                        # Handle single gyroscope reading
+                        gyro_x.append(float(gyro_data.get('x', 0)))
+                        gyro_y.append(float(gyro_data.get('y', 0)))
+                        gyro_z.append(float(gyro_data.get('z', 0)))
+        
+        # Calculate gyroscope magnitude
+        gyro_magnitude = []
+        if gyro_x and gyro_y and gyro_z:
+            gyro_magnitude = [math.sqrt(x**2 + y**2 + z**2) for x, y, z in zip(gyro_x, gyro_y, gyro_z)]
         
         gyro_stats = []
         gyro_stats.extend(self._calculate_stats(gyro_x, 1))
@@ -261,12 +312,33 @@ class EnhancedBehavioralProcessor:
     
     def _extract_scroll_features(self, events_by_type: Dict[str, List]) -> Dict[str, List[float]]:
         """Extract scrolling behavior features"""
-        scroll_events = events_by_type.get('scroll', [])
+        # Look for scroll data in touch_sequence events
+        touch_sequence_events = events_by_type.get('touch_sequence', [])
+        scroll_events = events_by_type.get('scroll', [])  # Keep for backward compatibility
         
         # Velocity statistics from scroll events
         velocities = []
         pixels = []
         
+        # Extract from touch_sequence events first
+        for event in touch_sequence_events:
+            if 'data' in event and 'scroll' in event['data']:
+                scroll_data = event['data']['scroll']
+                # Extract velocity and delta information
+                if isinstance(scroll_data, dict):
+                    velocities.append(scroll_data.get('velocity', 0))
+                    # Calculate pixels from delta_y if available
+                    delta_y = scroll_data.get('delta_y', 0)
+                    pixels.append(abs(delta_y))
+                elif isinstance(scroll_data, list):
+                    # Handle array of scroll events
+                    for scroll_item in scroll_data:
+                        if isinstance(scroll_item, dict):
+                            velocities.append(scroll_item.get('velocity', 0))
+                            delta_y = scroll_item.get('delta_y', 0)
+                            pixels.append(abs(delta_y))
+        
+        # Also process standalone scroll events for backward compatibility
         for event in scroll_events:
             if 'data' in event:
                 velocities.append(event['data'].get('velocity', 0))
@@ -281,9 +353,10 @@ class EnhancedBehavioralProcessor:
         
         # Pattern analysis
         pattern_stats = []
-        if len(scroll_events) > 0:
+        total_scroll_events = len(touch_sequence_events) + len(scroll_events)
+        if total_scroll_events > 0:
             # Scroll frequency
-            pattern_stats.append(len(scroll_events))
+            pattern_stats.append(total_scroll_events)
             
             # Scroll smoothness (velocity variance)
             vel_variance = np.var(velocities) if velocities else 0
@@ -364,14 +437,34 @@ class EnhancedBehavioralProcessor:
             temporal_patterns = [0.0] * 5
         
         # Device stability (accelerometer consistency)
-        accel_events = events_by_type.get('accel_data', [])
-        if accel_events:
-            accel_magnitudes = []
-            for event in accel_events:
-                x, y, z = event['data'].get('x', 0), event['data'].get('y', 0), event['data'].get('z', 0)
-                magnitude = math.sqrt(x**2 + y**2 + z**2)
-                accel_magnitudes.append(magnitude)
-            
+        # Look in touch_sequence events first
+        touch_sequence_events = events_by_type.get('touch_sequence', [])
+        accel_events = events_by_type.get('accel_data', [])  # Backward compatibility
+        
+        accel_magnitudes = []
+        
+        # Extract from touch_sequence events
+        for event in touch_sequence_events:
+            if 'data' in event and 'accelerometer' in event['data']:
+                accel_data = event['data']['accelerometer']
+                if isinstance(accel_data, list):
+                    for accel_item in accel_data:
+                        if isinstance(accel_item, dict):
+                            x, y, z = accel_item.get('x', 0), accel_item.get('y', 0), accel_item.get('z', 0)
+                            magnitude = math.sqrt(x**2 + y**2 + z**2)
+                            accel_magnitudes.append(magnitude)
+                elif isinstance(accel_data, dict):
+                    x, y, z = accel_data.get('x', 0), accel_data.get('y', 0), accel_data.get('z', 0)
+                    magnitude = math.sqrt(x**2 + y**2 + z**2)
+                    accel_magnitudes.append(magnitude)
+        
+        # Also process standalone accelerometer events
+        for event in accel_events:
+            x, y, z = event['data'].get('x', 0), event['data'].get('y', 0), event['data'].get('z', 0)
+            magnitude = math.sqrt(x**2 + y**2 + z**2)
+            accel_magnitudes.append(magnitude)
+        
+        if accel_magnitudes:
             stability_stats = self._calculate_stats(accel_magnitudes, 5)
         else:
             stability_stats = [0.0] * 5
@@ -400,33 +493,67 @@ class EnhancedBehavioralProcessor:
         consistency_metrics = []
         
         # Touch consistency
-        touch_events = events_by_type.get('touch_down', []) + events_by_type.get('touch_up', [])
-        if len(touch_events) > 5:
-            # Analyze touch coordinate patterns
-            coordinates = []
-            for event in touch_events:
-                if 'coordinates' in event['data']:
-                    coords = event['data']['coordinates']
-                    if len(coords) >= 2:
-                        coordinates.append([coords[0], coords[1]])
-            
-            if coordinates:
-                coord_array = np.array(coordinates)
-                x_variance = np.var(coord_array[:, 0])
-                y_variance = np.var(coord_array[:, 1])
-                consistency_metrics.extend([x_variance, y_variance])
-            else:
-                consistency_metrics.extend([0.0, 0.0])
+        # Look in touch_sequence events
+        touch_sequence_events = events_by_type.get('touch_sequence', [])
+        touch_events = events_by_type.get('touch_down', []) + events_by_type.get('touch_up', [])  # Backward compatibility
+        
+        coordinates = []
+        
+        # Extract coordinates from touch_sequence events
+        for event in touch_sequence_events:
+            if 'data' in event and 'touch_events' in event['data']:
+                touch_data = event['data']['touch_events']
+                if isinstance(touch_data, list):
+                    for touch_item in touch_data:
+                        if isinstance(touch_item, dict) and 'coordinates' in touch_item:
+                            coords = touch_item['coordinates']
+                            if len(coords) >= 2:
+                                coordinates.append([coords[0], coords[1]])
+        
+        # Also process standalone touch events
+        for event in touch_events:
+            if 'coordinates' in event['data']:
+                coords = event['data']['coordinates']
+                if len(coords) >= 2:
+                    coordinates.append([coords[0], coords[1]])
+        
+        if len(coordinates) > 5:
+            coord_array = np.array(coordinates)
+            x_variance = np.var(coord_array[:, 0])
+            y_variance = np.var(coord_array[:, 1])
+            consistency_metrics.extend([x_variance, y_variance])
         else:
             consistency_metrics.extend([0.0, 0.0])
         
         # Motion consistency
-        accel_events = events_by_type.get('accel_data', [])
-        if accel_events:
-            x_values = [event['data'].get('x', 0) for event in accel_events]
-            y_values = [event['data'].get('y', 0) for event in accel_events]
-            z_values = [event['data'].get('z', 0) for event in accel_events]
-            
+        # Use the same accelerometer data we extracted above
+        x_values = []
+        y_values = []
+        z_values = []
+        
+        # Extract from touch_sequence events
+        for event in touch_sequence_events:
+            if 'data' in event and 'accelerometer' in event['data']:
+                accel_data = event['data']['accelerometer']
+                if isinstance(accel_data, list):
+                    for accel_item in accel_data:
+                        if isinstance(accel_item, dict):
+                            x_values.append(accel_item.get('x', 0))
+                            y_values.append(accel_item.get('y', 0))
+                            z_values.append(accel_item.get('z', 0))
+                elif isinstance(accel_data, dict):
+                    x_values.append(accel_data.get('x', 0))
+                    y_values.append(accel_data.get('y', 0))
+                    z_values.append(accel_data.get('z', 0))
+        
+        # Also get from standalone accelerometer events
+        standalone_accel_events = events_by_type.get('accel_data', [])
+        for event in standalone_accel_events:
+            x_values.append(event['data'].get('x', 0))
+            y_values.append(event['data'].get('y', 0))
+            z_values.append(event['data'].get('z', 0))
+        
+        if x_values:
             consistency_metrics.append(np.var(x_values))
             consistency_metrics.append(np.var(y_values))
             consistency_metrics.append(np.var(z_values))
@@ -450,16 +577,28 @@ class EnhancedBehavioralProcessor:
         anomaly_indicators = []
         
         # Extreme values detection
-        touch_events = events_by_type.get('touch_down', [])
-        if touch_events:
-            pressures = [event['data'].get('pressure', 1.0) for event in touch_events if 'pressure' in event['data']]
-            if pressures:
-                pressure_mean = np.mean(pressures)
-                pressure_std = np.std(pressures)
-                extreme_pressure_count = sum(1 for p in pressures if abs(p - pressure_mean) > 2 * pressure_std)
-                anomaly_indicators.append(extreme_pressure_count / len(pressures))
-            else:
-                anomaly_indicators.append(0.0)
+        pressures = []
+        
+        # Extract pressures from touch_sequence events
+        for event in touch_sequence_events:
+            if 'data' in event and 'touch_events' in event['data']:
+                touch_data = event['data']['touch_events']
+                if isinstance(touch_data, list):
+                    for touch_item in touch_data:
+                        if isinstance(touch_item, dict) and 'pressure' in touch_item:
+                            pressures.append(touch_item['pressure'])
+        
+        # Also get from standalone touch events
+        standalone_touch_events = events_by_type.get('touch_down', [])
+        for event in standalone_touch_events:
+            if 'pressure' in event['data']:
+                pressures.append(event['data']['pressure'])
+        
+        if pressures:
+            pressure_mean = np.mean(pressures)
+            pressure_std = np.std(pressures)
+            extreme_pressure_count = sum(1 for p in pressures if abs(p - pressure_mean) > 2 * pressure_std)
+            anomaly_indicators.append(extreme_pressure_count / len(pressures))
         else:
             anomaly_indicators.append(0.0)
         
@@ -473,18 +612,32 @@ class EnhancedBehavioralProcessor:
         else:
             anomaly_indicators.append(0.0)
         
-        # Pattern breaks
-        scroll_events = events_by_type.get('scroll', [])
-        if scroll_events:
-            velocities = [event['data'].get('velocity', 0) for event in scroll_events if 'velocity' in event['data']]
-            if len(velocities) > 2:
-                # Detect sudden velocity changes
-                velocity_changes = [abs(velocities[i+1] - velocities[i]) for i in range(len(velocities)-1)]
-                mean_change = np.mean(velocity_changes)
-                large_changes = sum(1 for change in velocity_changes if change > 3 * mean_change)
-                anomaly_indicators.append(large_changes / len(velocity_changes))
-            else:
-                anomaly_indicators.append(0.0)
+        # Pattern breaks - use existing scroll velocity data
+        scroll_velocities = []
+        
+        # Extract scroll velocities from touch_sequence events
+        for event in touch_sequence_events:
+            if 'data' in event and 'scroll' in event['data']:
+                scroll_data = event['data']['scroll']
+                if isinstance(scroll_data, dict):
+                    scroll_velocities.append(scroll_data.get('velocity', 0))
+                elif isinstance(scroll_data, list):
+                    for scroll_item in scroll_data:
+                        if isinstance(scroll_item, dict):
+                            scroll_velocities.append(scroll_item.get('velocity', 0))
+        
+        # Also get from standalone scroll events
+        standalone_scroll_events = events_by_type.get('scroll', [])
+        for event in standalone_scroll_events:
+            if 'velocity' in event['data']:
+                scroll_velocities.append(event['data']['velocity'])
+        
+        if len(scroll_velocities) > 2:
+            # Detect sudden velocity changes
+            velocity_changes = [abs(scroll_velocities[i+1] - scroll_velocities[i]) for i in range(len(scroll_velocities)-1)]
+            mean_change = np.mean(velocity_changes)
+            large_changes = sum(1 for change in velocity_changes if change > 3 * mean_change)
+            anomaly_indicators.append(large_changes / len(velocity_changes))
         else:
             anomaly_indicators.append(0.0)
         

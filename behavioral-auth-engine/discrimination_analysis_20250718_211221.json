@@ -1,0 +1,170 @@
+{
+  "discrimination_analysis": {
+    "intra_user_similarities": [
+      0.9974250556898475,
+      0.9759944914506481,
+      0.9993081169748246,
+      0.9889355347357541,
+      0.9997025997082278
+    ],
+    "inter_user_similarities": [
+      0.890519824277988,
+      0.9975493224097536,
+      0.39437347617510765,
+      0.9930336968365121,
+      0.862227941973318,
+      0.7650942057458102,
+      0.8463320870084833,
+      0.3451650469856396,
+      0.9986766063346497,
+      0.32318120032342695
+    ],
+    "avg_intra_similarity": 0.9922731597118604,
+    "avg_inter_similarity": 0.7416153408070689,
+    "discrimination_ratio": 1.3379889885125773,
+    "separation_gap": 0.25065781890479144
+  },
+  "authentication_accuracy": {
+    "correct_authentications": 5,
+    "false_positives": 0,
+    "false_negatives": 0,
+    "total_tests": 5,
+    "detailed_results": [
+      {
+        "test_user": "fast_precise",
+        "correct": true,
+        "similarities": [
+          {
+            "user_id": "3e816e5a-000f-4c5d-86c2-6e8daf8dcad4",
+            "pattern_type": "fast_precise",
+            "similarity": 0.999890230340286
+          },
+          {
+            "user_id": "838cbe9c-d420-49e9-9d0d-ad66dd6017d6",
+            "pattern_type": "aggressive",
+            "similarity": 0.998145333825588
+          },
+          {
+            "user_id": "a82b8792-bb6b-49bc-b40d-3428ae8ec046",
+            "pattern_type": "gamer",
+            "similarity": 0.994248126082493
+          }
+        ]
+      },
+      {
+        "test_user": "slow_gentle",
+        "correct": true,
+        "similarities": [
+          {
+            "user_id": "4d4af313-f794-41ec-8e75-d1a1d1488bf0",
+            "pattern_type": "slow_gentle",
+            "similarity": 0.9901717659323201
+          },
+          {
+            "user_id": "3e816e5a-000f-4c5d-86c2-6e8daf8dcad4",
+            "pattern_type": "fast_precise",
+            "similarity": 0.9362684016257758
+          },
+          {
+            "user_id": "838cbe9c-d420-49e9-9d0d-ad66dd6017d6",
+            "pattern_type": "aggressive",
+            "similarity": 0.9158116985492124
+          }
+        ]
+      },
+      {
+        "test_user": "aggressive",
+        "correct": true,
+        "similarities": [
+          {
+            "user_id": "838cbe9c-d420-49e9-9d0d-ad66dd6017d6",
+            "pattern_type": "aggressive",
+            "similarity": 0.9998320176655987
+          },
+          {
+            "user_id": "a82b8792-bb6b-49bc-b40d-3428ae8ec046",
+            "pattern_type": "gamer",
+            "similarity": 0.9993909192969035
+          },
+          {
+            "user_id": "3e816e5a-000f-4c5d-86c2-6e8daf8dcad4",
+            "pattern_type": "fast_precise",
+            "similarity": 0.9963658167698466
+          }
+        ]
+      },
+      {
+        "test_user": "elderly",
+        "correct": true,
+        "similarities": [
+          {
+            "user_id": "8e64eabd-4d94-4abd-9915-3f1deaa3f9de",
+            "pattern_type": "elderly",
+            "similarity": 0.9986292205996291
+          },
+          {
+            "user_id": "4d4af313-f794-41ec-8e75-d1a1d1488bf0",
+            "pattern_type": "slow_gentle",
+            "similarity": 0.7643512851923221
+          },
+          {
+            "user_id": "3e816e5a-000f-4c5d-86c2-6e8daf8dcad4",
+            "pattern_type": "fast_precise",
+            "similarity": 0.39653585421751486
+          }
+        ]
+      },
+      {
+        "test_user": "gamer",
+        "correct": true,
+        "similarities": [
+          {
+            "user_id": "a82b8792-bb6b-49bc-b40d-3428ae8ec046",
+            "pattern_type": "gamer",
+            "similarity": 0.9999795837245941
+          },
+          {
+            "user_id": "838cbe9c-d420-49e9-9d0d-ad66dd6017d6",
+            "pattern_type": "aggressive",
+            "similarity": 0.9989387061497061
+          },
+          {
+            "user_id": "3e816e5a-000f-4c5d-86c2-6e8daf8dcad4",
+            "pattern_type": "fast_precise",
+            "similarity": 0.9936593103265974
+          }
+        ]
+      }
+    ],
+    "accuracy": 1.0,
+    "false_positive_rate": 0.0
+  },
+  "user_profiles": [
+    {
+      "pattern_type": "fast_precise",
+      "session_count": 8,
+      "user_id": "3e816e5a-000f-4c5d-86c2-6e8daf8dcad4"
+    },
+    {
+      "pattern_type": "slow_gentle",
+      "session_count": 8,
+      "user_id": "4d4af313-f794-41ec-8e75-d1a1d1488bf0"
+    },
+    {
+      "pattern_type": "aggressive",
+      "session_count": 8,
+      "user_id": "838cbe9c-d420-49e9-9d0d-ad66dd6017d6"
+    },
+    {
+      "pattern_type": "elderly",
+      "session_count": 8,
+      "user_id": "8e64eabd-4d94-4abd-9915-3f1deaa3f9de"
+    },
+    {
+      "pattern_type": "gamer",
+      "session_count": 8,
+      "user_id": "a82b8792-bb6b-49bc-b40d-3428ae8ec046"
+    }
+  ],
+  "test_timestamp": "20250718_211221"
+}

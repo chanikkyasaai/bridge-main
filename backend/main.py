@@ -1,18 +1,52 @@
 import logging
-from fastapi import FastAPI, HTTPException
+import logging.handlers
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import uvicorn
 import os
 import asyncio
+import time
+import json
+from datetime import datetime
 from dotenv import load_dotenv
 
 from app.api.v1.api import api_router
 from app.core.config import settings
 from app.core.session_manager import cleanup_sessions_task
 
-logging.basicConfig(level=logging.INFO)
+# Configure comprehensive logging for backend
+detailed_formatter = logging.Formatter(
+    '%(asctime)s | %(levelname)-8s | %(name)-15s | %(funcName)-15s | %(message)s'
+)
+
+# Setup backend log file with rotation
+backend_log_handler = logging.handlers.RotatingFileHandler(
+    'backend_detailed.log',
+    maxBytes=10*1024*1024,  # 10MB
+    backupCount=5
+)
+backend_log_handler.setFormatter(detailed_formatter)
+backend_log_handler.setLevel(logging.DEBUG)
+
+# Setup console handler
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(detailed_formatter)
+console_handler.setLevel(logging.INFO)
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    handlers=[backend_log_handler, console_handler]
+)
+
+# Create specialized loggers
+backend_logger = logging.getLogger("BACKEND")
+api_logger = logging.getLogger("API_REQUESTS")
+auth_logger = logging.getLogger("AUTHENTICATION")
+security_logger = logging.getLogger("SECURITY")
+
 logger = logging.getLogger(__name__)
 
 # Load environment variables
@@ -21,11 +55,12 @@ load_dotenv()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print("Starting up Canara AI Security Backend...")
-    print("Initializing behavioral analysis system...")
+    backend_logger.info("🚀 BACKEND_STARTUP | Starting Canara AI Security Backend...")
+    backend_logger.info("🔧 INITIALIZING | Behavioral analysis system...")
     
     # Create session buffers directory
     os.makedirs("session_buffers", exist_ok=True)
+    backend_logger.info("📁 DIRECTORY_CREATED | session_buffers directory ready")
     
     # Start background task for session cleanup
     cleanup_task = asyncio.create_task(cleanup_sessions_task())
@@ -56,6 +91,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add request logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    # Generate request ID
+    request_id = f"{int(time.time() * 1000)}_{id(request)}"
+    start_time = time.time()
+    
+    # Log incoming request
+    client_ip = request.client.host if request.client else "unknown"
+    user_agent = request.headers.get("user-agent", "unknown")
+    
+    api_logger.info(f"📥 REQUEST_IN | ID: {request_id} | Method: {request.method} | Path: {request.url.path} | IP: {client_ip}")
+    api_logger.debug(f"📋 REQUEST_DETAILS | ID: {request_id} | Headers: {dict(request.headers)} | UserAgent: {user_agent}")
+    
+    # Process request
+    try:
+        response = await call_next(request)
+        duration = (time.time() - start_time) * 1000
+        
+        # Log response
+        api_logger.info(f"📤 REQUEST_OUT | ID: {request_id} | Status: {response.status_code} | Duration: {duration:.2f}ms")
+        
+        return response
+    except Exception as e:
+        duration = (time.time() - start_time) * 1000
+        security_logger.error(f"🚨 REQUEST_ERROR | ID: {request_id} | Error: {str(e)} | Duration: {duration:.2f}ms")
+        raise
 
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
