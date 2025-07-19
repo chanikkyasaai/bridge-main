@@ -46,13 +46,45 @@ from src.core.ml_database import ml_db
 from src.data.behavioral_processor import BehavioralProcessor
 from src.layers.faiss_layer import FAISSLayer
 from src.layers.adaptive_layer import AdaptiveLayer
+from src.layers.gnn_anomaly_detector import GNNAnomalyDetector
 from src.core.enhanced_faiss_engine import EnhancedFAISSEngine
 from src.core.enhanced_behavioral_processor import EnhancedBehavioralProcessor
 from src.data.models import BehavioralFeatures, BehavioralVector, AuthenticationDecision
 from src.config.settings import get_settings
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure comprehensive logging
+import logging.handlers
+
+# Create detailed formatter
+detailed_formatter = logging.Formatter(
+    '%(asctime)s | %(levelname)-8s | %(name)-20s | %(funcName)-15s | %(message)s'
+)
+
+# Setup file handler for ML Engine logs
+ml_log_handler = logging.handlers.RotatingFileHandler(
+    'ml_engine_detailed.log',
+    maxBytes=10*1024*1024,  # 10MB
+    backupCount=5
+)
+ml_log_handler.setFormatter(detailed_formatter)
+ml_log_handler.setLevel(logging.DEBUG)
+
+# Setup console handler
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(detailed_formatter)
+console_handler.setLevel(logging.INFO)
+
+# Configure root logger
+logging.basicConfig(
+    level=logging.DEBUG,
+    handlers=[ml_log_handler, console_handler]
+)
+
+# Create dedicated loggers for different components
+ml_engine_logger = logging.getLogger("ML_ENGINE")
+behavioral_logger = logging.getLogger("BEHAVIORAL_ANALYSIS")
+security_logger = logging.getLogger("SECURITY_EVENTS")
+performance_logger = logging.getLogger("PERFORMANCE")
 logger = logging.getLogger(__name__)
 
 # Global ML Engine components
@@ -62,6 +94,7 @@ session_manager = None
 behavioral_processor = None
 faiss_layer = None
 adaptive_layer = None
+gnn_detector = None
 learning_system = None
 continuous_analysis = None
 enhanced_faiss_engine = None
@@ -69,7 +102,7 @@ enhanced_faiss_engine = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifespan"""
-    global vector_store, session_manager, behavioral_processor, faiss_layer, adaptive_layer, learning_system, continuous_analysis, enhanced_faiss_engine
+    global vector_store, session_manager, behavioral_processor, faiss_layer, adaptive_layer, gnn_detector, learning_system, continuous_analysis, enhanced_faiss_engine
     
     # Startup
     try:
@@ -95,13 +128,18 @@ async def lifespan(app: FastAPI):
         faiss_layer = FAISSLayer(vector_store)
         adaptive_layer = AdaptiveLayer(vector_store)
         
+        # Initialize GNN Anomaly Detector
+        gnn_detector = GNNAnomalyDetector()
+        await gnn_detector.initialize()
+        logger.info("GNN Anomaly Detector initialized")
+        
         # Initialize Phase 1 Learning System
         learning_system = Phase1LearningSystem(vector_store, behavioral_processor)
         
         # Initialize Phase 2 Continuous Analysis
         continuous_analysis = Phase2ContinuousAnalysis(vector_store, faiss_layer, adaptive_layer)
         
-        logger.info("ML Engine initialized successfully with Enhanced FAISS Engine & Phase 1 & 2 systems")
+        logger.info("ML Engine initialized successfully with Enhanced FAISS Engine, GNN Anomaly Detector & Phase 1 & 2 systems")
         
     except Exception as e:
         logger.error(f"Failed to initialize ML Engine: {e}")
@@ -164,6 +202,11 @@ class MLEngineStatus(BaseModel):
     status: str
     components: Dict[str, bool]
     statistics: Dict[str, Any]
+
+@app.get("/health")
+async def simple_health_check():
+    """Simple health check endpoint for monitoring"""
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
 @app.get("/", response_model=MLEngineStatus)
 async def health_check():
@@ -327,25 +370,45 @@ async def analyze_mobile_behavioral_data(request: MobileBehavioralDataRequest):
     Enhanced endpoint for processing mobile behavioral data
     Uses Enhanced FAISS Engine with proper vector embeddings
     """
+    start_time = datetime.utcnow()
+    request_id = f"{request.user_id}_{request.session_id}_{int(start_time.timestamp())}"
+    
+    print(f"🔍 ANALYZE-MOBILE: Request received for user {request.user_id}, session {request.session_id}")
+    print(f"🔍 ANALYZE-MOBILE: Request ID: {request_id}")
+    print(f"🔍 ANALYZE-MOBILE: Logs count: {len(request.logs)}")
+    
+    # Log incoming request
+    ml_engine_logger.info(f"🔍 ANALYZE-MOBILE REQUEST | RequestID: {request_id}")
+    behavioral_logger.info(f"📱 USER: {request.user_id} | SESSION: {request.session_id} | LOGS_COUNT: {len(request.logs)}")
+    
+    # Log detailed behavioral data
+    behavioral_logger.debug(f"📋 FULL_REQUEST_DATA | RequestID: {request_id} | Data: {json.dumps(request.dict(), indent=2)}")
+    
     try:
-        logger.info(f"Processing mobile behavioral data for session {request.session_id}")
-        
-        # Ensure session exists in SessionManager
+        # Log session management
+        session_context = None
         try:
             session_context = session_manager.get_session_context(request.session_id)
             if not session_context:
-                # Create session in SessionManager with the specific session_id
+                ml_engine_logger.info(f"🆕 CREATING_NEW_SESSION | RequestID: {request_id}")
                 created_session_id = await session_manager.create_session(
                     user_id=request.user_id,
                     session_id=request.session_id
                 )
-                logger.info(f"Created SessionManager session {created_session_id} for mobile data analysis")
+                ml_engine_logger.info(f"✅ SESSION_CREATED | RequestID: {request_id} | SessionID: {created_session_id}")
+            else:
+                ml_engine_logger.info(f"📂 EXISTING_SESSION_FOUND | RequestID: {request_id}")
         except Exception as e:
-            logger.warning(f"SessionManager session creation failed: {e} - continuing with analysis")
+            ml_engine_logger.warning(f"⚠️ SESSION_MANAGEMENT_WARNING | RequestID: {request_id} | Error: {e}")
         
-        # Get user profile for learning phase determination
+        # Log user profile retrieval
         user_profile = await ml_db.get_user_profile(request.user_id)
         learning_phase = user_profile.get('current_phase', 'learning') if user_profile else 'learning'
+        behavioral_logger.info(f"👤 USER_PROFILE | RequestID: {request_id} | Phase: {learning_phase} | HasProfile: {user_profile is not None}")
+        
+        # Log FAISS analysis start
+        performance_logger.info(f"⏱️ FAISS_ANALYSIS_START | RequestID: {request_id}")
+        faiss_start = datetime.utcnow()
         
         # Process using Enhanced FAISS Engine with mobile data format
         analysis_result = await enhanced_faiss_engine.process_mobile_behavioral_data(
@@ -358,30 +421,155 @@ async def analyze_mobile_behavioral_data(request: MobileBehavioralDataRequest):
             }
         )
         
+        faiss_duration = (datetime.utcnow() - faiss_start).total_seconds() * 1000
+        performance_logger.info(f"⏱️ FAISS_ANALYSIS_COMPLETE | RequestID: {request_id} | Duration: {faiss_duration:.2f}ms")
+        
+        # Log FAISS results
+        behavioral_logger.info(f"📊 FAISS_RESULT | RequestID: {request_id} | Decision: {analysis_result.decision} | Confidence: {analysis_result.confidence} | Similarity: {analysis_result.similarity_score:.6f}")
+        
+        # Apply GNN Anomaly Detection for additional analysis
+        gnn_result = None
+        gnn_risk_adjustment = 0.0
+        gnn_start = datetime.utcnow()
+        
+        try:
+            print(f"🔍 ML_ENGINE: Checking GNN conditions...")
+            print(f"   - gnn_detector exists: {gnn_detector is not None}")
+            print(f"   - hasattr session_vector: {hasattr(analysis_result, 'session_vector')}")
+            print(f"   - session_vector is not None: {analysis_result.session_vector is not None if hasattr(analysis_result, 'session_vector') else 'N/A'}")
+            
+            # FIX: More robust session vector extraction
+            session_vector_for_gnn = None
+            
+            # Try to get session_vector from analysis_result
+            if hasattr(analysis_result, 'session_vector') and analysis_result.session_vector is not None:
+                session_vector_for_gnn = analysis_result.session_vector
+                print(f"✅ ML_ENGINE: Using session_vector from analysis_result")
+            else:
+                print(f"⚠️ ML_ENGINE: analysis_result.session_vector unavailable, generating fresh vector")
+                # Regenerate the vector using the behavioral processor
+                try:
+                    # Access the behavioral processor from enhanced_faiss_engine
+                    behavioral_data = {
+                        "user_id": request.user_id,
+                        "session_id": request.session_id,
+                        "logs": request.logs
+                    }
+                    fresh_vector = enhanced_faiss_engine.behavioral_processor.process_mobile_behavioral_data(behavioral_data)
+                    fresh_vector = enhanced_faiss_engine._normalize_vector(fresh_vector)
+                    session_vector_for_gnn = fresh_vector
+                    print(f"✅ ML_ENGINE: Generated fresh vector with shape: {fresh_vector.shape}")
+                except Exception as vector_gen_error:
+                    print(f"❌ ML_ENGINE: Failed to generate fresh vector: {vector_gen_error}")
+            
+            # Run GNN if we have a detector and vector
+            if gnn_detector and session_vector_for_gnn is not None:
+                ml_engine_logger.info(f"🧠 GNN_ANALYSIS_START | RequestID: {request_id}")
+                print(f"🧠 ML_ENGINE: Starting GNN analysis with vector shape: {session_vector_for_gnn.shape if hasattr(session_vector_for_gnn, 'shape') else len(session_vector_for_gnn) if hasattr(session_vector_for_gnn, '__len__') else 'unknown'}")
+                
+                # Convert to numpy array if it's a list
+                import numpy as np
+                if isinstance(session_vector_for_gnn, list):
+                    session_vector_for_gnn = np.array(session_vector_for_gnn)
+                
+                # Convert behavioral logs to format suitable for GNN
+                gnn_result = await gnn_detector.detect_anomalies(
+                    user_id=request.user_id,
+                    session_id=request.session_id,
+                    behavioral_vector=session_vector_for_gnn,
+                    behavioral_logs=request.logs
+                )
+                
+                print(f"🧠 ML_ENGINE: GNN analysis completed. Anomaly score: {gnn_result.anomaly_score}")
+                
+                gnn_duration = (datetime.utcnow() - gnn_start).total_seconds() * 1000
+                performance_logger.info(f"⏱️ GNN_ANALYSIS_COMPLETE | RequestID: {request_id} | Duration: {gnn_duration:.2f}ms")
+                
+                # Log GNN results
+                behavioral_logger.info(f"🧠 GNN_RESULT | RequestID: {request_id} | AnomalyScore: {gnn_result.anomaly_score:.6f} | Types: {[at.value for at in gnn_result.anomaly_types]} | Confidence: {gnn_result.confidence}")
+            else:
+                print(f"❌ ML_ENGINE: GNN analysis SKIPPED due to failed conditions")
+                if not gnn_detector:
+                    print(f"   - GNN detector is None")
+                else:
+                    print(f"   - session_vector_for_gnn is None or unavailable")
+                
+                # Adjust risk score based on GNN findings
+                if gnn_result and gnn_result.anomaly_score > 0.5:
+                    gnn_risk_adjustment = gnn_result.anomaly_score * 0.3  # Weight GNN findings
+                    security_logger.warning(f"🚨 HIGH_GNN_ANOMALY | RequestID: {request_id} | Score: {gnn_result.anomaly_score:.3f} | Adjustment: {gnn_risk_adjustment:.3f}")
+                
+        except Exception as e:
+            ml_engine_logger.warning(f"⚠️ GNN_ANALYSIS_FAILED | RequestID: {request_id} | Error: {e}")
+        
+        # Calculate final risk and decision
+        base_risk = 1.0 - analysis_result.similarity_score
+        final_risk_score = min(1.0, base_risk + gnn_risk_adjustment)
+        
+        # Log risk calculation
+        security_logger.info(f"⚖️ RISK_CALCULATION | RequestID: {request_id} | BaseRisk: {base_risk:.6f} | GNNAdjustment: {gnn_risk_adjustment:.6f} | FinalRisk: {final_risk_score:.6f}")
+        
         # Create response
+        
         response = {
             "status": "success",
             "decision": analysis_result.decision,
             "confidence": analysis_result.confidence,
-            "risk_score": 1.0 - analysis_result.similarity_score,  # Convert similarity to risk
+            "risk_score": final_risk_score,
             "risk_level": analysis_result.risk_level,
             "similarity_score": analysis_result.similarity_score,
-            "analysis_type": "enhanced_faiss",
+            "analysis_type": "enhanced_faiss_with_gnn",
             "processing_time_ms": 0,  # Will be calculated
             "risk_factors": analysis_result.risk_factors,
             "similar_vectors": analysis_result.similar_vectors,
             "vector_id": analysis_result.vector_id,
             "learning_phase": learning_phase,
-            "message": f"Enhanced FAISS analysis - {analysis_result.decision} decision"
+            "message": f"Enhanced FAISS + GNN analysis - {analysis_result.decision} decision"
         }
+        
+        # Add GNN-specific information
+        if gnn_result:
+            response["gnn_analysis"] = {
+                "anomaly_score": gnn_result.anomaly_score,
+                "anomaly_types": [at.value for at in gnn_result.anomaly_types],
+                "gnn_confidence": gnn_result.confidence,
+                "risk_adjustment": gnn_risk_adjustment
+            }
+            # Update risk factors with GNN findings
+            if gnn_result.anomaly_score > 0.3:
+                response["risk_factors"].append(f"GNN detected {', '.join([at.value for at in gnn_result.anomaly_types])}")
+        
+        # Update decision based on final risk score
+        if final_risk_score > 0.7 and analysis_result.decision == "learn":
+            response["decision"] = "challenge"
+            response["message"] = "GNN detected high anomaly - challenge recommended"
+            security_logger.warning(f"🔄 DECISION_OVERRIDE | RequestID: {request_id} | Original: {analysis_result.decision} → Challenge (High Risk)")
+        elif final_risk_score > 0.9:
+            response["decision"] = "deny"
+            response["message"] = "GNN detected critical anomaly - access denied"
+            security_logger.error(f"🚫 DECISION_OVERRIDE | RequestID: {request_id} | Original: {analysis_result.decision} → Deny (Critical Risk)")
         
         # Add vector details if available (for debugging)
         if hasattr(analysis_result, 'vector_stats') and analysis_result.vector_stats:
             response["vector_stats"] = analysis_result.vector_stats
+            behavioral_logger.debug(f"📊 VECTOR_STATS | RequestID: {request_id} | NonZeros: {analysis_result.vector_stats.get('non_zero_count', 0)}/90 | Mean: {analysis_result.vector_stats.get('mean', 0):.6f}")
         
         if hasattr(analysis_result, 'session_vector') and analysis_result.session_vector:
             # Include only first 10 values of vector for debugging (to avoid huge responses)
             response["vector_sample"] = analysis_result.session_vector[:10]
+            # Include full vector for external tools and tests
+            response["session_vector"] = analysis_result.session_vector.tolist() if hasattr(analysis_result.session_vector, 'tolist') else list(analysis_result.session_vector)
+        
+        # Calculate total processing time
+        total_duration = (datetime.utcnow() - start_time).total_seconds() * 1000
+        response["processing_time_ms"] = total_duration
+        
+        # Log final decision
+        decision_level = "🟢" if response["decision"] == "allow" else "🟡" if response["decision"] in ["learn", "challenge"] else "🔴"
+        security_logger.info(f"{decision_level} FINAL_DECISION | RequestID: {request_id} | Decision: {response['decision']} | Risk: {final_risk_score:.6f} | ProcessingTime: {total_duration:.2f}ms")
+        
+        # Log comprehensive response summary
+        ml_engine_logger.info(f"✅ ANALYSIS_COMPLETE | RequestID: {request_id} | User: {request.user_id} | Decision: {response['decision']} | Confidence: {response['confidence']} | TotalTime: {total_duration:.2f}ms")
         
         # Store session behavioral event
         try:
@@ -391,19 +579,27 @@ async def analyze_mobile_behavioral_data(request: MobileBehavioralDataRequest):
                     "logs": request.logs,
                     "analysis_result": response,
                     "timestamp": datetime.utcnow().isoformat(),
-                    "analysis_engine": "enhanced_faiss"
+                    "analysis_engine": "enhanced_faiss_with_gnn",
+                    "request_id": request_id
                 }
             )
+            behavioral_logger.debug(f"💾 SESSION_EVENT_STORED | RequestID: {request_id}")
         except Exception as e:
-            logger.warning(f"Failed to store session event: {e}")
+            ml_engine_logger.warning(f"⚠️ SESSION_STORAGE_FAILED | RequestID: {request_id} | Error: {e}")
         
         # Make response JSON-safe
         safe_response = make_json_safe(response)
+        
+        # Log final response (abbreviated)
+        behavioral_logger.debug(f"📤 RESPONSE_SENT | RequestID: {request_id} | Status: success | Keys: {list(safe_response.keys())}")
+        
         return safe_response
         
     except Exception as e:
-        logger.error(f"Failed to analyze mobile behavioral data: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        error_duration = (datetime.utcnow() - start_time).total_seconds() * 1000
+        ml_engine_logger.error(f"❌ ANALYSIS_FAILED | RequestID: {request_id} | Error: {str(e)} | Duration: {error_duration:.2f}ms")
+        security_logger.error(f"🚨 SECURITY_ERROR | RequestID: {request_id} | User: {request.user_id} | Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Analysis failed for {request_id}: {str(e)}")
 
 @app.post("/analyze")
 async def analyze_behavior(request: BehavioralAnalysisRequest):
@@ -706,6 +902,75 @@ async def submit_feedback(request: AuthenticationFeedback):
     except Exception as e:
         logger.error(f"Feedback submission failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/v1/system/status")
+async def get_system_status():
+    """Get detailed system status for monitoring"""
+    try:
+        components_status = {
+            "vector_store": vector_store is not None,
+            "session_manager": session_manager is not None,
+            "behavioral_processor": behavioral_processor is not None,
+            "faiss_layer": faiss_layer is not None,
+            "adaptive_layer": adaptive_layer is not None,
+            "learning_system": learning_system is not None,
+            "continuous_analysis": continuous_analysis is not None,
+            "enhanced_faiss_engine": enhanced_faiss_engine is not None,
+        }
+        
+        # Check database connectivity
+        db_health = await ml_db.health_check() if ml_db else False
+        
+        return {
+            "status": "healthy" if all(components_status.values()) and db_health else "degraded",
+            "components": components_status,
+            "database": {"connected": db_health},
+            "timestamp": datetime.utcnow().isoformat(),
+            "uptime": "unknown"  # Could be calculated from startup time
+        }
+        
+    except Exception as e:
+        logger.error(f"System status check failed: {e}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+@app.get("/api/v1/system/stats")
+async def get_system_stats():
+    """Get system statistics and recent decisions"""
+    try:
+        # Get recent authentication decisions
+        recent_decisions = []
+        try:
+            # This would need to be implemented in ml_database.py
+            # recent_decisions = await ml_db.get_recent_decisions(limit=10)
+            pass
+        except:
+            pass
+            
+        return {
+            "recent_decisions": recent_decisions,
+            "total_users": 0,  # Would need to query database
+            "total_sessions": 0,  # Would need to query database
+            "avg_risk_score": 0.0,  # Would need to calculate
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"System stats retrieval failed: {e}")
+        return {"error": str(e), "timestamp": datetime.utcnow().isoformat()}
+
+@app.get("/api/v1/layers/statistics")
+async def get_layer_statistics():
+    """Get layer performance statistics"""
+    try:
+        return await get_statistics()  # Reuse existing statistics endpoint
+        
+    except Exception as e:
+        logger.error(f"Layer statistics retrieval failed: {e}")
+        return {"error": str(e), "timestamp": datetime.utcnow().isoformat()}
 
 @app.get("/statistics")
 async def get_statistics():

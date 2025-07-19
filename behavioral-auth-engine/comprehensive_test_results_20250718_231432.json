@@ -1,0 +1,60 @@
+{
+  "faiss_engine": {
+    "behavioral_processing": true,
+    "result_type": "VectorAnalysisResult",
+    "user_statistics": true,
+    "layer_statistics": true,
+    "status": "PASS"
+  },
+  "behavioral_processor": {
+    "vector_generation": true,
+    "vector_quality": "True",
+    "status": "\u2705 PASSED"
+  },
+  "vector_store": {},
+  "faiss_layer": {
+    "error": "'FAISSLayer' object has no attribute 'search_similar_vectors'",
+    "status": "\u274c FAILED"
+  },
+  "gnn_detector": {
+    "initialization": true,
+    "has_detect_method": true,
+    "has_model": true,
+    "has_process_method": false,
+    "status": "\u2705 PASSED"
+  },
+  "adaptive_layer": {
+    "error": "'AdaptiveLayer' object has no attribute 'process_authentication_feedback'",
+    "status": "\u274c FAILED"
+  },
+  "policy_engine": {
+    "error": "'PolicyOrchestrationEngine' object has no attribute 'evaluate_authentication_request'",
+    "status": "\u274c FAILED"
+  },
+  "bank_adapter": {
+    "risk_assessment": true,
+    "behavioral_context": true,
+    "status": "\u2705 PASSED"
+  },
+  "ecommerce_adapter": {
+    "fraud_detection": true,
+    "behavior_analysis": true,
+    "status": "\u2705 PASSED"
+  },
+  "drift_detector": {
+    "behavioral_drift_detection": true,
+    "system_drift_monitoring": true,
+    "drift_detected": "False",
+    "adaptation_needed": "False",
+    "status": "\u2705 PASSED"
+  },
+  "integration_test": {
+    "faiss_authentication": true,
+    "bank_adapter": true,
+    "ecommerce_adapter": true,
+    "drift_detection": true,
+    "adaptive_feedback_available": false,
+    "complete_flow": true,
+    "status": "\u2705 PASSED"
+  }
+}

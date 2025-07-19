@@ -1,0 +1,40 @@
+{
+  "faiss_settings": {
+    "nlist": 16,
+    "nprobe": 2,
+    "batch_size": 8,
+    "similarity_threshold": 0.7,
+    "enable_caching": true,
+    "cache_size": 200
+  },
+  "gnn_settings": {
+    "graph_simplification": true,
+    "max_nodes": 20,
+    "confidence_cache": true,
+    "anomaly_threshold": 0.25,
+    "enable_fast_mode": true,
+    "bot_detection_threshold": 0.3
+  },
+  "vector_settings": {
+    "compress_zeros": true,
+    "feature_selection": true,
+    "parallel_processing": true,
+    "memory_optimization": true,
+    "cache_vectors": true,
+    "max_dimension": 90
+  },
+  "api_settings": {
+    "response_compression": true,
+    "async_processing": true,
+    "timeout_ms": 1500,
+    "enable_streaming": false,
+    "cache_responses": true
+  },
+  "optimization_flags": {
+    "AGGRESSIVE_MODE": true,
+    "FAST_BOT_DETECTION": true,
+    "EARLY_EXIT": true,
+    "VECTOR_CACHING": true,
+    "SIMILARITY_CACHING": true
+  }
+}

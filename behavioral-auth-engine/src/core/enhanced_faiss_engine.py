@@ -13,6 +13,8 @@ import os
 from dataclasses import dataclass
 from enum import Enum
 import json
+import uuid
+import hashlib
 
 from src.core.enhanced_behavioral_processor import EnhancedBehavioralProcessor, ProcessedBehavioralFeatures
 from src.core.ml_database import MLSupabaseClient
@@ -72,6 +74,15 @@ class EnhancedFAISSEngine:
             'gradual_risk': 0.6,  # Moderate during gradual phase
             'full_auth': 0.8      # Strict during full authentication
         }
+    
+    def _generate_uuid_from_string(self, input_str: str) -> str:
+        """Generate consistent UUID from string input for database compatibility"""
+        # Create a consistent UUID from the string using MD5 hash
+        hash_object = hashlib.md5(input_str.encode())
+        hex_dig = hash_object.hexdigest()
+        
+        # Format as UUID string
+        return f"{hex_dig[:8]}-{hex_dig[8:12]}-{hex_dig[12:16]}-{hex_dig[16:20]}-{hex_dig[20:32]}"
         
     def _calculate_vector_stats(self, vector: np.ndarray) -> Dict[str, Any]:
         """Calculate statistics for a vector to verify it's meaningful"""
@@ -222,15 +233,18 @@ class EnhancedFAISSEngine:
             return None
     
     async def _get_or_create_user_profile(self, user_id: str) -> UserVectorProfile:
-        """Get or create user vector profile"""
+        """Get or create user vector profile with UUID handling"""
         if user_id in self.user_profiles:
             return self.user_profiles[user_id]
         
         try:
-            # Load from database
+            # Convert user_id to UUID format for database compatibility
+            user_uuid = self._generate_uuid_from_string(user_id)
+            
+            # Load from database using UUID
             cumulative_result = self.db_client.supabase.table('enhanced_behavioral_vectors')\
                 .select('*')\
-                .eq('user_id', user_id)\
+                .eq('user_id', user_uuid)\
                 .eq('vector_type', VectorType.CUMULATIVE.value)\
                 .order('created_at', desc=True)\
                 .limit(1)\
@@ -240,15 +254,17 @@ class EnhancedFAISSEngine:
                 cumulative_vector = np.array(cumulative_result.data[0]['vector_data'])
                 vector_count = cumulative_result.data[0].get('metadata', {}).get('vector_count', 1)
                 last_updated = datetime.fromisoformat(cumulative_result.data[0]['created_at'])
+                self.logger.info(f"Loaded user {user_id} cumulative vector with {vector_count} sessions")
             else:
                 cumulative_vector = np.zeros(self.vector_dimension)
                 vector_count = 0
                 last_updated = datetime.utcnow()
+                self.logger.info(f"Creating new profile for user {user_id} (no existing data)")
             
             # Load baseline if exists
             baseline_result = self.db_client.supabase.table('enhanced_behavioral_vectors')\
                 .select('*')\
-                .eq('user_id', user_id)\
+                .eq('user_id', user_uuid)\
                 .eq('vector_type', VectorType.BASELINE.value)\
                 .order('created_at', desc=True)\
                 .limit(1)\
@@ -257,13 +273,14 @@ class EnhancedFAISSEngine:
             baseline_vector = None
             if baseline_result.data:
                 baseline_vector = np.array(baseline_result.data[0]['vector_data'])
+                self.logger.debug(f"Loaded baseline vector for user {user_id}")
             
             # Get user profile for learning phase
-            user_profile_result = await self.db_client.get_user_profile(user_id)
+            user_profile_result = await self.db_client.get_user_profile(user_uuid)
             learning_phase = user_profile_result.get('current_phase', 'learning') if user_profile_result else 'learning'
             
             profile = UserVectorProfile(
-                user_id=user_id,
+                user_id=user_id,  # Keep original user_id for internal use
                 cumulative_vector=cumulative_vector,
                 baseline_vector=baseline_vector,
                 session_vectors=[],
@@ -276,7 +293,7 @@ class EnhancedFAISSEngine:
             return profile
             
         except Exception as e:
-            self.logger.error(f"Failed to load user profile: {e}")
+            self.logger.error(f"Failed to load user profile for {user_id}: {e}")
             # Return default profile
             profile = UserVectorProfile(
                 user_id=user_id,
@@ -296,15 +313,41 @@ class EnhancedFAISSEngine:
         session_vector: np.ndarray, 
         user_profile: UserVectorProfile
     ) -> VectorAnalysisResult:
-        """Analyze vector during learning phase"""
-        return VectorAnalysisResult(
-            similarity_score=0.9,  # High similarity during learning
-            confidence=0.5,
-            decision="learn",
-            risk_level="low",
-            risk_factors=["Learning phase - collecting behavioral data"],
-            similar_vectors=[]
-        )
+        """Analyze vector during learning phase with real FAISS similarity calculation"""
+        
+        # If we have previous vectors, calculate real similarity
+        similarity_score = 0.0
+        risk_factors = ["Learning phase - collecting behavioral data"]
+        
+        if user_profile.vector_count > 0 and user_profile.cumulative_vector is not None:
+            # Calculate real cosine similarity with user's cumulative profile
+            similarity_score = self._calculate_cosine_similarity(session_vector, user_profile.cumulative_vector)
+            risk_factors.append(f"Compared with {user_profile.vector_count} previous sessions")
+            
+            # Find similar vectors for analysis
+            similar_vectors = await self._find_similar_vectors(user_id, session_vector)
+            
+            # More realistic confidence based on data collected
+            confidence = min(0.8, user_profile.vector_count / 5.0)  # Build confidence over 5 sessions
+            
+            return VectorAnalysisResult(
+                similarity_score=similarity_score,
+                confidence=confidence,
+                decision="learn",
+                risk_level="low",
+                risk_factors=risk_factors,
+                similar_vectors=similar_vectors[:3]  # Top 3 similar vectors
+            )
+        else:
+            # First session - no baseline yet
+            return VectorAnalysisResult(
+                similarity_score=0.0,  # No baseline to compare
+                confidence=0.2,  # Low confidence for first session
+                decision="learn",
+                risk_level="low",
+                risk_factors=["First session - no baseline for comparison"],
+                similar_vectors=[]
+            )
     
     async def _analyze_gradual_phase(
         self, 
@@ -399,7 +442,7 @@ class EnhancedFAISSEngine:
         session_vector: np.ndarray, 
         decision: str
     ):
-        """Update user's cumulative vector with new session data"""
+        """Update user's cumulative vector with new session data, UUID handling, and fallback storage"""
         try:
             if decision == "block":
                 # Don't update cumulative with blocked sessions
@@ -408,6 +451,9 @@ class EnhancedFAISSEngine:
             user_profile = self.user_profiles.get(user_id)
             if not user_profile:
                 return
+            
+            # Convert user_id to UUID format for database compatibility
+            user_uuid = self._generate_uuid_from_string(user_id)
             
             # Update cumulative vector using exponential moving average
             alpha = 0.1  # Learning rate
@@ -426,32 +472,65 @@ class EnhancedFAISSEngine:
             user_profile.vector_count += 1
             user_profile.last_updated = datetime.utcnow()
             
-            # Store in database
+            # Store in database with UUID and fallback handling
             vector_data = {
-                'user_id': user_id,
+                'user_id': user_uuid,  # Use UUID format
                 'session_id': f"cumulative_{user_profile.vector_count}",
                 'vector_data': new_cumulative.tolist(),
                 'vector_type': VectorType.CUMULATIVE.value,
                 'confidence_score': 0.9,
                 'feature_source': 'cumulative_learning',
                 'metadata': {
+                    'original_user_id': user_id,  # Keep original for reference
                     'vector_count': user_profile.vector_count,
                     'learning_rate': alpha,
                     'decision_context': decision
                 }
             }
             
-            # Store in database
-            self.db_client.supabase.table('enhanced_behavioral_vectors').insert(vector_data).execute()
-            
-            # Update cumulative FAISS index
-            vector_normalized = new_cumulative.reshape(1, -1).astype(np.float32)
-            self.cumulative_index.add(vector_normalized)
-            
-            self.logger.info(f"Updated cumulative vector for user {user_id}, count: {user_profile.vector_count}")
+            # Try to store in database with fallback
+            try:
+                result = self.db_client.supabase.table('enhanced_behavioral_vectors').insert(vector_data).execute()
+                
+                if result.data:
+                    # Update cumulative FAISS index
+                    vector_normalized = new_cumulative.reshape(1, -1).astype(np.float32)
+                    self.cumulative_index.add(vector_normalized)
+                    
+                    self.logger.info(f"Updated cumulative vector for user {user_id} (UUID: {user_uuid}), count: {user_profile.vector_count}")
+                
+            except Exception as db_error:
+                if '23503' in str(db_error):  # Foreign key constraint
+                    self.logger.warning(f"Foreign key constraint for cumulative vector, using local storage for {user_id}")
+                else:
+                    self.logger.warning(f"Database error for cumulative vector: {db_error}")
+                
+                # Always update FAISS index regardless of database success
+                vector_normalized = new_cumulative.reshape(1, -1).astype(np.float32)
+                self.cumulative_index.add(vector_normalized)
+                
+                self.logger.info(f"Updated cumulative FAISS index for user {user_id}, count: {user_profile.vector_count}")
             
         except Exception as e:
             self.logger.error(f"Failed to update cumulative vector: {e}")
+            
+            # Emergency fallback - try to at least update the in-memory profile
+            try:
+                user_profile = self.user_profiles.get(user_id)
+                if user_profile and decision != "block":
+                    alpha = 0.1
+                    if user_profile.vector_count == 0:
+                        new_cumulative = session_vector.copy()
+                    else:
+                        new_cumulative = (1 - alpha) * user_profile.cumulative_vector + alpha * session_vector
+                    
+                    new_cumulative = self._normalize_vector(new_cumulative)
+                    user_profile.cumulative_vector = new_cumulative
+                    user_profile.vector_count += 1
+                    
+                    self.logger.info(f"Emergency fallback: updated in-memory profile for {user_id}")
+            except Exception as fallback_error:
+                self.logger.error(f"Even fallback cumulative update failed: {fallback_error}")
     
     async def _create_baseline_vector(self, user_id: str, user_profile: UserVectorProfile):
         """Create stable baseline vector from cumulative data"""
@@ -710,10 +789,14 @@ class EnhancedFAISSEngine:
         vector: np.ndarray, 
         original_data: Dict[str, Any]
     ) -> Optional[str]:
-        """Store session vector from mobile data"""
+        """Store session vector from mobile data with proper UUID handling and fallback storage"""
         try:
+            # Convert user_id to UUID format for database compatibility
+            user_uuid = self._generate_uuid_from_string(user_id)
+            
             metadata = {
                 'session_id': session_id,
+                'original_user_id': user_id,  # Keep original for reference
                 'event_count': len(original_data.get('logs', [])),
                 'processing_timestamp': datetime.utcnow().isoformat(),
                 'vector_quality': float(np.sum(np.abs(vector))),
@@ -722,7 +805,7 @@ class EnhancedFAISSEngine:
             }
             
             vector_data = {
-                'user_id': user_id,
+                'user_id': user_uuid,  # Use UUID format
                 'session_id': session_id,
                 'vector_data': vector.tolist(),
                 'vector_type': VectorType.SESSION.value,
@@ -731,24 +814,88 @@ class EnhancedFAISSEngine:
                 'metadata': metadata
             }
             
-            # Store in database
-            result = self.db_client.supabase.table('enhanced_behavioral_vectors').insert(vector_data).execute()
-            
-            if result.data:
-                vector_id = result.data[0]['id']
+            # Try to store in database - if foreign key fails, create a minimal user record
+            try:
+                result = self.db_client.supabase.table('enhanced_behavioral_vectors').insert(vector_data).execute()
                 
-                # Add to session FAISS index
-                vector_normalized = vector.reshape(1, -1).astype(np.float32)
-                self.session_index.add(vector_normalized)
+                if result.data:
+                    vector_id = result.data[0]['id']
+                    
+                    # Add to session FAISS index
+                    vector_normalized = vector.reshape(1, -1).astype(np.float32)
+                    self.session_index.add(vector_normalized)
+                    
+                    self.logger.debug(f"Stored mobile session vector {vector_id} for user {user_id} (UUID: {user_uuid})")
+                    return vector_id
                 
-                self.logger.debug(f"Stored mobile session vector {vector_id}")
-                return vector_id
+            except Exception as db_error:
+                if '23503' in str(db_error):  # Foreign key constraint violation
+                    self.logger.info(f"User {user_uuid} not in users table, creating minimal profile...")
+                    
+                    # Create minimal user profile for vector storage
+                    try:
+                        user_profile_data = {
+                            'id': user_uuid,
+                            'original_user_id': user_id,
+                            'created_for': 'behavioral_analysis',
+                            'created_at': datetime.utcnow().isoformat(),
+                            'metadata': {
+                                'auto_created': True,
+                                'purpose': 'behavioral_vector_storage',
+                                'original_id': user_id
+                            }
+                        }
+                        
+                        # Try to create user profile
+                        user_result = self.db_client.supabase.table('user_profiles').insert(user_profile_data).execute()
+                        
+                        if user_result.data:
+                            self.logger.info(f"Created minimal user profile for {user_id}")
+                            
+                            # Now try to store vector again
+                            result = self.db_client.supabase.table('enhanced_behavioral_vectors').insert(vector_data).execute()
+                            
+                            if result.data:
+                                vector_id = result.data[0]['id']
+                                
+                                # Add to session FAISS index
+                                vector_normalized = vector.reshape(1, -1).astype(np.float32)
+                                self.session_index.add(vector_normalized)
+                                
+                                self.logger.info(f"Successfully stored vector {vector_id} after creating user profile")
+                                return vector_id
+                        
+                    except Exception as profile_error:
+                        self.logger.warning(f"Failed to create user profile: {profile_error}")
+                        
+                        # Final fallback - store in local cache only and add to FAISS
+                        vector_normalized = vector.reshape(1, -1).astype(np.float32)
+                        self.session_index.add(vector_normalized)
+                        
+                        # Create a local vector ID
+                        local_vector_id = f"local_{user_id}_{session_id}_{int(datetime.utcnow().timestamp())}"
+                        
+                        self.logger.info(f"Stored vector locally with ID {local_vector_id} (database unavailable)")
+                        return local_vector_id
+                        
+                else:
+                    raise db_error
             
             return None
             
         except Exception as e:
             self.logger.error(f"Error storing mobile session vector: {e}")
-            return None
+            
+            # Emergency fallback - always add to FAISS index for comparison
+            try:
+                vector_normalized = vector.reshape(1, -1).astype(np.float32)
+                self.session_index.add(vector_normalized)
+                local_vector_id = f"emergency_{user_id}_{int(datetime.utcnow().timestamp())}"
+                self.logger.info(f"Emergency fallback: stored vector in FAISS with ID {local_vector_id}")
+                return local_vector_id
+            except Exception as faiss_error:
+                self.logger.error(f"Even FAISS fallback failed: {faiss_error}")
+                return None
 
     async def _check_learning_phase_transition(self, user_id: str):
         """Check if user should transition between learning phases"""

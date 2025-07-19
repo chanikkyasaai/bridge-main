@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+  behavioral-auth:
+    build: .
+    ports:
+      - "8001:8001"
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./logs:/app/logs
+      - ./models:/app/models
+    restart: unless-stopped
+    
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: behavioral_auth
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: secure_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
