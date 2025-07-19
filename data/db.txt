@@ -34,5 +34,7 @@ ALTER TABLE users
 ADD COLUMN sessions_count INTEGER DEFAULT 0;
 
 
+ALTER TABLE users
+ADD COLUMN threshold_variance DOUBLE PRECISION DEFAULT 10;
 
 

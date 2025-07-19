@@ -28,7 +28,7 @@ from faiss.vector_store import FAISSVectorStore, VectorStorageManager
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="ML Engine API with FAISS", version="1.0.0")
+app = FastAPI(title="ML Engine API with FAISS", version="1.0.0", description="Behavioral authentication with FAISS, user-specific threshold, and Level 2 GNN-based escalation for anomaly detection.")
 
 # Add CORS middleware
 app.add_middleware(
@@ -164,7 +164,7 @@ async def end_session(data: SessionEnd):
 
 @app.post("/analyze-mobile")
 async def analyze_behavior(data: BehavioralData, background_tasks: BackgroundTasks):
-    """Analyze behavioral data from mobile app using continuous authenticator"""
+    """Analyze behavioral data from mobile app using continuous authenticator.\n\nIf similarity < user-specific threshold, escalates to Level 2 (GNN-based anomaly detection)."""
     try:
         logger.info(f"Analyzing {len(data.logs)} events for session {data.session_id}")
         

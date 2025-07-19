@@ -11,3 +11,6 @@ httpx==0.28.1
 logging
 asyncio
 datetime
+torch==2.2.0
+torch-geometric==2.5.0
+networkx==3.2.1

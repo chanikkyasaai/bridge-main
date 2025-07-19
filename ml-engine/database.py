@@ -337,3 +337,19 @@ class DatabaseManager:
                 'total_sessions': 0,
                 'database_status': 'error'
             }
+
+    async def get_user_profile(self, user_id: str) -> Dict[str, Any]:
+        """Get user profile, including threshold_variance."""
+        try:
+            # Example: fetch from Supabase users table
+            # Replace with actual Supabase query
+            # For now, return a dummy profile
+            # TODO: Implement actual DB fetch
+            return {
+                'user_id': user_id,
+                'threshold_variance': 0.0,  # Replace with real value
+                'sessions_count': 6
+            }
+        except Exception as e:
+            logger.error(f"Failed to get user profile for {user_id}: {e}")
+            return {'user_id': user_id, 'threshold_variance': 0.0, 'sessions_count': 0}
