@@ -1,0 +1,38 @@
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  phone_number TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  mpin_hash TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  session_token TEXT UNIQUE NOT NULL,
+  started_at TIMESTAMP DEFAULT NOW(),
+  ended_at TIMESTAMP
+);
+
+CREATE TABLE session_vectors (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id UUID REFERENCES sessions(id) ON DELETE CASCADE,
+  vector FLOAT8[] NOT NULL, -- 32 or 64 dims depending on model
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE user_clusters (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  cluster_label INT NOT NULL, -- should start from 0 and be unique per user
+  centroid FLOAT8[] NOT NULL, -- e.g. 32/64-dimension vector
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, cluster_label) -- ensures per-user labels are unique
+);
+
+ALTER TABLE users 
+ADD COLUMN sessions_count INTEGER DEFAULT 0;
+
+
+
+

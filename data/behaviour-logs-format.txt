@@ -1,0 +1,88 @@
+logger.sendEvent('orientation_change', {
+        'orientation': orientation == Orientation.portrait ? 'portrait' : 'landscape',
+});
+
+logger.sendEvent('accel_data', {
+          'x': event.x,
+          'y': event.y,
+          'z': event.z,
+});
+
+logger.sendEvent('shake_detected', {
+          'x': event.x,
+          'y': event.y,
+          'z': event.z,
+          'magnitude': accMagnitude,
+});
+
+logger.sendEvent('flip_detected', {
+          'z': event.z,
+});
+
+logger.sendEvent('fast_rotation', {
+          'x': event.x,
+          'y': event.y,
+          'z': event.z,
+          'magnitude': rotationMagnitude,
+});
+
+logger.sendEvent('gyro_data', {
+          'x': event.x,
+          'y': event.y,
+          'z': event.z,
+});
+
+logger.sendEvent('brightness_change', {
+        'theme': MediaQuery.of(context).platformBrightness == Brightness.dark ? 'dark' : 'light',
+        'brightness_level': double.parse(brightnessLevel.toStringAsFixed(2)), // 0.0 to 1.0
+});
+
+logger.sendEvent('idle_timeout', {'idle_seconds': 60})
+
+widget.logger.sendEvent('touch_down', {
+          'coordinates': [position.dx, position.dy],
+          'pressure': pressure,
+          if (interTouch != null) 'inter_touch_gap_ms': interTouch,
+});
+
+widget.logger.sendEvent('touch_up', {
+          'coordinates': [position.dx, position.dy],
+          if (duration != null) 'touch_duration_ms': duration,
+});
+
+widget.logger.sendEvent('scroll', {
+            'pixels': current,
+            'max': scroll.metrics.maxScrollExtent,
+            if (velocity != null) 'velocity': velocity,
+});
+
+logger.sendEvent('navigation_pattern', {
+      'transition': transition,
+      'route': name,
+});
+
+{
+  "event_name": "login_button_pressed",
+  "data": {
+    'button_name': 'view_balance',
+    'new_state': !_isBalanceVisible,
+    'screen': 'Banking Page',
+    'interaction_type': 'double_tap',
+  }
+}
+
+widget.logger.sendEvent('typing_pattern', {
+      'screen': widget.screenName,
+      'field': widget.fieldName,
+      'typing_speed': double.parse(speed.toStringAsFixed(2)),
+      'keystroke_dynamics': _delays.map((e) => double.parse(e.toStringAsFixed(3))).toList(),
+      'delete_count': _deleteCount,
+      'first_key_delay_ms': _timeToFirstKey,
+      'total_time_ms': now.difference(_typingStartTime).inMilliseconds,
+      'keystroke_count': _delays.length,
+      'average_delay': double.parse((_delays.reduce((a, b) => a + b) / _delays.length).toStringAsFixed(2)),
+      'words_per_minute': double.parse(wordsPerMinute.toStringAsFixed(2)),
+      if (pressure != null) 'touch_pressure': pressure,
+      if (orientation != null) 'touch_angle': orientation,
+      if (size != null) 'touch_area': size,
+    });

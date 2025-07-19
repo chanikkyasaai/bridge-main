@@ -1,0 +1,3047 @@
+{
+  "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+  "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+  "logs": [
+    {
+      "timestamp": "2025-07-10T18:13:10.605756",
+      "event_type": "mpin_verified",
+      "data": {
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "success": true,
+        "timestamp": "2025-07-10T18:13:10.605606"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:10.963611",
+      "event_type": "orientation_change",
+      "data": {
+        "orientation": "portrait",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:10.963753",
+      "event_type": "brightness_change",
+      "data": {
+        "theme": "dark",
+        "brightness_level": 0.07,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:10.963818",
+      "event_type": "accel_data",
+      "data": {
+        "x": 0.08374879509210587,
+        "y": 5.3694939613342285,
+        "z": 8.362317085266113,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:10.963871",
+      "event_type": "gyro_data",
+      "data": {
+        "x": 0.0032843512017279863,
+        "y": -0.000665387196931988,
+        "z": 0.004401137121021748,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:13.121632",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          78.0,
+          345.3333333333333
+        ],
+        "pressure": 1.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:13.123529",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          78.0,
+          345.3333333333333
+        ],
+        "touch_duration_ms": 21,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:13.963541",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          60.0,
+          348.0
+        ],
+        "pressure": 1.0,
+        "inter_touch_gap_ms": 825,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:13.963681",
+      "event_type": "accel_data",
+      "data": {
+        "x": -0.9373882412910461,
+        "y": 5.339583873748779,
+        "z": 8.104490280151367,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:14.003483",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          60.0,
+          348.0
+        ],
+        "touch_duration_ms": 47,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:14.161641",
+      "event_type": "gyro_data",
+      "data": {
+        "x": -0.005418912973254919,
+        "y": -0.000534438993781805,
+        "z": 0.002798884641379118,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.183577",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          198.33333333333334,
+          618.6666666666666
+        ],
+        "pressure": 1.0,
+        "inter_touch_gap_ms": 1174,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.183714",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 0.0,
+        "max": 2458.3921568627457,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.231556",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 0.0,
+        "max": 2458.3921568627457,
+        "velocity": 0.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.241536",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 1.6666666666666288,
+        "max": 2458.3921568627457,
+        "velocity": 333.3333333333333,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.241664",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 3.6666666666666288,
+        "max": 2458.3921568627457,
+        "velocity": 250.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.241723",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 5.666666666666629,
+        "max": 2458.3921568627457,
+        "velocity": 1000.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.241781",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 7.666666666666629,
+        "max": 2458.3921568627457,
+        "velocity": 285.7142857142857,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.246402",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 9.666666666666629,
+        "max": 2458.3921568627457,
+        "velocity": 400.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.301635",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 12.0,
+        "max": 2458.3921568627457,
+        "velocity": 259.2592592592635,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.301768",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 16.33333333333337,
+        "max": 2458.3921568627457,
+        "velocity": 583.3333333333428,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.301828",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 18.33333333333337,
+        "max": 2458.3921568627457,
+        "velocity": 333.3333333333333,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.301921",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 20.666666666666742,
+        "max": 2458.3921568627457,
+        "velocity": 466.66666666667425,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.302053",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 23.33333333333337,
+        "max": 2458.3921568627457,
+        "velocity": 533.3333333333258,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.302142",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 26.0,
+        "max": 2458.3921568627457,
+        "velocity": 666.6666666666572,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.302220",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 29.0,
+        "max": 2458.3921568627457,
+        "velocity": 600.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.302295",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 32.66666666666663,
+        "max": 2458.3921568627457,
+        "velocity": 611.1111111111048,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.302376",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 36.33333333333326,
+        "max": 2458.3921568627457,
+        "velocity": 611.1111111111048,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.308579",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 40.33333333333326,
+        "max": 2458.3921568627457,
+        "velocity": 800.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.308684",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 43.999999999999886,
+        "max": 2458.3921568627457,
+        "velocity": 916.6666666666572,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.313385",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 48.666666666666515,
+        "max": 2458.3921568627457,
+        "velocity": 777.7777777777715,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.313485",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 53.666666666666515,
+        "max": 2458.3921568627457,
+        "velocity": 1250.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.328361",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 57.999999999999886,
+        "max": 2458.3921568627457,
+        "velocity": 722.2222222222285,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.341456",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 62.666666666666515,
+        "max": 2458.3921568627457,
+        "velocity": 777.7777777777715,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.351525",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 66.99999999999989,
+        "max": 2458.3921568627457,
+        "velocity": 722.2222222222285,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.351647",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 70.66666666666646,
+        "max": 2458.3921568627457,
+        "velocity": 1222.2222222221906,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.358525",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 75.66666666666646,
+        "max": 2458.3921568627457,
+        "velocity": 714.2857142857142,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.363583",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 80.66666666666646,
+        "max": 2458.3921568627457,
+        "velocity": 1250.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.363691",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 85.33333333333309,
+        "max": 2458.3921568627457,
+        "velocity": 933.3333333333258,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.363750",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 89.99999999999972,
+        "max": 2458.3921568627457,
+        "velocity": 933.3333333333258,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.368411",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 94.66666666666634,
+        "max": 2458.3921568627457,
+        "velocity": 933.3333333333258,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.368510",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 98.99999999999972,
+        "max": 2458.3921568627457,
+        "velocity": 722.2222222222285,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.391532",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 102.99999999999972,
+        "max": 2458.3921568627457,
+        "velocity": 1000.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.401534",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 106.66666666666634,
+        "max": 2458.3921568627457,
+        "velocity": 733.3333333333258,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.401667",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 109.99999999999966,
+        "max": 2458.3921568627457,
+        "velocity": 555.5555555555524,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.401760",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 113.33333333333297,
+        "max": 2458.3921568627457,
+        "velocity": 833.3333333333286,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.406480",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 116.66666666666629,
+        "max": 2458.3921568627457,
+        "velocity": 666.6666666666629,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.406588",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 119.66666666666629,
+        "max": 2458.3921568627457,
+        "velocity": 500.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.406646",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 122.66666666666629,
+        "max": 2458.3921568627457,
+        "velocity": 750.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.411517",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 124.9999999999996,
+        "max": 2458.3921568627457,
+        "velocity": 388.88888888888573,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.441666",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 126.9999999999996,
+        "max": 2458.3921568627457,
+        "velocity": 400.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.441805",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 129.33333333333292,
+        "max": 2458.3921568627457,
+        "velocity": 466.6666666666629,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.443433",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 131.33333333333292,
+        "max": 2458.3921568627457,
+        "velocity": 285.7142857142857,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.448476",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 133.33333333333292,
+        "max": 2458.3921568627457,
+        "velocity": 500.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.448588",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 135.33333333333292,
+        "max": 2458.3921568627457,
+        "velocity": 500.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.454497",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 137.66666666666623,
+        "max": 2458.3921568627457,
+        "velocity": 291.6666666666643,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.454603",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 139.99999999999955,
+        "max": 2458.3921568627457,
+        "velocity": 583.3333333333286,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.463435",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 142.33333333333286,
+        "max": 2458.3921568627457,
+        "velocity": 583.3333333333286,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.473464",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 144.99999999999955,
+        "max": 2458.3921568627457,
+        "velocity": 666.6666666666714,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.478560",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 147.66666666666623,
+        "max": 2458.3921568627457,
+        "velocity": 444.4444444444476,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.478686",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 150.66666666666623,
+        "max": 2458.3921568627457,
+        "velocity": 600.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.483388",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 153.99999999999955,
+        "max": 2458.3921568627457,
+        "velocity": 555.5555555555524,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.503418",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 157.33333333333286,
+        "max": 2458.3921568627457,
+        "velocity": 666.6666666666629,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.503597",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 160.99999999999955,
+        "max": 2458.3921568627457,
+        "velocity": 916.6666666666714,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.513382",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 164.33333333333286,
+        "max": 2458.3921568627457,
+        "velocity": 666.6666666666629,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.513479",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 167.33333333333286,
+        "max": 2458.3921568627457,
+        "velocity": 500.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.518355",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 173.99999999999955,
+        "max": 2458.3921568627457,
+        "velocity": 1111.1111111111143,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.518511",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          255.33333333333334,
+          444.6666666666667
+        ],
+        "touch_duration_ms": 353,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.563654",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 185.73175886344043,
+        "max": 2458.3921568627457,
+        "velocity": 325.8821906511358,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.573416",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 196.71572427162323,
+        "max": 2458.3921568627457,
+        "velocity": 646.1156122460469,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.586591",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 206.95980025759494,
+        "max": 2458.3921568627457,
+        "velocity": 640.2547491232316,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.621563",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 216.51368744769027,
+        "max": 2458.3921568627457,
+        "velocity": 597.1179493809586,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.628439",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 225.451189305639,
+        "max": 2458.3921568627457,
+        "velocity": 525.7354034087481,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.638442",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 233.58557492552467,
+        "max": 2458.3921568627457,
+        "velocity": 508.3991012428548,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.663419",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 241.06670392706593,
+        "max": 2458.3921568627457,
+        "velocity": 467.5705625963289,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.673664",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 247.89550362613443,
+        "max": 2458.3921568627457,
+        "velocity": 426.79998119178106,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.693466",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 254.0564829431038,
+        "max": 2458.3921568627457,
+        "velocity": 385.061207310585,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.713370",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 259.60432096616967,
+        "max": 2458.3921568627457,
+        "velocity": 346.7398764416174,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.723412",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 264.5241086271295,
+        "max": 2458.3921568627457,
+        "velocity": 307.48672880999095,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.753638",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 268.8727477678443,
+        "max": 2458.3921568627457,
+        "velocity": 271.7899462946747,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.763491",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 272.651829028961,
+        "max": 2458.3921568627457,
+        "velocity": 236.19257881979294,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.768399",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 275.88446190099967,
+        "max": 2458.3921568627457,
+        "velocity": 190.15487482580374,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.811469",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 278.5963520390242,
+        "max": 2458.3921568627457,
+        "velocity": 180.79267586830383,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.821634",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 280.80874411719117,
+        "max": 2458.3921568627457,
+        "velocity": 138.2745048854339,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.826449",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 282.5527120439498,
+        "max": 2458.3921568627457,
+        "velocity": 102.58634863285965,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.831444",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 283.8594251591856,
+        "max": 2458.3921568627457,
+        "velocity": 87.1142076823882,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.871667",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 284.7639986683549,
+        "max": 2458.3921568627457,
+        "velocity": 56.53584432307923,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.881644",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 285.3099073353495,
+        "max": 2458.3921568627457,
+        "velocity": 34.11929168716554,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.891623",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 285.55450146946555,
+        "max": 2458.3921568627457,
+        "velocity": 15.287133382251739,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:15.921456",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 285.59007161685304,
+        "max": 2458.3921568627457,
+        "velocity": 2.2231342117180475,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:16.243659",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          126.66666666666667,
+          271.0
+        ],
+        "pressure": 1.0,
+        "inter_touch_gap_ms": 713,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:16.293449",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          126.66666666666667,
+          271.0
+        ],
+        "touch_duration_ms": 40,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:16.341586",
+      "event_type": "navigation_pattern",
+      "data": {
+        "transition": "didPush",
+        "route": "/directpay",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:17.123489",
+      "event_type": "accel_data",
+      "data": {
+        "x": -1.1024930477142334,
+        "y": 5.688337802886963,
+        "z": 8.14098072052002,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:17.163523",
+      "event_type": "gyro_data",
+      "data": {
+        "x": -0.002384747611358762,
+        "y": 0.0014744979562237859,
+        "z": -0.0011945030419155955,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:17.453531",
+      "event_type": "brightness_change",
+      "data": {
+        "theme": "dark",
+        "brightness_level": 0.07,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:18.362504",
+      "event_type": "typing_pattern",
+      "data": {
+        "screen": "Direct_Pay",
+        "field": "account_number",
+        "typing_speed": 2.48,
+        "keystroke_dynamics": [
+          0.994,
+          0.568,
+          0.179,
+          0.153,
+          0.12
+        ],
+        "delete_count": 0,
+        "first_key_delay_ms": 994,
+        "total_time_ms": 2015,
+        "keystroke_count": 5,
+        "average_delay": 0.4,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:18.362523",
+      "event_type": "risk_score_update",
+      "data": {
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "previous_score": 0.0,
+        "new_score": 0.05,
+        "adjustment": 0.05,
+        "trigger_event": "typing_pattern"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:19.983467",
+      "event_type": "typing_pattern",
+      "data": {
+        "screen": "Direct_Pay",
+        "field": "re_account_number",
+        "typing_speed": 1.38,
+        "keystroke_dynamics": [
+          2.688,
+          0.438,
+          0.186,
+          0.153,
+          0.171
+        ],
+        "delete_count": 0,
+        "first_key_delay_ms": 2688,
+        "total_time_ms": 3638,
+        "keystroke_count": 5,
+        "average_delay": 0.73,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:19.983487",
+      "event_type": "risk_score_update",
+      "data": {
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "previous_score": 0.05,
+        "new_score": 0.1,
+        "adjustment": 0.05,
+        "trigger_event": "typing_pattern"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:20.273606",
+      "event_type": "accel_data",
+      "data": {
+        "x": -1.0223335027694702,
+        "y": 5.605785369873047,
+        "z": 8.22114086151123,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:20.363580",
+      "event_type": "gyro_data",
+      "data": {
+        "x": -0.0040572648867964745,
+        "y": -6.0683309129672125e-05,
+        "z": 0.0034419146832078695,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:20.941483",
+      "event_type": "brightness_change",
+      "data": {
+        "theme": "dark",
+        "brightness_level": 0.07,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:21.833480",
+      "event_type": "typing_pattern",
+      "data": {
+        "screen": "Direct_Pay",
+        "field": "beneficiary_name",
+        "typing_speed": 0.91,
+        "keystroke_dynamics": [
+          4.381,
+          0.529,
+          0.208,
+          0.173,
+          0.19
+        ],
+        "delete_count": 0,
+        "first_key_delay_ms": 4381,
+        "total_time_ms": 5482,
+        "keystroke_count": 5,
+        "average_delay": 1.1,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:21.833499",
+      "event_type": "risk_score_update",
+      "data": {
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "previous_score": 0.1,
+        "new_score": 0.15000000000000002,
+        "adjustment": 0.05,
+        "trigger_event": "typing_pattern"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:23.383515",
+      "event_type": "gyro_data",
+      "data": {
+        "x": -0.0005227281944826245,
+        "y": -0.008119853213429451,
+        "z": 0.007097817957401276,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:23.433546",
+      "event_type": "accel_data",
+      "data": {
+        "x": -0.6969096064567566,
+        "y": 5.84566593170166,
+        "z": 8.054839134216309,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:23.438540",
+      "event_type": "typing_pattern",
+      "data": {
+        "screen": "Direct_Pay",
+        "field": "nickname",
+        "typing_speed": 0.7,
+        "keystroke_dynamics": [
+          6.186,
+          0.395,
+          0.171,
+          0.167,
+          0.193
+        ],
+        "delete_count": 0,
+        "first_key_delay_ms": 6186,
+        "total_time_ms": 7114,
+        "keystroke_count": 5,
+        "average_delay": 1.42,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:23.438557",
+      "event_type": "risk_score_update",
+      "data": {
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "previous_score": 0.15000000000000002,
+        "new_score": 0.2,
+        "adjustment": 0.05,
+        "trigger_event": "typing_pattern"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:24.128437",
+      "event_type": "brightness_change",
+      "data": {
+        "theme": "dark",
+        "brightness_level": 0.07,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:24.613485",
+      "event_type": "navigation_pattern",
+      "data": {
+        "transition": "didPushNext",
+        "route": "/directpay",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:24.651425",
+      "event_type": "navigation_pattern",
+      "data": {
+        "transition": "didPush",
+        "route": "/directpay",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:26.583427",
+      "event_type": "gyro_data",
+      "data": {
+        "x": 0.0017300066538155079,
+        "y": -0.0004162662080489099,
+        "z": 0.0009198312181979418,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:26.583574",
+      "event_type": "accel_data",
+      "data": {
+        "x": -0.2745763957500458,
+        "y": 5.080560684204102,
+        "z": 8.990432739257812,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:29.599405",
+      "event_type": "gyro_data",
+      "data": {
+        "x": 0.02077498473227024,
+        "y": -0.05129443109035492,
+        "z": -0.005433817859739065,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:29.633392",
+      "event_type": "navigation_pattern",
+      "data": {
+        "transition": "didPopNext",
+        "route": "/directpay",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:29.633564",
+      "event_type": "navigation_pattern",
+      "data": {
+        "transition": "didPopNext",
+        "route": "/directpay",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:29.663445",
+      "event_type": "navigation_pattern",
+      "data": {
+        "transition": "didPush",
+        "route": "/directpay",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:29.743353",
+      "event_type": "accel_data",
+      "data": {
+        "x": 0.7136593461036682,
+        "y": 5.36769962310791,
+        "z": 8.379066467285156,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:29.813368",
+      "event_type": "brightness_change",
+      "data": {
+        "theme": "dark",
+        "brightness_level": 0.07,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:31.693407",
+      "event_type": "navigation_pattern",
+      "data": {
+        "transition": "didPop",
+        "route": "/directpay",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:31.693549",
+      "event_type": "navigation_pattern",
+      "data": {
+        "transition": "didPop",
+        "route": "/directpay",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:31.693609",
+      "event_type": "navigation_pattern",
+      "data": {
+        "transition": "didPop",
+        "route": "/directpay",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:32.593432",
+      "event_type": "gyro_data",
+      "data": {
+        "x": 0.04369943588972092,
+        "y": 0.0067613981664180756,
+        "z": 0.0067890784703195095,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:32.903351",
+      "event_type": "accel_data",
+      "data": {
+        "x": 0.1094716340303421,
+        "y": 6.351747512817383,
+        "z": 7.618747234344482,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.324543",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          224.66666666666666,
+          528.6666666666666
+        ],
+        "pressure": 1.0,
+        "inter_touch_gap_ms": 17017,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.324687",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 285.59007161685304,
+        "max": 2458.3921568627457,
+        "velocity": 0.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.334314",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 285.59007161685304,
+        "max": 2458.3921568627457,
+        "velocity": 0.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.352339",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 290.25673828351967,
+        "max": 2458.3921568627457,
+        "velocity": 333.33333333333337,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.352473",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 294.25673828351967,
+        "max": 2458.3921568627457,
+        "velocity": 4000.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.357232",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 297.59007161685304,
+        "max": 2458.3921568627457,
+        "velocity": 666.6666666666742,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.366235",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 300.9234049501864,
+        "max": 2458.3921568627457,
+        "velocity": 833.3333333333428,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.377286",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 304.2567382835198,
+        "max": 2458.3921568627457,
+        "velocity": 666.6666666666742,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.377392",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 307.5900716168531,
+        "max": 2458.3921568627457,
+        "velocity": 555.5555555555524,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.377452",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 307.9234049501864,
+        "max": 2458.3921568627457,
+        "velocity": 66.66666666666288,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.377511",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 313.5900716168531,
+        "max": 2458.3921568627457,
+        "velocity": 1133.3333333333371,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.390431",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 318.9234049501864,
+        "max": 2458.3921568627457,
+        "velocity": 888.8888888888857,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.390556",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 322.9234049501864,
+        "max": 2458.3921568627457,
+        "velocity": 1000.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.390620",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 326.2567382835197,
+        "max": 2458.3921568627457,
+        "velocity": 666.6666666666629,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.402281",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 329.9234049501864,
+        "max": 2458.3921568627457,
+        "velocity": 611.1111111111143,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.412439",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 333.5900716168531,
+        "max": 2458.3921568627457,
+        "velocity": 733.3333333333371,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.412550",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 337.2567382835198,
+        "max": 2458.3921568627457,
+        "velocity": 733.3333333333371,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.412612",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 340.92340495018647,
+        "max": 2458.3921568627457,
+        "velocity": 733.3333333333371,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.417198",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 343.92340495018647,
+        "max": 2458.3921568627457,
+        "velocity": 600.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.417287",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 346.2567382835198,
+        "max": 2458.3921568627457,
+        "velocity": 388.88888888888573,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.432194",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 348.2567382835198,
+        "max": 2458.3921568627457,
+        "velocity": 500.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.442287",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 350.2567382835198,
+        "max": 2458.3921568627457,
+        "velocity": 400.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.447266",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 352.2567382835198,
+        "max": 2458.3921568627457,
+        "velocity": 285.7142857142857,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.447366",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 354.5900716168531,
+        "max": 2458.3921568627457,
+        "velocity": 777.7777777777715,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.452250",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 357.2567382835198,
+        "max": 2458.3921568627457,
+        "velocity": 380.95238095238363,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.457251",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 359.92340495018647,
+        "max": 2458.3921568627457,
+        "velocity": 888.8888888888952,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.470239",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 362.92340495018647,
+        "max": 2458.3921568627457,
+        "velocity": 600.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.477410",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 365.59007161685315,
+        "max": 2458.3921568627457,
+        "velocity": 444.4444444444476,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.477512",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 368.25673828351984,
+        "max": 2458.3921568627457,
+        "velocity": 666.6666666666714,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.482374",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 370.59007161685315,
+        "max": 2458.3921568627457,
+        "velocity": 388.88888888888573,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.482466",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 372.59007161685315,
+        "max": 2458.3921568627457,
+        "velocity": 400.0,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.497252",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 375.25673828351984,
+        "max": 2458.3921568627457,
+        "velocity": 533.3333333333371,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.497348",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 379.9234049501865,
+        "max": 2458.3921568627457,
+        "velocity": 933.3333333333371,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.507206",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          245.0,
+          434.3333333333333
+        ],
+        "touch_duration_ms": 210,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.546264",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 387.1243843610815,
+        "max": 2458.3921568627457,
+        "velocity": 211.79351208514709,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.553216",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 393.69312183715624,
+        "max": 2458.3921568627457,
+        "velocity": 410.54609225466976,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.568215",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 399.6256711546248,
+        "max": 2458.3921568627457,
+        "velocity": 348.9734892628562,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.593287",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 404.94094260524105,
+        "max": 2458.3921568627457,
+        "velocity": 332.2044656635157,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.603315",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 409.6597941354051,
+        "max": 2458.3921568627457,
+        "velocity": 277.57950177435555,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.618313",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 413.7944847191284,
+        "max": 2458.3921568627457,
+        "velocity": 258.4181614827052,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.643389",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 417.3721511949657,
+        "max": 2458.3921568627457,
+        "velocity": 223.60415473983153,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.653359",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 420.41181481505157,
+        "max": 2458.3921568627457,
+        "velocity": 189.97897625536808,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.668202",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 422.9384057748549,
+        "max": 2458.3921568627457,
+        "velocity": 157.91193498770895,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.693330",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 424.9762122215759,
+        "max": 2458.3921568627457,
+        "velocity": 127.36290292006203,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.711354",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 426.5634801146657,
+        "max": 2458.3921568627457,
+        "velocity": 99.20424331811262,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.718195",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 427.721864039611,
+        "max": 2458.3921568627457,
+        "velocity": 68.1402308791335,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.743269",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 428.48547164843,
+        "max": 2458.3921568627457,
+        "velocity": 47.725475551189334,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.753250",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 428.9126491091431,
+        "max": 2458.3921568627457,
+        "velocity": 26.69859129456853,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.768310",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 429.063063424472,
+        "max": 2458.3921568627457,
+        "velocity": 9.400894708054608,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:33.793580",
+      "event_type": "scroll",
+      "data": {
+        "pixels": 429.0694710996852,
+        "max": 2458.3921568627457,
+        "velocity": 0.4004797008256844,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:34.843405",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          308.0,
+          431.6666666666667
+        ],
+        "pressure": 1.0,
+        "inter_touch_gap_ms": 1299,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:34.893406",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          308.0,
+          431.6666666666667
+        ],
+        "touch_duration_ms": 77,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:35.783410",
+      "event_type": "gyro_data",
+      "data": {
+        "x": -0.0007718491251580417,
+        "y": 0.01433510147035122,
+        "z": 0.001011388492770493,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:36.053355",
+      "event_type": "accel_data",
+      "data": {
+        "x": 0.12442677468061447,
+        "y": 6.0987067222595215,
+        "z": 7.800003528594971,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:37.173502",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          225.66666666666666,
+          422.0
+        ],
+        "pressure": 1.0,
+        "inter_touch_gap_ms": 2261,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:37.213379",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          225.66666666666666,
+          422.0
+        ],
+        "touch_duration_ms": 55,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:37.263312",
+      "event_type": "navigation_pattern",
+      "data": {
+        "transition": "didPush",
+        "route": "/sendmoney",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:38.373469",
+      "event_type": "navigation_pattern",
+      "data": {
+        "transition": "didPop",
+        "route": "/sendmoney",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:38.983358",
+      "event_type": "gyro_data",
+      "data": {
+        "x": -0.004196729976683855,
+        "y": 0.004617254715412855,
+        "z": -0.00426167156547308,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:39.111361",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          131.33333333333334,
+          417.3333333333333
+        ],
+        "pressure": 1.0,
+        "inter_touch_gap_ms": 1888,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:39.163303",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          131.33333333333334,
+          417.3333333333333
+        ],
+        "touch_duration_ms": 60,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:39.213287",
+      "event_type": "accel_data",
+      "data": {
+        "x": 0.0891326442360878,
+        "y": 5.961119174957275,
+        "z": 7.939385414123535,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:41.643291",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          58.666666666666664,
+          427.3333333333333
+        ],
+        "pressure": 1.0,
+        "inter_touch_gap_ms": 2467,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:41.673271",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          58.666666666666664,
+          427.3333333333333
+        ],
+        "touch_duration_ms": 42,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:41.713252",
+      "event_type": "navigation_pattern",
+      "data": {
+        "transition": "didPush",
+        "route": "/registerupi",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:41.971333",
+      "event_type": "gyro_data",
+      "data": {
+        "x": 0.0004311708908062428,
+        "y": 0.009697618894279003,
+        "z": 0.0033822960685938597,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:42.383231",
+      "event_type": "accel_data",
+      "data": {
+        "x": -0.1698904037475586,
+        "y": 5.855237007141113,
+        "z": 8.066205024719238,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:42.913366",
+      "event_type": "brightness_change",
+      "data": {
+        "theme": "dark",
+        "brightness_level": 0.07,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:45.183214",
+      "event_type": "gyro_data",
+      "data": {
+        "x": 0.008232702501118183,
+        "y": -0.0026221578009426594,
+        "z": -0.015064365230500698,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:45.523230",
+      "event_type": "accel_data",
+      "data": {
+        "x": -0.2961117923259735,
+        "y": 6.180660724639893,
+        "z": 7.737790107727051,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:47.311264",
+      "event_type": "navigation_pattern",
+      "data": {
+        "transition": "didPop",
+        "route": "/registerupi",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:48.183379",
+      "event_type": "gyro_data",
+      "data": {
+        "x": -0.006479274015873671,
+        "y": -0.0019077981123700738,
+        "z": 0.0019780630245804787,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:48.503334",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          100.33333333333333,
+          711.6666666666666
+        ],
+        "pressure": 1.0,
+        "inter_touch_gap_ms": 6813,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:48.503487",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          100.33333333333333,
+          711.6666666666666
+        ],
+        "touch_duration_ms": 24,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:48.503548",
+      "event_type": "nav_bar_tap",
+      "data": {
+        "from": 0,
+        "to": 1,
+        "tab_name": "Bank",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:48.683200",
+      "event_type": "accel_data",
+      "data": {
+        "x": -0.27337998151779175,
+        "y": 5.947958946228027,
+        "z": 7.9860453605651855,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:49.813326",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          120.0,
+          186.0
+        ],
+        "pressure": 1.0,
+        "inter_touch_gap_ms": 1284,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:49.813475",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          120.0,
+          186.0
+        ],
+        "touch_duration_ms": 18,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:50.129267",
+      "event_type": "button_press",
+      "data": {
+        "interaction_type": "tap",
+        "button_name": "view_balance",
+        "new_state": true,
+        "screen": "Banking Page",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:51.021321",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          247.33333333333334,
+          717.3333333333334
+        ],
+        "pressure": 1.0,
+        "inter_touch_gap_ms": 1190,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:51.073499",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          247.33333333333334,
+          717.3333333333334
+        ],
+        "touch_duration_ms": 66,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:51.078256",
+      "event_type": "nav_bar_tap",
+      "data": {
+        "from": 1,
+        "to": 3,
+        "tab_name": "Cards",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:51.363294",
+      "event_type": "gyro_data",
+      "data": {
+        "x": 0.0016278031980618834,
+        "y": 0.016613386571407318,
+        "z": -0.009876474738121033,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:51.833253",
+      "event_type": "accel_data",
+      "data": {
+        "x": -0.3756731450557709,
+        "y": 6.037689685821533,
+        "z": 7.968697547912598,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:51.873329",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          193.33333333333334,
+          207.66666666666666
+        ],
+        "pressure": 1.0,
+        "inter_touch_gap_ms": 802,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:51.923202",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          193.33333333333334,
+          207.66666666666666
+        ],
+        "touch_duration_ms": 50,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:51.953234",
+      "event_type": "navigation_pattern",
+      "data": {
+        "transition": "didPush",
+        "route": "/debitcards",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:53.543226",
+      "event_type": "navigation_pattern",
+      "data": {
+        "transition": "didPop",
+        "route": "/debitcards",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:53.991379",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          293.0,
+          717.6666666666666
+        ],
+        "pressure": 1.0,
+        "inter_touch_gap_ms": 2066,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:54.043237",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          293.0,
+          717.6666666666666
+        ],
+        "touch_duration_ms": 59,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:54.373163",
+      "event_type": "gyro_data",
+      "data": {
+        "x": -0.018257159739732742,
+        "y": -0.013025619089603424,
+        "z": 0.00043755859951488674,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:54.833243",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          302.3333333333333,
+          711.6666666666666
+        ],
+        "pressure": 1.0,
+        "inter_touch_gap_ms": 772,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:54.843436",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          302.3333333333333,
+          711.6666666666666
+        ],
+        "touch_duration_ms": 28,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:54.843562",
+      "event_type": "nav_bar_tap",
+      "data": {
+        "from": 3,
+        "to": 4,
+        "tab_name": "Profile",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:54.993401",
+      "event_type": "accel_data",
+      "data": {
+        "x": -0.4893322288990021,
+        "y": 5.863013744354248,
+        "z": 8.060222625732422,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:56.013261",
+      "event_type": "touch_down",
+      "data": {
+        "coordinates": [
+          43.0,
+          722.0
+        ],
+        "pressure": 1.0,
+        "inter_touch_gap_ms": 1137,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:56.073192",
+      "event_type": "touch_up",
+      "data": {
+        "coordinates": [
+          43.0,
+          722.0
+        ],
+        "touch_duration_ms": 91,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:56.073355",
+      "event_type": "nav_bar_tap",
+      "data": {
+        "from": 4,
+        "to": 0,
+        "tab_name": "All",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:57.303277",
+      "event_type": "navigation_pattern",
+      "data": {
+        "state": "AppLifecycleState.inactive",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:57.363158",
+      "event_type": "gyro_data",
+      "data": {
+        "x": -0.009857311844825745,
+        "y": -0.007539635058492422,
+        "z": 0.006057684775441885,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:58.153217",
+      "event_type": "accel_data",
+      "data": {
+        "x": -0.21774685382843018,
+        "y": 5.567500114440918,
+        "z": 8.254639625549316,
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    },
+    {
+      "timestamp": "2025-07-10T18:13:58.803444",
+      "event_type": "navigation_pattern",
+      "data": {
+        "state": "AppLifecycleState.hidden",
+        "session_id": "01aa97ef-762c-483a-ba9e-59a0c2ee22cf",
+        "user_id": "70f10a60-4de4-4bf8-b8b3-6a0ed39bf4e4",
+        "phone": "8825624303",
+        "device_id": "TP1A.220905.001"
+      }
+    }
+  ],
+  "uploaded_at": "2025-07-10T19:17:17.484590",
+  "total_events": 227
+}
