@@ -1,11 +1,9 @@
 class Endpoints {
-<<<<<<< HEAD
-  //static const String baseUrl = 'http://192.168.241.41:8000/api/v1';
-  static const String baseUrl = 'http://10.90.141.93:8000/api/v1';
-=======
-  static const String baseUrl = 'http://192.168.178.41:8000/api/v1';
 
->>>>>>> 8abb62b7a03fa12a82cdbdbb3c9d23d23eb6a95d
+  //static const String baseUrl = 'http://192.168.241.41:8000/api/v1';
+  static const String baseUrl = 'http://10.90.141.6:8000/api/v1';
+
+
   static const String login = "/auth/login";
   static const String register = "/auth/register";
   static const String logout = "/auth/logout";

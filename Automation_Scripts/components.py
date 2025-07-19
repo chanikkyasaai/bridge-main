@@ -7,6 +7,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 import time
 from swipe_down import scroll_down_recommended,scroll_up_recommended
+import random
+
 def createCapabilities():
     # Create capabilities using AppiumOptions
     caps = UiAutomator2Options().load_capabilities({
@@ -84,6 +86,15 @@ def login_button_click(driver):
         'new UiSelector().description("Login")'
     )
     login_button.click()
+
+def primary_login(driver,phone_number="9444452444",password="12345",timeout=None,typingDelay=0.1):
+    login_phone_number_element(driver, phone_number=phone_number, timeout=timeout, typingDelay=typingDelay)
+    driver_hide_keyboard(driver, timeout=timeout)
+    login_password_element(driver, password=password, timeout=timeout, tyingDelay=typingDelay)
+    login_button_click(driver)
+    if timeout:
+        time.sleep(timeout)
+
 
 def go_to_registration_page(driver,timeout=None):
     driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Don't have an account? Register").click()
@@ -187,9 +198,10 @@ def add_benificiary(driver,name="Deez Nuts", upi_id="123456789@upi",mobile_numbe
     add_button=driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR,'new UiSelector().description("Add")')
     add_button.click()
     print("Beneficiary added successfully.")
+    exit_send_money(driver, timeout=timeout)
 
 def send_money(driver,timeout=None):
-    
+    goto_bank(driver, timeout=timeout)
     scroll_down_recommended(driver)
     send_money_button=driver.find_element(
         AppiumBy.ACCESSIBILITY_ID,'Send Money'
@@ -244,9 +256,10 @@ def send_money_direct_pay(driver,upi_id="9444524432@yaml",amount="6969",timeout=
     print("Payment initiated successfully.")
     if timeout:
         time.sleep(timeout)
-
+    exit_send_money(driver, timeout=timeout)
 
 def direct_pay(driver,account_number="124385490367",beneficiary_name="Deez Nuts",Nick_name="earpods",timeout=None,typingDelay=0.1):
+    goto_bank(driver, timeout=timeout)
     typingDelay = typingDelay if typingDelay is not None else 0.1
     direct_pay_btn=driver.find_element(
         AppiumBy.ACCESSIBILITY_ID,"Direct Pay"
@@ -296,13 +309,25 @@ def direct_pay(driver,account_number="124385490367",beneficiary_name="Deez Nuts"
     )
     back_button.click()
     print("Direct Pay initiated successfully.")
+    exit_send_money(driver, timeout=timeout)
+
+
+def goto_all(driver,timeout=None):
+    driver.find_element(
+        AppiumBy.ACCESSIBILITY_ID,'All'
+    ).click()
+    if timeout:
+        time.sleep(timeout)
 
 def open_deposit(driver,full_name="Deez Nuts",mobile_number="1234567890",timeout=None,typingDelay=0.1):
+    goto_all(driver,timeout=timeout)
+    scroll_down_recommended(driver, distance=1400)
     typingDelay = typingDelay if typingDelay is not None else 0.1
-    #open_deposit_button=driver.find_element(
-    #    AppiumBy.ACCESSIBILITY_ID,'Open Deposit'
-    #)
-    #open_deposit_button.click()
+    open_deposit_button=driver.find_element(
+        AppiumBy.ACCESSIBILITY_ID,'Open Deposit'
+    )
+    open_deposit_button.click()
+    print("Opening Deposit...")
     wait=WebDriverWait(driver, timeout if timeout else 10)
     wait.until(EC.presence_of_element_located((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().className("android.widget.EditText").instance(0)')))
     full_name_field=driver.find_element(
@@ -651,3 +676,10 @@ def view_cards_reverse(driver,timeout=None):
         time.sleep(timeout)
     print("Exited Cards section.")
 
+
+def get_random_delay(center=0.5, variation=0.2):
+    """
+    Returns a random delay centered around 'center' with +/- 'variation'.
+    Default range: 0.3 to 0.7 seconds.
+    """
+    return random.uniform(center - variation, center + variation)

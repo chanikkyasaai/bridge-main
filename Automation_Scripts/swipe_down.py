@@ -75,7 +75,7 @@ def scroll_up_simple(driver, distance=300, duration=500):
     actions.perform()
 
 # Most recommended approach for mobile scrolling
-def scroll_down_recommended(driver, distance=300):
+def scroll_down_recommended(driver, distance=300,duration=500):
     size = driver.get_window_size()
     start_x = size['width'] // 2
     start_y = size['height'] // 2
@@ -83,7 +83,7 @@ def scroll_down_recommended(driver, distance=300):
     
     # Using driver.swipe (if available) - most reliable for mobile
     try:
-        driver.swipe(start_x, start_y, start_x, end_y, duration=500)
+        driver.swipe(start_x, start_y, start_x, end_y, duration=duration)
     except AttributeError:
         # Fallback to ActionChains if swipe is not available
         actions = ActionChains(driver)
@@ -92,7 +92,7 @@ def scroll_down_recommended(driver, distance=300):
         actions.move_to_location(start_x, end_y)
         actions.release()
         actions.perform()
-def scroll_up_recommended(driver, distance=300):
+def scroll_up_recommended(driver, distance=300,duration=500):
     size = driver.get_window_size()
     start_x = size['width'] // 2
     start_y = size['height'] // 2
@@ -100,7 +100,7 @@ def scroll_up_recommended(driver, distance=300):
     
     # Using driver.swipe (if available) - most reliable for mobile
     try:
-        driver.swipe(start_x, start_y, start_x, end_y, duration=500)
+        driver.swipe(start_x, start_y, start_x, end_y, duration=duration)
     except AttributeError:
         # Fallback to ActionChains if swipe is not available
         actions = ActionChains(driver)
