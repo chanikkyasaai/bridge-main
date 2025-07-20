@@ -4,6 +4,7 @@ import 'package:canara_ai/apis/endpoints.dart';
 import 'package:canara_ai/apis/interceptor.dart';
 import 'package:canara_ai/main.dart';
 import 'package:canara_ai/utils/get_advanced_info.dart';
+import 'package:canara_ai/utils/get_cont_device_info.dart';
 import 'package:canara_ai/utils/token_storage.dart';
 import 'package:dio/dio.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -26,14 +27,26 @@ class BehaviorLogger {
   BehaviorLogger(this.dio);
 
   void _startHeartbeat() {
-    Timer.periodic(Duration(seconds: 30), (timer) {
-      if (_ws == null) {
+    Timer.periodic(Duration(seconds: 5), (timer) async {
+      if (_ws == null || !_sessionActive) {
         timer.cancel();
         return;
       }
-      _ws!.sink.add(jsonEncode({'type': 'ping', 'timestamp': DateTime.now().toIso8601String()}));
+      try {
+        final deviceInfo = await DeviceInfoContext.build();
+        final payload = {
+          'type': 'device_info',
+          'data': deviceInfo.toJson(),
+          'timestamp': DateTime.now().toIso8601String(),
+        };
+        _ws!.sink.add(jsonEncode(payload));
+        print("Heartbeat (deviceinfo) sent: $payload");
+      } catch (e) {
+        print("Heartbeat (deviceinfo) error: $e");
+      }
     });
   }
+
 
   final _eventQueue = StreamController<String>();
   bool _isSending = false;
@@ -98,7 +111,7 @@ class BehaviorLogger {
     sessionId = _sessionId;
     sessionToken = _sessionToken;
 
-    final uri = Uri.parse('ws://192.168.178.41:8000/api/v1/ws/behavior/$_sessionId?token=${Uri.encodeComponent(_sessionToken)}');
+    final uri = Uri.parse('ws://192.168.241.41:8000/api/v1/ws/behavior/$_sessionId?token=${Uri.encodeComponent(_sessionToken)}');
 
     print(uri);
 
@@ -185,7 +198,7 @@ class BehaviorLogger {
         print('Session ID: $sessionId');
         print('Session Token: $sessionToken');
         final token = await tokenstorage.getAccessToken();
-        final uri = Uri.parse('ws://192.168.178.41:8000/api/v1/ws/behavior/$sessionId?token=${Uri.encodeComponent(sessionToken!)}');
+        final uri = Uri.parse('ws://192.168.241.41:8000/api/v1/ws/behavior/$sessionId?token=${Uri.encodeComponent(sessionToken!)}');
 
         _ws = WebSocketChannel.connect(uri);
 

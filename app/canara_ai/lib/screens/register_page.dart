@@ -50,6 +50,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
         if(api.statusCode != 200) {
           _showSnack("Error Registering");
+          if (api.data != null) {
+            _showSnack(api.data);
+          }
         }
         else{
           _showSnack('Registration Successful');

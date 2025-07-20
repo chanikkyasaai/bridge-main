@@ -2,6 +2,7 @@ import 'package:canara_ai/logging/behaviour_route_tracker.dart';
 import 'package:canara_ai/logging/button_wrapper.dart';
 import 'package:canara_ai/logging/log_touch_data.dart';
 import 'package:canara_ai/logging/logger_instance.dart';
+import 'package:canara_ai/logging/monitor_logging.dart';
 import 'package:canara_ai/logging/typing_tracker.dart';
 import 'package:canara_ai/main.dart';
 import 'package:canara_ai/screens/nav/home_page.dart';
@@ -67,7 +68,6 @@ class _CaptchaPageState extends State<CaptchaPage> {
 
     logger = AppLogger.logger;
 
-
     _flutterTts.setLanguage('en-US');
     _flutterTts.setSpeechRate(0.4); // Adjust as needed
     _flutterTts.setPitch(1.0);
@@ -82,7 +82,7 @@ class _CaptchaPageState extends State<CaptchaPage> {
     });
   }
 
-  void _verifyCaptcha() {
+  Future<void> _verifyCaptcha() async {
     String userInput = _captchaController.text.trim().toLowerCase();
     String correctAnswer = _captchaWords.join(' ').toLowerCase();
 
@@ -91,9 +91,14 @@ class _CaptchaPageState extends State<CaptchaPage> {
         _isVerified = true;
         _message = 'CAPTCHA verified successfully!';
       });
-      Navigator.pushAndRemoveUntil(
+      Navigator.pushAndRemoveUntil( 
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
+        MaterialPageRoute(
+          builder: (_) => BehaviorMonitor(
+            logger: AppLogger.logger,
+            child: HomePage(),
+          ),
+        ),
         (_) => false,
       );
     } else {
@@ -110,7 +115,6 @@ class _CaptchaPageState extends State<CaptchaPage> {
     await _flutterTts.stop(); // stop any ongoing speech
     await _flutterTts.speak(_captchaWords.join(', '));
   }
-
 
   @override
   void dispose() {
@@ -132,7 +136,6 @@ class _CaptchaPageState extends State<CaptchaPage> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -224,7 +227,6 @@ class _CaptchaPageState extends State<CaptchaPage> {
                       ),
                     ],
                   ),
-
 
                   const SizedBox(height: 16),
 

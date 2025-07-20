@@ -14,8 +14,6 @@ class SessionStartRequest {
   final String appVersion;
   final String networkType;
   final Map<String, dynamic> locationData;
-  final bool isKnownDevice;
-  final bool isTrustedLocation;
   final String userAgent;
   final String deviceIp;
 
@@ -28,8 +26,6 @@ class SessionStartRequest {
     required this.appVersion,
     required this.networkType,
     required this.locationData,
-    required this.isKnownDevice,
-    required this.isTrustedLocation,
     required this.userAgent,
     required this.deviceIp,
   });
@@ -44,8 +40,6 @@ class SessionStartRequest {
           "app_version": appVersion,
           "network_type": networkType,
           "location_data": locationData,
-          "is_known_device": isKnownDevice,
-          "is_trusted_location": isTrustedLocation,
           "user_agent": userAgent,
           "ip_address": deviceIp,
         }
@@ -68,8 +62,6 @@ class SessionStartRequest {
 
   static Future<SessionStartRequest> build({
     required String mpin,
-    required bool isKnownDevice,
-    required bool isTrustedLocation,
   }) async {
     final deviceInfo = DeviceInfoPlugin();
     final packageInfo = await PackageInfo.fromPlatform();
@@ -140,8 +132,6 @@ class SessionStartRequest {
       appVersion: packageInfo.version,
       networkType: networkType,
       locationData: locationData,
-      isKnownDevice: isKnownDevice,
-      isTrustedLocation: isTrustedLocation,
       userAgent: 'CanaraAI1/${packageInfo.version} ($deviceType; $deviceModel; Android $osVersion)',
       deviceIp: deviceIp,
     );

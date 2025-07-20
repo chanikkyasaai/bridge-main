@@ -127,8 +127,6 @@ class _AuthPageState extends State<AuthPage> {
     try {
       // Wait for SessionStartRequest to be built
       final sessionRequest = await SessionStartRequest.build(
-        isKnownDevice: true,
-        isTrustedLocation: true,
         mpin: pin.toString().trim(),
       );
 
@@ -140,13 +138,6 @@ class _AuthPageState extends State<AuthPage> {
       );
 
       if (api.statusCode == 200) {
-        if (widget.isFirst == true) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const CaptchaPage()),
-            (route) => false,
-          );
-        } else {
           print('User ID: ${api.data['user_id']} Phone: ${api.data['phone']}');
 
           await _retryPendingExitEvent(context);
@@ -157,12 +148,11 @@ class _AuthPageState extends State<AuthPage> {
             MaterialPageRoute(
               builder: (_) => BehaviorMonitor(
                 logger: AppLogger.logger,
-                child: HomePage(),
+                child: CaptchaPage(),
               ),
             ),
             (route) => false,
           );
-        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
