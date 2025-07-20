@@ -61,17 +61,6 @@ A **multi-layered, real-time behavioral authentication system** for mobile banki
 ![Figure 1: System Architecture Diagram (Visual)](data/architecture_diagram.jpg)
 *Figure 1: System Architecture Diagram (Visual)*
 
-<!-- Optional: Simple Mermaid diagram for text-based viewers -->
-```mermaid
-flowchart LR
-    A[Flutter Mobile App] --> B[Backend API (FastAPI)]
-    B --> C[ML Engine (FAISS, GNN, Informer)]
-    C --> D[Supabase DB & Storage]
-    C -->|Signals| B
-    B -->|WebSocket/REST| A
-    D -->|Audit Logs| E[Security Dashboard (Optional)]
-```
-
 - **Flutter App:** Captures user behavior (touch, scroll, device info) and streams to backend.
 - **Backend API:** Manages sessions, routes data, and communicates with ML engine.
 - **ML Engine:**  
