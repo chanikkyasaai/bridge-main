@@ -46,11 +46,6 @@ class AuthenticationManager:
             
             logger.info(f"Processing authentication events for session {session_id}")
             
-            # # Fetch user threshold_variance
-            # user_profile = await self.db.get_user_profile(user_id)
-            # threshold_variance = user_profile.get('threshold_variance', 0.0)
-            # user_threshold = 0.75 - threshold_variance
-            
             # Check if we have enough events for analysis
             if len(new_events) < self.min_events_for_analysis:
                 return {
@@ -87,7 +82,7 @@ class AuthenticationManager:
                 json_safe_bot_result = self._make_json_safe(bot_result)
                 
                 return {
-                    "status": "success",
+                    "status": "blocked",
                     "decision": "block",
                     "phase": "authentication",
                     "confidence": 0.95,
@@ -109,8 +104,8 @@ class AuthenticationManager:
             
             # Perform similarity matching with user clusters
             auth_result = await self._perform_authentication(user_id, cumulative_vector)
-            
-            # similarity = auth_result.get('similarity', 0.0)
+            similarity = auth_result.get('similarity', 0.0)
+            user_threshold = self.similarity_threshold
             
             # Escalation logic
             if similarity < user_threshold:
@@ -124,32 +119,41 @@ class AuthenticationManager:
                 
                 # Perform user-adapted anomaly detection using Supabase historical data
                 try:
-                    # Import the global managers from main
                     from main import gnn_storage_manager, gnn_caching_manager
-                    
                     gnn_result = await detect_anomaly_with_user_adaptation(
                         current_session_data, 
                         user_id,
                         storage_manager=gnn_storage_manager,
                         caching_manager=gnn_caching_manager
                     )
-                    
                     base_anomaly_score = gnn_result.get("base_anomaly_score", 0.0)
                     adapted_anomaly_score = gnn_result.get("adapted_anomaly_score")
                     historical_sessions_used = gnn_result.get("historical_sessions_used", 0)
-                    
-                    logger.info(f"GNN escalation completed for session {session_id}:")
-                    logger.info(f"   📊 Base anomaly score: {base_anomaly_score:.4f}")
-                    logger.info(f"   📊 Adapted anomaly score: {adapted_anomaly_score:.4f if adapted_anomaly_score else 'N/A'}")
-                    logger.info(f"   📊 Historical sessions used: {historical_sessions_used}")
-                    
-                    # Use adapted score if available, otherwise use base score
                     final_anomaly_score = adapted_anomaly_score if adapted_anomaly_score is not None else base_anomaly_score
-                    
+
+                    # --- GNN DECISION LOGIC ---
+                    if final_anomaly_score is not None:
+                        if final_anomaly_score > 0.7:
+                            gnn_decision = "block"
+                            gnn_status = "blocked"
+                            gnn_message = f"GNN anomaly score {final_anomaly_score:.3f} > 0.7: BLOCK"
+                        elif final_anomaly_score > -0.4:
+                            gnn_decision = "reauth"
+                            gnn_status = "reauth_required"
+                            gnn_message = f"GNN anomaly score {final_anomaly_score:.3f} in (-0.4, 0.7): REAUTH"
+                        else:
+                            gnn_decision = "allow"
+                            gnn_status = "success"
+                            gnn_message = f"GNN anomaly score {final_anomaly_score:.3f} <= -0.4: ALLOW"
+                    else:
+                        gnn_decision = "reauth"
+                        gnn_status = "reauth_required"
+                        gnn_message = "GNN anomaly score unavailable: REAUTH"
+
                     return {
                         **auth_result,
-                        "status": "escalated",
-                        "decision": "escalate",
+                        "status": gnn_status,
+                        "decision": gnn_decision,
                         "phase": "escalation",
                         "similarity": similarity,
                         "user_threshold": user_threshold,
@@ -158,39 +162,26 @@ class AuthenticationManager:
                         "adapted_anomaly_score": adapted_anomaly_score,
                         "historical_sessions_used": historical_sessions_used,
                         "user_profile_available": gnn_result.get("user_profile_available", False),
-                        "message": f"Escalated to Level 2 (GNN) due to low similarity. Anomaly score: {final_anomaly_score:.4f}",
+                        "message": gnn_message,
                     }
-                    
                 except Exception as e:
                     logger.error(f"Failed to perform GNN escalation for session {session_id}: {e}")
-                    # Fallback to basic GNN without historical data
-                    if session_id not in self.session_graphs:
-                        self.session_graphs[session_id] = SessionEventGraph()
-                    for event in new_events:
-                        self.session_graphs[session_id].add_event(event)
-                    session_graph = self.session_graphs[session_id]
-                    pyg_data = session_graph.to_pyg_data()
-                    fallback_anomaly_score = self.gnn_detector.predict_anomaly(pyg_data)
-                    
                     return {
                         **auth_result,
-                        "status": "escalated",
-                        "decision": "escalate", 
+                        "status": "reauth_required",
+                        "decision": "reauth",
                         "phase": "escalation",
                         "similarity": similarity,
                         "user_threshold": user_threshold,
-                        "anomaly_score": fallback_anomaly_score,
+                        "anomaly_score": None,
                         "error": f"Supabase GNN failed, using fallback: {str(e)}",
-                        "message": f"Escalated to Level 2 (GNN fallback) due to low similarity. Anomaly score: {fallback_anomaly_score:.4f}",
+                        "message": f"GNN escalation failed, requiring re-authentication.",
                     }
-            
             # Update cluster if authentication passed (incremental learning)
             if auth_result["decision"] == "allow" and similarity > user_threshold:
                 await self._update_nearest_cluster(user_id, cumulative_vector, auth_result["nearest_cluster"])
-            
             # Store vector in session data for final processing
             session_data["vectors"].append(current_vector)
-            
             # Enhanced result with authentication details
             result = {
                 **auth_result,
@@ -200,12 +191,9 @@ class AuthenticationManager:
                 "cumulative_vector_strength": float(np.linalg.norm(cumulative_vector)),
                 "events_processed": len(new_events)
             }
-            
             logger.info(f"Authentication result for {session_id}: {auth_result['decision']} "
                        f"(similarity: {auth_result['similarity']:.3f})")
-            
             return result
-            
         except Exception as e:
             logger.error(f"Failed to process auth events for session {session_id}: {e}")
             return {
