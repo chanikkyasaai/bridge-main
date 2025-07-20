@@ -212,30 +212,23 @@ class LearningManager:
         """
         try:
             logger.info(f"Performing clustering for user {user_id}")
-            
             # Get all session vectors for this user
-            session_vectors = await self.db.get_latest_user_vectors(user_id, limit=10)
-            
-            if len(session_vectors) < 3:
-                logger.warning(f"Not enough session vectors for clustering user {user_id}: {len(session_vectors)}")
-                return {"status": "insufficient_data", "vectors_count": len(session_vectors)}
-            
-            # Convert to numpy array format
+            session_vectors_data = await self.db.get_user_session_vectors(user_id, limit=10)
+            if len(session_vectors_data) < 3:
+                logger.warning(f"Not enough session vectors for clustering user {user_id}: {len(session_vectors_data)}")
+                return {"status": "insufficient_data", "vectors_count": len(session_vectors_data)}
+            # Extract vectors and their session_ids
             session_vectors_array = []
-            for vector in session_vectors:
-                if isinstance(vector, list):
-                    session_vectors_array.append(np.array(vector))
-                else:
-                    session_vectors_array.append(vector)
-            
+            session_vector_ids = []
+            for entry in session_vectors_data:
+                session_vectors_array.append(entry['vector'])
+                session_vector_ids.append(entry['session_id'])
             # Use vector storage manager to create behavioral profile
             profile_result = await self.vector_storage_manager.create_user_behavioral_profile(
-                user_id, session_vectors_array
+                user_id, session_vectors_array, session_vector_ids
             )
-            
             if profile_result['status'] == 'success':
                 logger.info(f"Successfully created behavioral profile for user {user_id} with {profile_result['n_clusters']} clusters")
-                
                 return {
                     "status": "success",
                     "clusters_created": profile_result['n_clusters'],
@@ -246,9 +239,8 @@ class LearningManager:
             else:
                 logger.error(f"Failed to create behavioral profile: {profile_result.get('message')}")
                 return profile_result
-            
         except Exception as e:
-            logger.error(f"Failed to perform clustering for user {user_id}: {e}")
+            logger.error(f"Failed to perform clustering for {user_id}: {e}")
             return {"status": "error", "message": str(e)}
     
     def _determine_optimal_clusters(self, X: np.ndarray) -> int:

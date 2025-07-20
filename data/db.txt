@@ -37,4 +37,9 @@ ADD COLUMN sessions_count INTEGER DEFAULT 0;
 ALTER TABLE users
 ADD COLUMN threshold_variance DOUBLE PRECISION DEFAULT 10;
 
+ALTER TABLE users
+ALTER COLUMN threshold_variance SET DEFAULT 0;
+
+ALTER TABLE user_clusters
+ADD COLUMN session_vector_ids UUID[] DEFAULT '{}';
 

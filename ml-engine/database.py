@@ -147,31 +147,26 @@ class DatabaseManager:
             logger.error(f"Failed to get latest vectors for {user_id}: {e}")
             return []
     
-    async def store_user_clusters(self, user_id: str, clusters: List[Tuple[int, np.ndarray]]) -> bool:
-        """Store user cluster centroids"""
+    async def store_user_clusters(self, user_id: str, clusters: List[Tuple[int, np.ndarray, List[str]]]) -> bool:
+        """Store user cluster centroids and session_vector_ids"""
         try:
             if not self.supabase:
                 await self.initialize()
-            
             # Delete existing clusters for this user
             self.supabase.table('user_clusters').delete().eq('user_id', user_id).execute()
-            
             # Insert new clusters
-            for cluster_label, centroid in clusters:
+            for cluster_label, centroid, session_vector_ids in clusters:
                 centroid_list = centroid.tolist() if hasattr(centroid, 'tolist') else list(centroid)
-                
                 data = {
                     'user_id': user_id,
                     'cluster_label': cluster_label,
-                    'centroid': centroid_list
+                    'centroid': centroid_list,
+                    'session_vector_ids': session_vector_ids or []
                 }
-                
                 result = self.supabase.table('user_clusters').insert(data).execute()
-                
                 if not result.data:
                     logger.error(f"Failed to store cluster {cluster_label} for {user_id}")
                     return False
-            
             logger.info(f"Stored {len(clusters)} clusters for {user_id}")
             return True
         except Exception as e:
@@ -353,3 +348,28 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Failed to get user profile for {user_id}: {e}")
             return {'user_id': user_id, 'threshold_variance': 0.0, 'sessions_count': 0}
+
+    async def update_user_threshold_variance(self, user_id: str, increment: float) -> bool:
+        """Update the user's threshold_variance, capping at 15."""
+        try:
+            if not self.supabase:
+                await self.initialize()
+            # Fetch current value
+            result = self.supabase.table('users').select('threshold_variance').eq('id', user_id).execute()
+            if result.data and len(result.data) > 0:
+                current = result.data[0].get('threshold_variance', 0.0) or 0.0
+            else:
+                current = 0.0
+            new_value = min(current + increment, 15.0)
+            update_result = self.supabase.table('users').update({
+                'threshold_variance': new_value
+            }).eq('id', user_id).execute()
+            if update_result.data:
+                logger.info(f"Updated threshold_variance for {user_id}: {current} → {new_value}")
+                return True
+            else:
+                logger.error(f"Failed to update threshold_variance for {user_id}")
+                return False
+        except Exception as e:
+            logger.error(f"Failed to update threshold_variance for {user_id}: {e}")
+            return False

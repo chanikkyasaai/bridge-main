@@ -149,7 +149,10 @@ class AuthenticationManager:
                         gnn_decision = "reauth"
                         gnn_status = "reauth_required"
                         gnn_message = "GNN anomaly score unavailable: REAUTH"
-
+                    # Track escalation and GNN result in session_data for use at session end
+                    session_data['escalated_to_gnn'] = True
+                    session_data['gnn_decision'] = gnn_decision
+                    session_data['gnn_anomaly_score'] = final_anomaly_score
                     return {
                         **auth_result,
                         "status": gnn_status,
@@ -166,6 +169,9 @@ class AuthenticationManager:
                     }
                 except Exception as e:
                     logger.error(f"Failed to perform GNN escalation for session {session_id}: {e}")
+                    session_data['escalated_to_gnn'] = True
+                    session_data['gnn_decision'] = 'reauth'
+                    session_data['gnn_anomaly_score'] = None
                     return {
                         **auth_result,
                         "status": "reauth_required",
@@ -177,6 +183,11 @@ class AuthenticationManager:
                         "error": f"Supabase GNN failed, using fallback: {str(e)}",
                         "message": f"GNN escalation failed, requiring re-authentication.",
                     }
+            else:
+                # Not escalated
+                session_data['escalated_to_gnn'] = False
+                session_data['gnn_decision'] = None
+                session_data['gnn_anomaly_score'] = None
             # Update cluster if authentication passed (incremental learning)
             if auth_result["decision"] == "allow" and similarity > user_threshold:
                 await self._update_nearest_cluster(user_id, cumulative_vector, auth_result["nearest_cluster"])
@@ -240,6 +251,26 @@ class AuthenticationManager:
             # Increment session count
             new_session_count = await self.db.increment_user_session_count(user_id)
             
+            # --- DYNAMIC THRESHOLD VARIANCE LOGIC ---
+            # Only update if escalated to GNN and not blocked
+            if session_data.get('escalated_to_gnn'):
+                gnn_decision = session_data.get('gnn_decision')
+                gnn_score = session_data.get('gnn_anomaly_score')
+                increment = 0.0
+                if gnn_decision == 'allow':
+                    increment = 1.0
+                elif gnn_decision == 'reauth':
+                    increment = 2.0 if gnn_score is not None and 0.5 <= gnn_score <= 0.7 else 1.0
+                # Only update if not blocked and increment > 0
+                if gnn_decision in ('allow', 'reauth') and increment > 0:
+                    await self.db.update_user_threshold_variance(user_id, increment)
+                # --- RECLUSTERING LOGIC ---
+                # If GNN allowed after escalation, trigger reclustering
+                if gnn_decision == 'allow':
+                    from learning_manager import LearningManager
+                    logger.info(f"Triggering reclustering for user {user_id} after GNN legit decision.")
+                    learning_manager = LearningManager(self.db, self.feature_extractor, self.vector_storage_manager, self.bot_detector)
+                    await learning_manager._perform_user_clustering(user_id)
             # Clean up session state
             if session_id in self.session_vectors:
                 del self.session_vectors[session_id]

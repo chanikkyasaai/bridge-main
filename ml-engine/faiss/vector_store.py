@@ -435,7 +435,7 @@ class VectorStorageManager:
                 'message': str(e)
             }
     
-    async def create_user_behavioral_profile(self, user_id: str, session_vectors: List[np.ndarray]) -> Dict[str, Any]:
+    async def create_user_behavioral_profile(self, user_id: str, session_vectors: List[np.ndarray], session_vector_ids: List[str] = None) -> Dict[str, Any]:
         """
         Create user's behavioral profile by clustering session vectors
         Called after learning phase completion (6+ sessions)
@@ -443,46 +443,39 @@ class VectorStorageManager:
         try:
             from sklearn.cluster import KMeans
             from sklearn.preprocessing import StandardScaler
-            
             if len(session_vectors) < 3:
                 return {
                     'status': 'error',
                     'message': 'Insufficient session vectors for clustering'
                 }
-            
             # Convert to numpy array and normalize
             X = np.array(session_vectors)
             scaler = StandardScaler()
             X_normalized = scaler.fit_transform(X)
-            
             # Determine optimal number of clusters (2-4 for banking)
             n_clusters = min(4, max(2, len(session_vectors) // 2))
-            
             # Perform K-means clustering
             kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
             cluster_labels = kmeans.fit_predict(X_normalized)
-            
             # Get cluster centroids in original space
             centroids_normalized = kmeans.cluster_centers_
             centroids_original = scaler.inverse_transform(centroids_normalized)
-            
             # Create cluster labels list
             unique_labels = list(range(n_clusters))
-            
             # Store clusters in FAISS
             faiss_result = await self.faiss_store.create_user_clusters(
                 user_id, centroids_original, unique_labels
             )
-            
-            # Store clusters in database - convert to the expected format (List[Tuple[int, np.ndarray]])
+            # Store clusters in database - convert to the expected format (List[Tuple[int, np.ndarray, List[str]]])
             clusters_data = []
+            if session_vector_ids is None:
+                session_vector_ids = [str(i) for i in range(len(session_vectors))]
             for i, centroid in enumerate(centroids_original):
-                clusters_data.append((i, centroid))  # Tuple format expected by database method
-            
+                # Collect session_vector_ids for this cluster
+                ids_for_cluster = [session_vector_ids[j] for j, label in enumerate(cluster_labels) if label == i]
+                clusters_data.append((i, centroid, ids_for_cluster))
             await self.db.store_user_clusters(user_id, clusters_data)
-            
             logger.info(f"Created behavioral profile for user {user_id} with {n_clusters} clusters")
-            
             return {
                 'status': 'success',
                 'user_id': user_id,
@@ -491,7 +484,6 @@ class VectorStorageManager:
                 'faiss_result': faiss_result,
                 'session_vectors_used': len(session_vectors)
             }
-            
         except Exception as e:
             logger.error(f"Failed to create behavioral profile for user {user_id}: {e}")
             return {
