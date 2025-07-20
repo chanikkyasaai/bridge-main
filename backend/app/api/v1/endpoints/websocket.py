@@ -1,4 +1,4 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, Query, Depends
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, Query, Depends, Body
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Dict, Any, Optional
 import json
@@ -372,6 +372,29 @@ async def flush_all_batches():
         }
     except Exception as e:
         return {"error": f"Failed to flush batches: {str(e)}"}
+
+@router.post("/security-event")
+async def receive_security_event(
+    payload: dict = Body(...)
+):
+    """
+    Receive security events (block, reauth, etc.) from ML engine and forward to the correct websocket session.
+    """
+    session_id = payload.get("session_id")
+    user_id = payload.get("user_id")
+    event_type = payload.get("event_type")
+    details = payload.get("details", {})
+    if not session_id or not event_type:
+        return {"status": "error", "message": "Missing session_id or event_type"}
+    # Compose message for frontend
+    message = {
+        "type": event_type,
+        "details": details,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    # Send to the correct websocket session
+    await websocket_manager.send_message(session_id, message)
+    return {"status": "success", "message": f"Event {event_type} sent to session {session_id}"}
 
 @router.post("/sessions/{session_id}/lifecycle")
 async def handle_app_lifecycle(

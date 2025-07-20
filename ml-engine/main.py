@@ -13,6 +13,7 @@ import asyncio
 import os
 from datetime import datetime
 from dotenv import load_dotenv
+import httpx
 
 # Load environment variables
 load_dotenv()
@@ -177,14 +178,13 @@ class AuditExplainabilityEngine:
         self.db_manager = db_manager
         self.bucket = "behavior-logs"
         self.folder = "logs/security-logs/"
+        # Buffer logs in memory per session
+        self.session_logs = {}  # session_id -> list of log lines
+        import os
+        self.backend_url = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")
 
-    async def append_log(self, session_id, user_id, log_data: dict):
+    def buffer_log(self, session_id, user_id, log_data: dict):
         from datetime import datetime
-        import io
-        # Always initialize Supabase client
-        await self.db_manager.initialize()
-        supabase = self.db_manager.supabase
-        file_path = self.folder + f"{session_id}.txt"
         lines = [f"Timestamp: {datetime.utcnow().isoformat()}"]
         if 'event' in log_data:
             lines.append(f"Event: {log_data['event']}")
@@ -192,19 +192,43 @@ class AuditExplainabilityEngine:
             if k != 'event':
                 lines.append(f"{k}: {v}")
         log_text = "\n".join(lines) + "\n---\n"
+        if session_id not in self.session_logs:
+            self.session_logs[session_id] = []
+        self.session_logs[session_id].append(log_text)
+
+    async def upload_log(self, session_id, user_id):
+        # Upload the buffered log to Supabase at session end
+        await self.db_manager.initialize()
+        supabase = self.db_manager.supabase
+        file_path = self.folder + f"{session_id}.txt"
+        log_text = "".join(self.session_logs.get(session_id, []))
         try:
-            logger.info(f"[AuditExplainabilityEngine] Attempting to download existing log: {file_path}")
-            existing = supabase.storage.from_(self.bucket).download(file_path)
-            log_text = existing.decode('utf-8') + log_text
-            logger.info(f"[AuditExplainabilityEngine] Existing log found, appending.")
-        except Exception as e:
-            logger.info(f"[AuditExplainabilityEngine] No existing log found or error: {e}")
-        try:
-            logger.info(f"[AuditExplainabilityEngine] Uploading log to {file_path} (bucket: {self.bucket})")
             supabase.storage.from_(self.bucket).upload(file_path, log_text.encode('utf-8'))
-            logger.info(f"[AuditExplainabilityEngine] Log uploaded successfully: {file_path}")
         except Exception as e:
-            logger.error(f"[AuditExplainabilityEngine] Failed to upload log: {e}")
+            # Try to remove and re-upload if file exists
+            try:
+                supabase.storage.from_(self.bucket).remove(file_path)
+                supabase.storage.from_(self.bucket).upload(file_path, log_text.encode('utf-8'))
+            except Exception as e2:
+                logger.error(f"[AuditExplainabilityEngine] Failed to upload log after remove: {e2}")
+        # Clean up buffer
+        if session_id in self.session_logs:
+            del self.session_logs[session_id]
+
+    async def send_security_event(self, session_id, user_id, event_type, details):
+        url = f"{self.backend_url}/api/v1/ws/security-event"
+        payload = {
+            "session_id": session_id,
+            "user_id": user_id,
+            "event_type": event_type,
+            "details": details
+        }
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.post(url, json=payload)
+                response.raise_for_status()
+        except Exception as e:
+            logger.error(f"[AuditExplainabilityEngine] Failed to send security event: {e}")
 
 # Instantiate the audit engine
 audit_engine = AuditExplainabilityEngine(db_manager)
@@ -216,7 +240,8 @@ if __name__ == "__main__":
         test_session = "test_audit_log_manual"
         test_user = "manual_test_user"
         log_data = {"event": "manual_test", "message": "This is a direct test of the audit log upload."}
-        await audit_engine.append_log(test_session, test_user, log_data)
+        audit_engine.buffer_log(test_session, test_user, log_data)
+        await audit_engine.upload_log(test_session, test_user)
         print(f"Manual audit log test for session {test_session} complete.")
     asyncio.run(test_audit_log())
 
@@ -281,7 +306,7 @@ async def start_session(data: SessionStart):
         }
         
         # Audit log for session start
-        await audit_engine.append_log(data.session_id, data.user_id, {
+        audit_engine.buffer_log(data.session_id, data.user_id, {
             "event": "session_start",
             "phase": phase,
             "status": "started"
@@ -320,11 +345,7 @@ async def end_session(data: SessionEnd):
         logger.info(f"Session {data.session_id} ended successfully")
         
         # Audit log for session end
-        await audit_engine.append_log(data.session_id, session_data["user_id"], {
-            "event": "session_end",
-            **end_result,
-            "status": "ended"
-        })
+        await audit_engine.upload_log(data.session_id, session_data["user_id"])
         
         return {
             "status": "success",
@@ -369,14 +390,7 @@ async def analyze_behavior(data: BehavioralData, background_tasks: BackgroundTas
             if drift_action == 'block':
                 logger.error(f"[DriftTracker] Blocking session {data.session_id} due to drift event.")
                 # Audit log for block
-                await audit_engine.append_log(data.session_id, data.user_id, {
-                    "event": "drift_detected",
-                    "reason": "behavioral_drift_detected",
-                    "message": "Session blocked due to device/location drift.",
-                    "phase": session_data.get("phase"),
-                    "status": "blocked"
-                })
-                # Optionally, update session state or notify backend
+                await audit_engine.send_security_event(data.session_id, data.user_id, "drift_detected", {"reason": "behavioral_drift_detected", "message": "Session blocked due to device/location drift."})
                 return {
                     "status": "blocked",
                     "decision": "block",
@@ -386,13 +400,7 @@ async def analyze_behavior(data: BehavioralData, background_tasks: BackgroundTas
                 }
             elif drift_action == 'reauth':
                 logger.warning(f"[DriftTracker] Forcing re-authentication for session {data.session_id} due to IP/network change.")
-                await audit_engine.append_log(data.session_id, data.user_id, {
-                    "event": "ip_change_detected",
-                    "reason": "ip_change_detected",
-                    "message": "Re-authentication required due to network change.",
-                    "phase": session_data.get("phase"),
-                    "status": "reauth_required"
-                })
+                await audit_engine.send_security_event(data.session_id, data.user_id, "ip_change_detected", {"reason": "ip_change_detected", "message": "Re-authentication required due to network change."})
                 return {
                     "status": "reauth_required",
                     "decision": "reauth",
@@ -411,7 +419,7 @@ async def analyze_behavior(data: BehavioralData, background_tasks: BackgroundTas
         
         logger.info(f"Analysis result for {data.session_id}: {result['decision']} (confidence: {result.get('confidence', 0):.3f})")
         # Audit log for every decision
-        await audit_engine.append_log(data.session_id, data.user_id, result)
+        audit_engine.buffer_log(data.session_id, data.user_id, result)
         
         return result
         
