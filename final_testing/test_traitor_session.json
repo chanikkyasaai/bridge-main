@@ -1,0 +1,14 @@
+{
+  "user_id": "traitor-user-001",
+  "session_id": "traitor-session-001",
+  "logs": [
+    {"timestamp": "2025-07-21T10:00:00.000000", "event_type": "touch_down", "data": {"coordinates": [10, 10], "pressure": 0.1, "device_id": "TRAITOR-DEVICE-001"}},
+    {"timestamp": "2025-07-21T10:00:01.000000", "event_type": "touch_up", "data": {"coordinates": [10, 10], "touch_duration_ms": 10, "device_id": "TRAITOR-DEVICE-001"}},
+    {"timestamp": "2025-07-21T10:00:02.000000", "event_type": "accel_data", "data": {"x": 9.9, "y": 9.9, "z": 9.9, "device_id": "TRAITOR-DEVICE-001"}},
+    {"timestamp": "2025-07-21T10:00:03.000000", "event_type": "gyro_data", "data": {"x": 9.9, "y": 9.9, "z": 9.9, "device_id": "TRAITOR-DEVICE-001"}},
+    {"timestamp": "2025-07-21T10:00:04.000000", "event_type": "typing_pattern", "data": {"screen": "Login", "field": "username", "typing_speed": 100.0, "keystroke_dynamics": [0.01, 0.01, 0.01], "delete_count": 0, "first_key_delay_ms": 1, "total_time_ms": 3, "keystroke_count": 3, "average_delay": 0.01, "words_per_minute": 1000.0}},
+    {"timestamp": "2025-07-21T10:00:05.000000", "event_type": "orientation_change", "data": {"orientation": "landscape", "device_id": "TRAITOR-DEVICE-001"}},
+    {"timestamp": "2025-07-21T10:00:06.000000", "event_type": "brightness_change", "data": {"theme": "dark", "brightness_level": 0.01, "device_id": "TRAITOR-DEVICE-001"}},
+    {"timestamp": "2025-07-21T10:00:07.000000", "event_type": "scroll", "data": {"pixels": 9999, "max": 99999, "velocity": 9999, "device_id": "TRAITOR-DEVICE-001"}}
+  ]
+} 

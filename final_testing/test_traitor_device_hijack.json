@@ -1,0 +1,12 @@
+{
+  "user_id": "traitor-user-001",
+  "session_id": "traitor-hijack-session-001",
+  "logs": [
+    {"timestamp": "2025-07-21T10:00:00.000000", "event_type": "device_info", "data": {"device_id": "TRAITOR-DEVICE-001", "device_model": "Pixel 9", "os_version": "Android 15", "ip_address": "1.2.3.4", "latitude": 12.9716, "longitude": 77.5946}},
+    {"timestamp": "2025-07-21T10:00:05.000000", "event_type": "device_info", "data": {"device_id": "TRAITOR-DEVICE-002", "device_model": "iPhone 15", "os_version": "iOS 18", "ip_address": "99.88.77.66", "latitude": 40.7128, "longitude": -74.0060}},
+    {"timestamp": "2025-07-21T10:00:10.000000", "event_type": "touch_down", "data": {"coordinates": [100, 100], "pressure": 0.5, "device_id": "TRAITOR-DEVICE-002"}},
+    {"timestamp": "2025-07-21T10:00:11.000000", "event_type": "touch_up", "data": {"coordinates": [100, 100], "touch_duration_ms": 100, "device_id": "TRAITOR-DEVICE-002"}},
+    {"timestamp": "2025-07-21T10:00:12.000000", "event_type": "accel_data", "data": {"x": 0.0, "y": 0.0, "z": 0.0, "device_id": "TRAITOR-DEVICE-002"}},
+    {"timestamp": "2025-07-21T10:00:13.000000", "event_type": "gyro_data", "data": {"x": 0.0, "y": 0.0, "z": 0.0, "device_id": "TRAITOR-DEVICE-002"}}
+  ]
+} 
