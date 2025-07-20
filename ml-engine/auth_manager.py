@@ -25,8 +25,8 @@ class AuthenticationManager:
         
         # Session state management
         self.session_vectors = {}  # Track session vectors for cumulative analysis
-        self.gnn_detector = GNNAnomalyDetector()
-        self.session_graphs = {}  # session_id -> SessionEventGraph
+        # self.gnn_detector = GNNAnomalyDetector()
+        # self.session_graphs = {}  # session_id -> SessionEventGraph
         
         # Configuration
         self.similarity_threshold = 0.75  # Default, but will use user-specific
@@ -46,10 +46,10 @@ class AuthenticationManager:
             
             logger.info(f"Processing authentication events for session {session_id}")
             
-            # Fetch user threshold_variance
-            user_profile = await self.db.get_user_profile(user_id)
-            threshold_variance = user_profile.get('threshold_variance', 0.0)
-            user_threshold = 0.75 - threshold_variance
+            # # Fetch user threshold_variance
+            # user_profile = await self.db.get_user_profile(user_id)
+            # threshold_variance = user_profile.get('threshold_variance', 0.0)
+            # user_threshold = 0.75 - threshold_variance
             
             # Check if we have enough events for analysis
             if len(new_events) < self.min_events_for_analysis:
@@ -110,7 +110,7 @@ class AuthenticationManager:
             # Perform similarity matching with user clusters
             auth_result = await self._perform_authentication(user_id, cumulative_vector)
             
-            similarity = auth_result.get('similarity', 0.0)
+            # similarity = auth_result.get('similarity', 0.0)
             
             # Escalation logic
             if similarity < user_threshold:

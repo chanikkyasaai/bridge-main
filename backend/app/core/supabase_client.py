@@ -84,12 +84,14 @@ class SupabaseClient:
             raise Exception(f"Failed to mark session ended: {str(e)}")
     
     # Session Management
-    async def create_session(self, user_id: str, session_token: str, device_info: Optional[str] = None) -> Dict[str, Any]:
+    async def create_session(self, user_id: str, session_token: str, session_id: str, device_info: Optional[str] = None) -> Dict[str, Any]:
         """Create a new session in the database"""
         try:
             result = self.supabase.table('sessions').insert({
+                'id': session_id,
                 'user_id': user_id,
-                'session_token': session_token
+                'session_token': session_token,
+                # 'device_info': device_info
             }).execute()
             return result.data[0] if result.data else None
         except Exception as e:
