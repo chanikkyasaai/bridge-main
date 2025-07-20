@@ -23,6 +23,7 @@ from feature_extractor import FeatureExtractor
 from database import DatabaseManager
 from bot_detector import BotDetector
 from faiss.vector_store import FAISSVectorStore, VectorStorageManager
+from gnn_escalation import detect_anomaly_with_user_adaptation, CachingManager, SupabaseStorageManager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -53,6 +54,10 @@ learning_manager = LearningManager(db_manager, feature_extractor, vector_storage
 auth_manager = AuthenticationManager(db_manager, feature_extractor, vector_storage_manager, faiss_store, bot_detector)
 continuous_authenticator = ContinuousAuthenticator(learning_manager, auth_manager, db_manager)
 
+# Initialize GNN escalation components with caching
+gnn_caching_manager = CachingManager(max_cache_size=2000)
+gnn_storage_manager = SupabaseStorageManager(gnn_caching_manager)
+
 # Active sessions tracking
 active_sessions = {}
 
@@ -77,24 +82,45 @@ class FeedbackData(BaseModel):
     was_correct: bool
     feedback_source: str = "system"
 
+class GNNAnomalyRequest(BaseModel):
+    user_id: str
+    session_data: Dict[str, Any]
+
 @app.get("/")
 async def health_check():
     """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
-        "components": {
-            "database": "connected",
-            "feature_extractor": "ready",
-            "learning_manager": "ready",
-            "auth_manager": "ready"
-        },
-        "statistics": {
-            "active_sessions": len(active_sessions),
-            "total_users": await db_manager.get_total_users(),
-            "total_sessions": await db_manager.get_total_sessions()
+    try:
+        # Initialize GNN storage manager if not already done
+        await gnn_storage_manager.initialize()
+        
+        # Get cache statistics
+        cache_stats = gnn_caching_manager.get_cache_stats()
+        
+        return {
+            "status": "healthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "components": {
+                "database": "connected",
+                "feature_extractor": "ready",
+                "learning_manager": "ready",
+                "auth_manager": "ready",
+                "gnn_escalation": "ready",
+                "supabase_storage": "connected"
+            },
+            "statistics": {
+                "active_sessions": len(active_sessions),
+                "total_users": await db_manager.get_total_users(),
+                "total_sessions": await db_manager.get_total_sessions()
+            },
+            "gnn_cache_stats": cache_stats
         }
-    }
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return {
+            "status": "degraded",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
 
 @app.post("/session/start")
 async def start_session(data: SessionStart):
@@ -199,6 +225,64 @@ async def analyze_behavior(data: BehavioralData, background_tasks: BackgroundTas
         
     except Exception as e:
         logger.error(f"Failed to analyze behavior for session {data.session_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/gnn/anomaly-detection")
+async def gnn_anomaly_detection(data: GNNAnomalyRequest):
+    """Direct GNN-based anomaly detection with user adaptation using Supabase historical data"""
+    try:
+        logger.info(f"🚀 Starting GNN anomaly detection for user {data.user_id}")
+        
+        # Ensure storage manager is initialized
+        await gnn_storage_manager.initialize()
+        
+        # Perform anomaly detection with caching
+        result = await detect_anomaly_with_user_adaptation(
+            current_session_json=data.session_data,
+            user_id=data.user_id,
+            storage_manager=gnn_storage_manager,
+            caching_manager=gnn_caching_manager
+        )
+        
+        logger.info(f"✅ GNN anomaly detection completed for user {data.user_id}")
+        
+        return {
+            "status": "success",
+            "gnn_result": result,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ GNN anomaly detection failed for user {data.user_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/gnn/cache-stats")
+async def get_gnn_cache_stats():
+    """Get GNN caching statistics"""
+    try:
+        cache_stats = gnn_caching_manager.get_cache_stats()
+        return {
+            "status": "success",
+            "cache_stats": cache_stats,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Failed to get cache stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/gnn/clear-cache")
+async def clear_gnn_cache():
+    """Clear all GNN caches"""
+    try:
+        gnn_caching_manager.clear_cache()
+        logger.info("🧹 GNN cache cleared")
+        return {
+            "status": "success",
+            "message": "GNN cache cleared successfully",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Failed to clear cache: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/feedback")

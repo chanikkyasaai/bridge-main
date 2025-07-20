@@ -9,7 +9,7 @@ from typing import Dict, List, Any, Optional
 import logging
 from datetime import datetime
 import asyncio
-from gnn_escalation import SessionEventGraph, GNNAnomalyDetector
+from gnn_escalation import SessionEventGraph, GNNAnomalyDetector, detect_anomaly_with_user_adaptation
 
 logger = logging.getLogger(__name__)
 
@@ -114,29 +114,75 @@ class AuthenticationManager:
             
             # Escalation logic
             if similarity < user_threshold:
-                # Escalate to Level 2 (GNN)
+                # Escalate to Level 2 (GNN with Supabase historical data)
                 logger.warning(f"🚨 Escalating session {session_id} to Level 2 (GNN) due to low similarity: {similarity:.3f} < {user_threshold:.3f}")
-                # Maintain/update session event graph
-                if session_id not in self.session_graphs:
-                    self.session_graphs[session_id] = SessionEventGraph()
-                for event in new_events:
-                    self.session_graphs[session_id].add_event(event)
-                session_graph = self.session_graphs[session_id]
-                pyg_data = session_graph.to_pyg_data()
-                anomaly_score = self.gnn_detector.predict_anomaly(pyg_data)
-                logger.info(f"GNN anomaly score for session {session_id}: {anomaly_score:.3f}")
-                # Clean up graph if session ends (optional)
-                # del self.session_graphs[session_id]
-                return {
-                    **auth_result,
-                    "status": "escalated",
-                    "decision": "escalate",
-                    "phase": "escalation",
-                    "similarity": similarity,
-                    "user_threshold": user_threshold,
-                    "anomaly_score": anomaly_score,
-                    "message": f"Escalated to Level 2 (GNN) due to low similarity. Anomaly score: {anomaly_score:.3f}",
+                
+                # Prepare current session data for GNN analysis
+                current_session_data = {
+                    "logs": new_events
                 }
+                
+                # Perform user-adapted anomaly detection using Supabase historical data
+                try:
+                    # Import the global managers from main
+                    from main import gnn_storage_manager, gnn_caching_manager
+                    
+                    gnn_result = await detect_anomaly_with_user_adaptation(
+                        current_session_data, 
+                        user_id,
+                        storage_manager=gnn_storage_manager,
+                        caching_manager=gnn_caching_manager
+                    )
+                    
+                    base_anomaly_score = gnn_result.get("base_anomaly_score", 0.0)
+                    adapted_anomaly_score = gnn_result.get("adapted_anomaly_score")
+                    historical_sessions_used = gnn_result.get("historical_sessions_used", 0)
+                    
+                    logger.info(f"GNN escalation completed for session {session_id}:")
+                    logger.info(f"   📊 Base anomaly score: {base_anomaly_score:.4f}")
+                    logger.info(f"   📊 Adapted anomaly score: {adapted_anomaly_score:.4f if adapted_anomaly_score else 'N/A'}")
+                    logger.info(f"   📊 Historical sessions used: {historical_sessions_used}")
+                    
+                    # Use adapted score if available, otherwise use base score
+                    final_anomaly_score = adapted_anomaly_score if adapted_anomaly_score is not None else base_anomaly_score
+                    
+                    return {
+                        **auth_result,
+                        "status": "escalated",
+                        "decision": "escalate",
+                        "phase": "escalation",
+                        "similarity": similarity,
+                        "user_threshold": user_threshold,
+                        "anomaly_score": final_anomaly_score,
+                        "base_anomaly_score": base_anomaly_score,
+                        "adapted_anomaly_score": adapted_anomaly_score,
+                        "historical_sessions_used": historical_sessions_used,
+                        "user_profile_available": gnn_result.get("user_profile_available", False),
+                        "message": f"Escalated to Level 2 (GNN) due to low similarity. Anomaly score: {final_anomaly_score:.4f}",
+                    }
+                    
+                except Exception as e:
+                    logger.error(f"Failed to perform GNN escalation for session {session_id}: {e}")
+                    # Fallback to basic GNN without historical data
+                    if session_id not in self.session_graphs:
+                        self.session_graphs[session_id] = SessionEventGraph()
+                    for event in new_events:
+                        self.session_graphs[session_id].add_event(event)
+                    session_graph = self.session_graphs[session_id]
+                    pyg_data = session_graph.to_pyg_data()
+                    fallback_anomaly_score = self.gnn_detector.predict_anomaly(pyg_data)
+                    
+                    return {
+                        **auth_result,
+                        "status": "escalated",
+                        "decision": "escalate", 
+                        "phase": "escalation",
+                        "similarity": similarity,
+                        "user_threshold": user_threshold,
+                        "anomaly_score": fallback_anomaly_score,
+                        "error": f"Supabase GNN failed, using fallback: {str(e)}",
+                        "message": f"Escalated to Level 2 (GNN fallback) due to low similarity. Anomaly score: {fallback_anomaly_score:.4f}",
+                    }
             
             # Update cluster if authentication passed (incremental learning)
             if auth_result["decision"] == "allow" and similarity > user_threshold:
