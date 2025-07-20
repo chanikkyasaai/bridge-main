@@ -61,14 +61,15 @@ A **multi-layered, real-time behavioral authentication system** for mobile banki
 ![Figure 1: System Architecture Diagram (Visual)](data/architecture_diagram.jpg)
 *Figure 1: System Architecture Diagram (Visual)*
 
+<!-- Optional: Simple Mermaid diagram for text-based viewers -->
 ```mermaid
 flowchart LR
-    A[Flutter Mobile App] -- Behavioral Events --> B[Backend API (FastAPI)]
-    B -- Session Data --> C[ML Engine (FAISS, GNN, Informer)]
-    C -- Decisions, Logs --> D[Supabase DB & Storage]
-    C -- Signals (block/reauth/allow) --> B
-    B -- WebSocket/REST --> A
-    D -- Audit Logs --> E[Security Dashboard (Optional)]
+    A[Flutter Mobile App] --> B[Backend API (FastAPI)]
+    B --> C[ML Engine (FAISS, GNN, Informer)]
+    C --> D[Supabase DB & Storage]
+    C -->|Signals| B
+    B -->|WebSocket/REST| A
+    D -->|Audit Logs| E[Security Dashboard (Optional)]
 ```
 
 - **Flutter App:** Captures user behavior (touch, scroll, device info) and streams to backend.
@@ -213,7 +214,7 @@ bridge/
 - Sanjeev A  
 - Logarathan S V  
 
-*SuRaksha Cyber Hackathon 2024*  
+*SuRaksha Cyber Hackathon 2025*  
 *Theme: Enhancing Mobile Banking Security through Behavior-Based Continuous Authentication*
 
 ---
@@ -222,16 +223,11 @@ bridge/
 
 MIT License
 
----
 
-## 15. Contact
-
-For demo, queries, or collaboration:  
-[Add your contact emails or LinkedIn here]
 
 ---
 
-## 16. Docker Compose Example
+## 15. Docker Compose Example
 
 ```yaml
 version: '3.8'
@@ -254,5 +250,3 @@ services:
 ```
 
 ---
-
-**This README is designed to impress judges, clearly explain your innovation, and make your project easy to run and evaluate.** 
