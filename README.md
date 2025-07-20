@@ -58,7 +58,7 @@ A **multi-layered, real-time behavioral authentication system** for mobile banki
 
 ## 3. System Architecture
 
-![Figure 1: System Architecture Diagram (Visual)](data/architecture_diagram.jpg)
+![Figure 1: System Architecture Diagram (Visual)](data/architecture.jpeg)
 *Figure 1: System Architecture Diagram (Visual)*
 
 - **Flutter App:** Captures user behavior (touch, scroll, device info) and streams to backend.
