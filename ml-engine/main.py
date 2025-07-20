@@ -86,6 +86,140 @@ class GNNAnomalyRequest(BaseModel):
     user_id: str
     session_data: Dict[str, Any]
 
+class BehavioralDriftTracker:
+    """Monitors device, location, and network drift for a session."""
+    def __init__(self):
+        self.session_states = {}  # session_id -> last device_info
+
+    def process_device_info(self, session_id, user_id, event):
+        device_data = event.get('data', {})
+        timestamp = event.get('timestamp')
+        state = self.session_states.get(session_id)
+        log_prefix = f"[DriftTracker][Session {session_id}][User {user_id}]"
+
+        # Extract relevant fields
+        device_id = device_data.get('device_id')
+        device_model = device_data.get('device_model')
+        os_version = device_data.get('os_version')
+        ip_address = device_data.get('ip_address')
+        location = device_data.get('location_data', {})
+        latitude = location.get('latitude')
+        longitude = location.get('longitude')
+
+        # If this is the first device_info, just store it
+        if not state:
+            self.session_states[session_id] = {
+                'device_id': device_id,
+                'device_model': device_model,
+                'os_version': os_version,
+                'ip_address': ip_address,
+                'latitude': latitude,
+                'longitude': longitude,
+                'timestamp': timestamp
+            }
+            logger.info(f"{log_prefix} Initial device_info received.")
+            return None
+
+        # Check for device change
+        if device_id and device_id != state['device_id']:
+            logger.warning(f"{log_prefix} Device ID changed mid-session! Blocking session.")
+            return 'block'
+        if device_model and device_model != state['device_model']:
+            logger.warning(f"{log_prefix} Device model changed mid-session! Blocking session.")
+            return 'block'
+        if os_version and os_version != state['os_version']:
+            logger.warning(f"{log_prefix} OS version changed mid-session! Blocking session.")
+            return 'block'
+
+        # Check for impossible travel
+        if latitude is not None and longitude is not None and state['latitude'] is not None and state['longitude'] is not None:
+            from geopy.distance import geodesic
+            try:
+                prev_coords = (state['latitude'], state['longitude'])
+                curr_coords = (latitude, longitude)
+                dist_km = geodesic(prev_coords, curr_coords).km
+                # Calculate time difference in seconds
+                from dateutil.parser import parse as parse_dt
+                t1 = parse_dt(state['timestamp'])
+                t2 = parse_dt(timestamp)
+                time_diff = abs((t2 - t1).total_seconds())
+                # If distance > 100km and time < 5min, block
+                if dist_km > 100 and time_diff < 300:
+                    logger.warning(f"{log_prefix} Impossible travel detected ({dist_km:.1f}km in {time_diff:.1f}s)! Blocking session.")
+                    return 'block'
+            except Exception as e:
+                logger.error(f"{log_prefix} Error in travel check: {e}")
+
+        # Check for IP change
+        if ip_address and ip_address != state['ip_address']:
+            logger.warning(f"{log_prefix} IP address changed from {state['ip_address']} to {ip_address}. Forcing re-authentication.")
+            self.session_states[session_id]['ip_address'] = ip_address
+            return 'reauth'
+
+        # Update state
+        self.session_states[session_id].update({
+            'device_id': device_id,
+            'device_model': device_model,
+            'os_version': os_version,
+            'ip_address': ip_address,
+            'latitude': latitude,
+            'longitude': longitude,
+            'timestamp': timestamp
+        })
+        return None
+
+# Instantiate the drift tracker
+drift_tracker = BehavioralDriftTracker()
+
+class AuditExplainabilityEngine:
+    """Logs similarity scores, anomaly weights, and decision reasoning for security audit."""
+    def __init__(self, db_manager):
+        self.db_manager = db_manager
+        self.bucket = "behavior-logs"
+        self.folder = "logs/security-logs/"
+
+    async def append_log(self, session_id, user_id, log_data: dict):
+        from datetime import datetime
+        import io
+        # Always initialize Supabase client
+        await self.db_manager.initialize()
+        supabase = self.db_manager.supabase
+        file_path = self.folder + f"{session_id}.txt"
+        lines = [f"Timestamp: {datetime.utcnow().isoformat()}"]
+        if 'event' in log_data:
+            lines.append(f"Event: {log_data['event']}")
+        for k, v in log_data.items():
+            if k != 'event':
+                lines.append(f"{k}: {v}")
+        log_text = "\n".join(lines) + "\n---\n"
+        try:
+            logger.info(f"[AuditExplainabilityEngine] Attempting to download existing log: {file_path}")
+            existing = supabase.storage.from_(self.bucket).download(file_path)
+            log_text = existing.decode('utf-8') + log_text
+            logger.info(f"[AuditExplainabilityEngine] Existing log found, appending.")
+        except Exception as e:
+            logger.info(f"[AuditExplainabilityEngine] No existing log found or error: {e}")
+        try:
+            logger.info(f"[AuditExplainabilityEngine] Uploading log to {file_path} (bucket: {self.bucket})")
+            supabase.storage.from_(self.bucket).upload(file_path, log_text.encode('utf-8'))
+            logger.info(f"[AuditExplainabilityEngine] Log uploaded successfully: {file_path}")
+        except Exception as e:
+            logger.error(f"[AuditExplainabilityEngine] Failed to upload log: {e}")
+
+# Instantiate the audit engine
+audit_engine = AuditExplainabilityEngine(db_manager)
+
+# Test the upload directly at startup
+if __name__ == "__main__":
+    import asyncio
+    async def test_audit_log():
+        test_session = "test_audit_log_manual"
+        test_user = "manual_test_user"
+        log_data = {"event": "manual_test", "message": "This is a direct test of the audit log upload."}
+        await audit_engine.append_log(test_session, test_user, log_data)
+        print(f"Manual audit log test for session {test_session} complete.")
+    asyncio.run(test_audit_log())
+
 @app.get("/")
 async def health_check():
     """Health check endpoint"""
@@ -146,6 +280,13 @@ async def start_session(data: SessionStart):
             "last_analysis": None
         }
         
+        # Audit log for session start
+        await audit_engine.append_log(data.session_id, data.user_id, {
+            "event": "session_start",
+            "phase": phase,
+            "status": "started"
+        })
+        
         logger.info(f"Session {data.session_id} started in {phase} phase")
         
         return {
@@ -177,6 +318,13 @@ async def end_session(data: SessionEnd):
         del active_sessions[data.session_id]
         
         logger.info(f"Session {data.session_id} ended successfully")
+        
+        # Audit log for session end
+        await audit_engine.append_log(data.session_id, session_data["user_id"], {
+            "event": "session_end",
+            **end_result,
+            "status": "ended"
+        })
         
         return {
             "status": "success",
@@ -210,16 +358,60 @@ async def analyze_behavior(data: BehavioralData, background_tasks: BackgroundTas
             }
         
         session_data = active_sessions[data.session_id]
-        
-        # Use continuous authenticator for processing
+
+        # Separate device_info events for drift tracking
+        device_info_events = [e for e in data.logs if e.get('event_type') == 'device_info']
+        behavioral_events = [e for e in data.logs if e.get('event_type') != 'device_info']
+
+        # Process device_info events with drift tracker
+        for event in device_info_events:
+            drift_action = drift_tracker.process_device_info(data.session_id, data.user_id, event)
+            if drift_action == 'block':
+                logger.error(f"[DriftTracker] Blocking session {data.session_id} due to drift event.")
+                # Audit log for block
+                await audit_engine.append_log(data.session_id, data.user_id, {
+                    "event": "drift_detected",
+                    "reason": "behavioral_drift_detected",
+                    "message": "Session blocked due to device/location drift.",
+                    "phase": session_data.get("phase"),
+                    "status": "blocked"
+                })
+                # Optionally, update session state or notify backend
+                return {
+                    "status": "blocked",
+                    "decision": "block",
+                    "reason": "behavioral_drift_detected",
+                    "message": "Session blocked due to device/location drift.",
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+            elif drift_action == 'reauth':
+                logger.warning(f"[DriftTracker] Forcing re-authentication for session {data.session_id} due to IP/network change.")
+                await audit_engine.append_log(data.session_id, data.user_id, {
+                    "event": "ip_change_detected",
+                    "reason": "ip_change_detected",
+                    "message": "Re-authentication required due to network change.",
+                    "phase": session_data.get("phase"),
+                    "status": "reauth_required"
+                })
+                return {
+                    "status": "reauth_required",
+                    "decision": "reauth",
+                    "reason": "ip_change_detected",
+                    "message": "Re-authentication required due to network change.",
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+
+        # Only send behavioral events to the main pipeline
         result = await continuous_authenticator.process_continuous_authentication(
-            data.user_id, data.session_id, data.logs, session_data
+            data.user_id, data.session_id, behavioral_events, session_data
         )
         
         # Update last analysis time
         session_data["last_analysis"] = datetime.utcnow()
         
         logger.info(f"Analysis result for {data.session_id}: {result['decision']} (confidence: {result.get('confidence', 0):.3f})")
+        # Audit log for every decision
+        await audit_engine.append_log(data.session_id, data.user_id, result)
         
         return result
         
