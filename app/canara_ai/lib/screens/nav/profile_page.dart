@@ -69,7 +69,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final logger = AppLogger.logger;
 
     Future<void> onLogout(BuildContext context) async {
-            // Send logout event before deleting tokens
+      // Send logout event before deleting tokens
       if (context.mounted) {
         BehaviorMonitorState? monitorState = context.findAncestorStateOfType<BehaviorMonitorState>();
         await monitorState?.sendUserLogoutEvent();
@@ -88,7 +88,6 @@ class _ProfilePageState extends State<ProfilePage> {
       await storage.delete(key: 'email');
       await storage.delete(key: 'isLoggedIn');
       await tokenStorage.clearTokens();
-      
 
       // Use context after async gap with a mounted check
       if (context.mounted) {
@@ -157,8 +156,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 _profileTile('Manage View Balance/Statement', Icons.account_balance_wallet, canaraYellow, onTap: () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageViewBalancePage()));
                 }),
-                _profileTile('Change MPIN', Icons.lock, canaraLightBlue, onTap: () => _showChangeMpinDialog(context)),
-                _profileTile('Forgot MPIN', Icons.help_outline, canaraBlue, onTap: () => _showForgotMpinDialog(context)),
+                _profileTile('Change DeviceInfo', Icons.lock, canaraLightBlue, onTap: () => _changedeviceinfo()),
+                _profileTile('Change Location', Icons.help_outline, canaraBlue, onTap: () => _changelocationinfo()),
                 _profileTile('Change Passcode', Icons.password, canaraYellow, onTap: () => _showChangePasscodeDialog(context)),
                 _profileTile('Get MMID', Icons.confirmation_number, canaraLightBlue, onTap: () => _showGetMmidDialog(context)),
                 _profileTile('My Accounts', Icons.account_box, canaraBlue, onTap: () {
@@ -318,6 +317,40 @@ class _ProfilePageState extends State<ProfilePage> {
         Text('Unblock', style: TextStyle(color: Colors.grey, fontSize: 12)),
       ],
     );
+  }
+
+void _changedeviceinfo() {
+    // Scenario 1: Same device details but different location
+    logger.sendEvent("device_info", {
+      "device_id": "same_device_id_as_original", // Same as original
+      "device_model": "SameModelAsOriginal",
+      "os_version": "SameOSAsOriginal",
+      "ip_address": "1.2.3.4", // Different IP
+      "location_data": {
+        "latitude": 15.1234, // Different location
+        "longitude": 75.5678
+      },
+      "network_type": "WiFi",
+      "user_agent": "SameUserAgentAsOriginal",
+      "app_version": "SameAppVersionAsOriginal"
+    });
+  }
+
+  void _changelocationinfo() {
+    // Scenario 2: Same location but different device details
+    logger.sendEvent("device_info", {
+      "device_id": "different_device_id_than_original", // Different device
+      "device_model": "DifferentModelThanOriginal",
+      "os_version": "DifferentOSVersion",
+      "ip_address": "5.6.7.8", // Different IP
+      "location_data": {
+        "latitude": 12.3456, // Same as original location
+        "longitude": 34.5678
+      },
+      "network_type": "Mobile", // Different network
+      "user_agent": "DifferentUserAgent",
+      "app_version": "DifferentAppVersion"
+    });
   }
 
   void _showChangeMpinDialog(BuildContext context) {

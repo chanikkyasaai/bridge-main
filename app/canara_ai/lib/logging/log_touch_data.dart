@@ -21,6 +21,7 @@ class BehaviorLogger {
 
   final tokenstorage = TokenStorage();
   final storage = FlutterSecureStorage();
+  final ValueNotifier<String?> serverNotice = ValueNotifier(null);
 
   bool _sessionActive = true; // Add this flag
 
@@ -35,7 +36,7 @@ class BehaviorLogger {
       try {
         final deviceInfo = await DeviceInfoContext.build();
         final payload = {
-          'type': 'device_info',
+          'event_type': 'device_info',
           'data': deviceInfo.toJson(),
           'timestamp': DateTime.now().toIso8601String(),
         };
@@ -67,14 +68,17 @@ class BehaviorLogger {
         final event = jsonDecode(eventJson);
 
         if (event['type'] == 'mpin_required') {
+          print('MPIN required: ${event['reason']}');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(event['reason'] ?? 'Temporary security block')),
           );
+
           navigatorKey.currentState?.pushNamedAndRemoveUntil('/auth', (route) => false);
           return;
         }
 
         if (event['type'] == 'session_blocked') {
+          print('Session blocked: ${event['reason']}');
           // Log out and show reason in a toast/snackbar
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(event['reason'] ?? 'Session blocked')),
@@ -110,6 +114,7 @@ class BehaviorLogger {
 
     sessionId = _sessionId;
     sessionToken = _sessionToken;
+
 
     final uri = Uri.parse('ws://192.168.241.41:8000/api/v1/ws/behavior/$_sessionId?token=${Uri.encodeComponent(_sessionToken)}');
 
@@ -180,14 +185,20 @@ class BehaviorLogger {
 
   void _handleServerMessage(dynamic message) {
     final data = jsonDecode(message);
+
     if (data['type'] == 'connection_established') {
       print('WebSocket connected: ${data['message']}');
     } else if (data['type'] == 'data_received') {
       print('Event processed: ${data['timestamp']}');
     } else if (data['type'] == 'error') {
       print('WebSocket error: ${data['message']}');
-    } 
+    } else if (data['type'] == 'session_blocked') {
+      print('Session blocked: ${data['reason']}');
+    } else if (data['type'] == 'mpin_required') {
+      print('MPIN required: ${data['reason']}');
+    }
   }
+
 
   void _retryConnection({int retries = 5}) async {
     for (int attempt = 0; attempt < retries; attempt++) {
