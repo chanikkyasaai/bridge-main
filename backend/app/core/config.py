@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     SESSION_CLEANUP_INTERVAL: int = 300  # 5 minutes
     
     # CORS
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8080"]
+    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8080", "*"]
     
     # Supabase Configuration
     SUPABASE_URL: str = ""

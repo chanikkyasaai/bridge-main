@@ -9,7 +9,7 @@ from typing import Dict, List, Any, Optional
 import logging
 from datetime import datetime
 import asyncio
-from gnn_escalation import SessionEventGraph, GNNAnomalyDetector
+# from gnn_escalation import SessionEventGraph, GNNAnomalyDetector
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +25,8 @@ class AuthenticationManager:
         
         # Session state management
         self.session_vectors = {}  # Track session vectors for cumulative analysis
-        self.gnn_detector = GNNAnomalyDetector()
-        self.session_graphs = {}  # session_id -> SessionEventGraph
+        # self.gnn_detector = GNNAnomalyDetector()
+        # self.session_graphs = {}  # session_id -> SessionEventGraph
         
         # Configuration
         self.similarity_threshold = 0.75  # Default, but will use user-specific
@@ -46,10 +46,10 @@ class AuthenticationManager:
             
             logger.info(f"Processing authentication events for session {session_id}")
             
-            # Fetch user threshold_variance
-            user_profile = await self.db.get_user_profile(user_id)
-            threshold_variance = user_profile.get('threshold_variance', 0.0)
-            user_threshold = 0.75 - threshold_variance
+            # # Fetch user threshold_variance
+            # user_profile = await self.db.get_user_profile(user_id)
+            # threshold_variance = user_profile.get('threshold_variance', 0.0)
+            # user_threshold = 0.75 - threshold_variance
             
             # Check if we have enough events for analysis
             if len(new_events) < self.min_events_for_analysis:
@@ -110,33 +110,33 @@ class AuthenticationManager:
             # Perform similarity matching with user clusters
             auth_result = await self._perform_authentication(user_id, cumulative_vector)
             
-            similarity = auth_result.get('similarity', 0.0)
+            # similarity = auth_result.get('similarity', 0.0)
             
-            # Escalation logic
-            if similarity < user_threshold:
-                # Escalate to Level 2 (GNN)
-                logger.warning(f"🚨 Escalating session {session_id} to Level 2 (GNN) due to low similarity: {similarity:.3f} < {user_threshold:.3f}")
-                # Maintain/update session event graph
-                if session_id not in self.session_graphs:
-                    self.session_graphs[session_id] = SessionEventGraph()
-                for event in new_events:
-                    self.session_graphs[session_id].add_event(event)
-                session_graph = self.session_graphs[session_id]
-                pyg_data = session_graph.to_pyg_data()
-                anomaly_score = self.gnn_detector.predict_anomaly(pyg_data)
-                logger.info(f"GNN anomaly score for session {session_id}: {anomaly_score:.3f}")
-                # Clean up graph if session ends (optional)
-                # del self.session_graphs[session_id]
-                return {
-                    **auth_result,
-                    "status": "escalated",
-                    "decision": "escalate",
-                    "phase": "escalation",
-                    "similarity": similarity,
-                    "user_threshold": user_threshold,
-                    "anomaly_score": anomaly_score,
-                    "message": f"Escalated to Level 2 (GNN) due to low similarity. Anomaly score: {anomaly_score:.3f}",
-                }
+            # # Escalation logic
+            # if similarity < user_threshold:
+            #     # Escalate to Level 2 (GNN)
+            #     logger.warning(f"🚨 Escalating session {session_id} to Level 2 (GNN) due to low similarity: {similarity:.3f} < {user_threshold:.3f}")
+            #     # Maintain/update session event graph
+            #     if session_id not in self.session_graphs:
+            #         self.session_graphs[session_id] = SessionEventGraph()
+            #     for event in new_events:
+            #         self.session_graphs[session_id].add_event(event)
+            #     session_graph = self.session_graphs[session_id]
+            #     pyg_data = session_graph.to_pyg_data()
+            #     anomaly_score = self.gnn_detector.predict_anomaly(pyg_data)
+            #     logger.info(f"GNN anomaly score for session {session_id}: {anomaly_score:.3f}")
+            #     # Clean up graph if session ends (optional)
+            #     # del self.session_graphs[session_id]
+            #     return {
+            #         **auth_result,
+            #         "status": "escalated",
+            #         "decision": "escalate",
+            #         "phase": "escalation",
+            #         "similarity": similarity,
+            #         "user_threshold": user_threshold,
+            #         "anomaly_score": anomaly_score,
+            #         "message": f"Escalated to Level 2 (GNN) due to low similarity. Anomaly score: {anomaly_score:.3f}",
+            #     }
             
             # Update cluster if authentication passed (incremental learning)
             if auth_result["decision"] == "allow" and similarity > user_threshold:

@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 from app.api.v1.api import api_router
 from app.core.config import settings
 from app.core.session_manager import cleanup_sessions_task
+from app.core.event_batcher import event_batcher
+from app.ml_engine_client import behavioral_event_hook
 
 # Load environment variables
 load_dotenv()
@@ -23,6 +25,11 @@ async def lifespan(app: FastAPI):
     # Create session buffers directory
     os.makedirs("session_buffers", exist_ok=True)
     
+    # Initialize event batcher
+    print("Initializing event batcher...")
+    event_batcher.set_ml_callback(behavioral_event_hook)
+    await event_batcher.start()
+    
     # Start background task for session cleanup
     cleanup_task = asyncio.create_task(cleanup_sessions_task())
     
@@ -30,6 +37,12 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     print("Shutting down Canara AI Security Backend...")
+    
+    # Stop event batcher
+    print("Stopping event batcher...")
+    await event_batcher.stop()
+    
+    # Cancel cleanup task
     cleanup_task.cancel()
     try:
         await cleanup_task

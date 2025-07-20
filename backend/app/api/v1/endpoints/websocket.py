@@ -1,12 +1,16 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, Query
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, Query, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Dict, Any, Optional
 import json
 import asyncio
 from datetime import datetime
 from app.core.session_manager import session_manager
 from app.core.security import extract_session_info
+from app.ml_engine_client import behavioral_event_hook, end_ml_session
+from app.core.event_batcher import event_batcher
 
 router = APIRouter()
+security = HTTPBearer()
 
 class WebSocketManager:
     """Manages WebSocket connections for behavioral data collection"""
@@ -166,7 +170,36 @@ async def process_behavioral_data(session_id: str, behavioral_event: Dict[str, A
     # Store behavioral data
     session.add_behavioral_data(event_type, event_data)
     
-    # Analyze behavior and update risk score
+    # Add event to batcher for ML analysis
+    try:
+        # Add event to batch - this will handle batching automatically
+        was_processed = await event_batcher.add_event(session_id, behavioral_event)
+        
+        if was_processed:
+            # Event was processed immediately (batch was full)
+            session.add_behavioral_data("event_batch_processed", {
+                "session_id": session_id,
+                "event_type": event_type,
+                "processed_immediately": True,
+                "timestamp": session.last_activity.isoformat()
+            })
+        else:
+            # Event was queued for batch processing
+            session.add_behavioral_data("event_batch_queued", {
+                "session_id": session_id,
+                "event_type": event_type,
+                "queued_for_batch": True,
+                "timestamp": session.last_activity.isoformat()
+            })
+            
+    except Exception as batch_error:
+        session.add_behavioral_data("event_batch_error", {
+            "session_id": session_id,
+            "error": str(batch_error),
+            "timestamp": session.last_activity.isoformat()
+        })
+    
+    # Also run local behavioral analysis as fallback
     await analyze_behavioral_pattern(session, event_type, event_data)
 
 async def analyze_behavioral_pattern(session, event_type: str, event_data: Dict[str, Any]):
@@ -316,10 +349,144 @@ async def debug_token(token: str):
     except Exception as e:
         return {"error": f"Debug failed: {str(e)}"}
 
+@router.get("/debug/event-batcher")
+async def get_event_batcher_stats():
+    """Get event batcher statistics"""
+    try:
+        stats = event_batcher.get_stats()
+        return {
+            "event_batcher_stats": stats,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        return {"error": f"Failed to get event batcher stats: {str(e)}"}
+
+@router.post("/debug/flush-all-batches")
+async def flush_all_batches():
+    """Manually flush all pending batches"""
+    try:
+        await event_batcher._flush_all_batches()
+        return {
+            "message": "All batches flushed successfully",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        return {"error": f"Failed to flush batches: {str(e)}"}
+
+@router.post("/sessions/{session_id}/lifecycle")
+async def handle_app_lifecycle(
+    session_id: str,
+    lifecycle_data: dict,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    Handle app lifecycle events from frontend (app close, background, foreground, etc.)
+    """
+    try:
+        # Verify session token
+        session_info = extract_session_info(credentials.credentials)
+        if not session_info:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid session token"
+            )
+        
+        # Get session
+        session = session_manager.get_session(session_id)
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Session not found"
+            )
+        
+        # Verify token belongs to this session
+        if session_info.get("user_id") != session.user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Token does not match session user"
+            )
+        
+        event_type = lifecycle_data.get("event_type")
+        details = lifecycle_data.get("details", {})
+        
+        # Handle the lifecycle event
+        result = await session_manager.handle_app_lifecycle_event(session_id, event_type, details)
+        
+        # If session was terminated, end ML session
+        if event_type in ["app_close", "user_logout", "force_close"] and result:
+            try:
+                ml_end_result = await end_ml_session(session_id, event_type)
+                if ml_end_result and ml_end_result.get("status") == "success":
+                    session.add_behavioral_data("ml_session_ended", {
+                        "session_id": session_id,
+                        "reason": event_type,
+                        "timestamp": session.last_activity.isoformat()
+                    })
+            except Exception as ml_error:
+                session.add_behavioral_data("ml_session_end_error", {
+                    "session_id": session_id,
+                    "error": str(ml_error),
+                    "timestamp": session.last_activity.isoformat()
+                })
+        
+        return {
+            "message": f"Lifecycle event '{event_type}' processed",
+            "session_id": session_id,
+            "session_terminated": result,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to handle lifecycle event: {str(e)}"
+        )
+
 async def handle_websocket_disconnect(session_id: str):
     """
     Handle WebSocket disconnection and decide whether to terminate the session
     """
+    # Flush any pending events in the batch
+    try:
+        await event_batcher.flush_session(session_id)
+        session = session_manager.get_session(session_id)
+        if session:
+            session.add_behavioral_data("event_batch_flushed", {
+                "session_id": session_id,
+                "reason": "websocket_disconnect",
+                "timestamp": session.last_activity.isoformat()
+            })
+    except Exception as flush_error:
+        session = session_manager.get_session(session_id)
+        if session:
+            session.add_behavioral_data("event_batch_flush_error", {
+                "session_id": session_id,
+                "error": str(flush_error),
+                "timestamp": session.last_activity.isoformat()
+            })
+    
+    # End ML Engine session
+    try:
+        ml_end_result = await end_ml_session(session_id, "websocket_disconnect")
+        if ml_end_result and ml_end_result.get("status") == "success":
+            session = session_manager.get_session(session_id)
+            if session:
+                session.add_behavioral_data("ml_session_ended", {
+                    "session_id": session_id,
+                    "reason": "websocket_disconnect",
+                    "timestamp": session.last_activity.isoformat()
+                })
+    except Exception as ml_error:
+        session = session_manager.get_session(session_id)
+        if session:
+            session.add_behavioral_data("ml_session_end_error", {
+                "session_id": session_id,
+                "error": str(ml_error),
+                "timestamp": session.last_activity.isoformat()
+            })
+    
     # Use the new lifecycle event handler
     await session_manager.handle_app_lifecycle_event(
         session_id, 

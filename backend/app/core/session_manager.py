@@ -275,7 +275,7 @@ class SessionManager:
         # Create session in Supabase database
         try:
             supabase_session = await supabase_client.create_session(
-                user_id, device_id, session_token
+                user_id, session_token=session_token, session_id=session_id, device_info=device_id
             )
             supabase_session_id = supabase_session['id'] if supabase_session else None
         except Exception as e:
@@ -310,6 +310,39 @@ class SessionManager:
         """Terminate a specific session and save behavioral data to Supabase"""
         if session_id in self.active_sessions:
             session = self.active_sessions[session_id]
+            
+            # Flush any pending events in the batch
+            try:
+                from app.core.event_batcher import event_batcher
+                await event_batcher.flush_session(session_id)
+                session.add_behavioral_data("event_batch_flushed", {
+                    "session_id": session_id,
+                    "reason": "session_termination",
+                    "timestamp": session.last_activity.isoformat()
+                })
+            except Exception as flush_error:
+                session.add_behavioral_data("event_batch_flush_error", {
+                    "session_id": session_id,
+                    "error": str(flush_error),
+                    "timestamp": session.last_activity.isoformat()
+                })
+            
+            # End ML Engine session
+            try:
+                from app.ml_engine_client import end_ml_session
+                ml_end_result = await end_ml_session(session_id, final_decision)
+                if ml_end_result and ml_end_result.get("status") == "success":
+                    session.add_behavioral_data("ml_session_ended", {
+                        "session_id": session_id,
+                        "reason": final_decision,
+                        "timestamp": session.last_activity.isoformat()
+                    })
+            except Exception as ml_error:
+                session.add_behavioral_data("ml_session_end_error", {
+                    "session_id": session_id,
+                    "error": str(ml_error),
+                    "timestamp": session.last_activity.isoformat()
+                })
             
             # End the session
             session.end_session()

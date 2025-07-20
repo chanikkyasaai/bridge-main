@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from datetime import timedelta, datetime
-from typing import Optional
+from typing import Optional, Dict, Any
 from app.core.security import (
     create_access_token, create_refresh_token, create_session_token, 
     verify_password, get_password_hash, verify_access_token, 
@@ -12,6 +12,7 @@ from app.core.session_manager import session_manager
 from app.core.config import settings
 from app.core.supabase_client import supabase_client
 from app.core.token_manager import token_manager
+from app.ml_engine_client import start_ml_session, end_ml_session
 
 router = APIRouter()
 security = HTTPBearer()
@@ -44,8 +45,20 @@ class SessionResponse(BaseModel):
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
+class DeviceContext(BaseModel):
+    device_id: str
+    device_type: Optional[str] = None
+    device_model: Optional[str] = None
+    os_version: Optional[str] = None
+    app_version: Optional[str] = None
+    network_type: Optional[str] = None
+    location_data: Optional[Dict[str, Any]] = None
+    user_agent: Optional[str] = None
+    ip_address: Optional[str] = None
+
 class MPINVerification(BaseModel):
     mpin: str
+    context: Optional[DeviceContext] = None
 
 class MPINChallenge(BaseModel):
     session_id: str
@@ -55,6 +68,7 @@ class MPINLogin(BaseModel):
     phone: str
     mpin: str
     device_id: str
+    context: Optional[DeviceContext] = None
 
 class FullAuthResponse(BaseModel):
     access_token: str
@@ -296,21 +310,60 @@ async def verify_mpin_endpoint(
         
         # Verify MPIN
         if verify_mpin(mpin_data.mpin, user["mpin_hash"]):
+            # Extract device context information
+            device_context = mpin_data.context
+            device_id = device_context.device_id if device_context else current_user["device_id"]
+            
             # Create behavioral logging session first
             session_id = await session_manager.create_session(
                 user_id,
                 phone,
-                current_user["device_id"],
+                device_id,
                 None  # Pass None for session_token, we'll update it after creation
             )
             # Create session token with the actual session_id
             session_token = create_session_token(
-                phone, current_user["device_id"], user_id, session_id)
+                phone, device_id, user_id, session_id)
 
             # Update the session with the token
             session = session_manager.get_session(session_id)
             if session:
                 session.session_token = session_token
+                
+                # Start ML Engine session with enhanced device info
+                try:
+                    ml_device_info = {
+                        "device_id": device_id,
+                        "phone": phone,
+                        "session_id": session_id,
+                        "device_type": device_context.device_type if device_context else None,
+                        "device_model": device_context.device_model if device_context else None,
+                        "os_version": device_context.os_version if device_context else None,
+                        "app_version": device_context.app_version if device_context else None,
+                        "network_type": device_context.network_type if device_context else None,
+                        "ip_address": device_context.ip_address if device_context else None
+                    }
+                    ml_result = await start_ml_session(user_id, session_id, ml_device_info)
+                    if ml_result and ml_result.get("status") == "success":
+                        session.add_behavioral_data("ml_session_started", {
+                            "session_id": session_id,
+                            "ml_engine_status": "connected",
+                            "timestamp": session.last_activity.isoformat()
+                        })
+                    else:
+                        session.add_behavioral_data("ml_session_failed", {
+                            "session_id": session_id,
+                            "ml_engine_status": "unavailable",
+                            "error": ml_result.get("message", "Unknown error"),
+                            "timestamp": session.last_activity.isoformat()
+                        })
+                except Exception as ml_error:
+                    session.add_behavioral_data("ml_session_error", {
+                        "session_id": session_id,
+                        "ml_engine_status": "error",
+                        "error": str(ml_error),
+                        "timestamp": session.last_activity.isoformat()
+                    })
             
             if session:
                 # Reset MPIN attempts on successful verification
@@ -324,15 +377,15 @@ async def verify_mpin_endpoint(
                 })
                 
                 # Create security event
-                if session.supabase_session_id:
-                    await supabase_client.create_security_event(
-                        session.supabase_session_id,
-                        1,  # Level 1
-                        "continue",
-                        "MPIN verified successfully",
-                        "mpin_verification",
-                        1.0
-                    )
+                # if session.supabase_session_id:
+                #     await supabase_client.create_security_event(
+                #         session.supabase_session_id,
+                #         1,  # Level 1
+                #         "continue",
+                #         "MPIN verified successfully",
+                #         "mpin_verification",
+                #         1.0
+                #     )
             
             return SessionResponse(
                 message="MPIN verified successfully",
@@ -390,6 +443,22 @@ async def logout(current_user: dict = Depends(get_current_user)):
         user_sessions = session_manager.get_user_sessions(user_id)
         for session in user_sessions:
             if not device_id or session.device_id == device_id:
+                # End ML Engine session
+                try:
+                    ml_end_result = await end_ml_session(session.session_id, "user_logout")
+                    if ml_end_result and ml_end_result.get("status") == "success":
+                        session.add_behavioral_data("ml_session_ended", {
+                            "session_id": session.session_id,
+                            "reason": "user_logout",
+                            "timestamp": session.last_activity.isoformat()
+                        })
+                except Exception as ml_error:
+                    session.add_behavioral_data("ml_session_end_error", {
+                        "session_id": session.session_id,
+                        "error": str(ml_error),
+                        "timestamp": session.last_activity.isoformat()
+                    })
+                
                 session.end_session()
         
         return {
@@ -571,18 +640,22 @@ async def mpin_login(user_data: MPINLogin):
         token_manager.store_refresh_token(
             jti, user_id, user_data.device_id, expires_at)
 
+        # Extract device context information
+        device_context = user_data.context
+        device_id = device_context.device_id if device_context else user_data.device_id
+        
         # Create behavioral logging session immediately
         # First create session to get session_id, then create token with that session_id
         session_id = await session_manager.create_session(
             user_id,
             user_data.phone,
-            user_data.device_id,
+            device_id,
             None  # Pass None for session_token, we'll update it after creation
         )
 
         # Create session token with the actual session_id
         session_token = create_session_token(
-            user_data.phone, user_data.device_id, user_id, session_id)
+            user_data.phone, device_id, user_id, session_id)
 
         # Update the session with the token
         
@@ -590,6 +663,57 @@ async def mpin_login(user_data: MPINLogin):
         session = session_manager.get_session(session_id)
         if session:
             session.session_token = session_token
+            
+            # Log device context information
+            if device_context:
+                session.add_behavioral_data("device_context", {
+                    "session_id": session_id,
+                    "device_id": device_context.device_id,
+                    "device_type": device_context.device_type,
+                    "device_model": device_context.device_model,
+                    "os_version": device_context.os_version,
+                    "app_version": device_context.app_version,
+                    "network_type": device_context.network_type,
+                    "location_data": device_context.location_data,
+                    "user_agent": device_context.user_agent,
+                    "ip_address": device_context.ip_address,
+                    "timestamp": session.last_activity.isoformat()
+                })
+            
+            # Start ML Engine session with enhanced device info
+            try:
+                ml_device_info = {
+                    "device_id": device_id,
+                    "phone": user_data.phone,
+                    "session_id": session_id,
+                    "device_type": device_context.device_type if device_context else None,
+                    "device_model": device_context.device_model if device_context else None,
+                    "os_version": device_context.os_version if device_context else None,
+                    "app_version": device_context.app_version if device_context else None,
+                    "network_type": device_context.network_type if device_context else None,
+                    "ip_address": device_context.ip_address if device_context else None
+                }
+                ml_result = await start_ml_session(user_id, session_id, ml_device_info)
+                if ml_result and ml_result.get("status") == "success":
+                    session.add_behavioral_data("ml_session_started", {
+                        "session_id": session_id,
+                        "ml_engine_status": "connected",
+                        "timestamp": session.last_activity.isoformat()
+                    })
+                else:
+                    session.add_behavioral_data("ml_session_failed", {
+                        "session_id": session_id,
+                        "ml_engine_status": "unavailable",
+                        "error": ml_result.get("message", "Unknown error"),
+                        "timestamp": session.last_activity.isoformat()
+                    })
+            except Exception as ml_error:
+                session.add_behavioral_data("ml_session_error", {
+                    "session_id": session_id,
+                    "ml_engine_status": "error",
+                    "error": str(ml_error),
+                    "timestamp": session.last_activity.isoformat()
+                })
         
         if session:
             # Log MPIN verification success
